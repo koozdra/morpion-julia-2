@@ -1,3 +1,5 @@
+import Dates
+
 struct Move
     x::Int8
     y::Int8
@@ -175,8 +177,6 @@ function find_created_moves(board, point_x, point_y)
     possible_moves
 end
 
-
-
 function print_board(board) 
     for y in -14:24
         for x in -14:24
@@ -187,26 +187,6 @@ function print_board(board)
     end
 end
 
-function unit_dict(iterations, board_template, moves) 
-    for i in 1:iterations
-        dna = generate_dna_dict(moves);
-        eval_moves = eval_dna_dict(copy(board_template), dna)
-        if (moves != eval_moves)
-            println("oh shit")
-        end
-    end
-end
-
-function unit(iterations, board_template, moves) 
-    for i in 1:iterations
-        
-        dna = generate_dna(moves);
-        eval_moves = eval_dna(copy(board_template), dna)
-        if (length(moves) != length(eval_moves))
-            println("oh shit")
-        end
-    end
-end
 
 function random_completion(board)
     taken_moves = Move[]
@@ -317,13 +297,13 @@ function eval_dna_dict(board, dna)
         if haskey(dna, dna_index(a))
             a_rank = dna[dna_index(a)]
         else
-            a_rank = -rand(1:1000)
+            a_rank = -rand(1:100)
         end
 
         if haskey(dna, dna_index(b))
             b_rank = dna[dna_index(b)]
         else
-            b_rank = -rand(1:1000)
+            b_rank = -rand(1:100)
         end
         
         (a_rank > b_rank) ? a : b
@@ -344,105 +324,156 @@ end
 function modification_triple(board, moves)
    	morpion_dna = generate_dna(moves)
 
-    #force the three to be different?? 
-    # for i = 1:3
-    # morpion_dna[dna_index(moves[rand(1:end)])] = -rand()
-    morpion_dna[dna_index(moves[rand(1:end)])] = -1
-   	# end
+    for i = 1:rand(1:4)
+        morpion_dna[dna_index(moves[rand(1:end)])] = -rand()
+   	end
 
    	eval_dna(board, morpion_dna)
+end
+
+function modification_triple_dict(board, moves)
+    morpion_dna = generate_dna_dict(moves)
+
+    for i = 1:3
+        morpion_dna[dna_index(moves[rand(1:end)])] = -100000
+    end
+
+    eval_dna_dict(board, morpion_dna)
+end
+
+function points_hash(moves)
+   	hash(sort(map((move)->(move.x, move.y), moves)))
 end
 
 function run() 
     board_template = generate_initial_board()
 
-    min_accept_delta = 0
+    min_accept_delta = -10
 
-    curr_moves = random_completion(copy(board_template))
-    step = 0
-
-    # println("done $(length(curr_moves))")
-    #TODO: type
-    random_completion_moves = random_completion(copy(board_template))
-    # hash = hash(random_completion_moves)
-    # pool = [random_completion(copy(board_template))]
-    # pool_visits = Dict()
+    # curr_moves = random_completion(copy(board_template))
 
 
+    # dna = generate_dna_dict(curr_moves)
+    # eval_moves = eval_dna_dict(copy(board_template), dna)
+
+    # println("$(length(curr_moves)) -> $(length(eval_moves))")
+    # println(curr_moves)
+    # println(eval_moves)
+    start_moves = random_completion(copy(board_template))
+    start_moves_points_hash = points_hash(start_moves)
+    # pool = [start_moves]
+    pool_index = Dict(start_moves_points_hash => (start_moves, 0))
+    # searched_index = Dict()
+
+    function exploit_reducer(a, b)
+      # records 1
+      # t = 1
+        t = 2
+        (a_moves, a_visits) = a
+        (b_moves, b_visits) = b
+        a_score = length(a_moves)
+        b_score = length(b_moves)
+        sa = a_score - (a_visits / (a_score * t))
+        sb = b_score - (b_visits / (b_score * t))
+  
+        if sa > sb || sa == sb #&& randbool()
+            return a
+        else
+            return b
+        end
+    end
+
+    function explore_reducer(a, b)
+      # records 1
+      # t = 1
+        t = 0.01
+        (a_moves, a_visits) = a
+        (b_moves, b_visits) = b
+        a_score = length(a_moves)
+        b_score = length(b_moves)
+        sa = a_score - (a_visits / (a_score * t))
+        sb = b_score - (b_visits / (b_score * t))
+  
+        if sa > sb || sa == sb #&& randbool()
+            return a
+        else
+            return b
+        end
+    end
+
+    step = 1
+
+    timer = Dates.now()
+
+    max_score = 0
+    max_moves = Move[]
     
     while true
-        # selection
+        # curr_moves = pool[step % length(pool) + 1]
 
+        if step & 1 == 0
+            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
+        else
+            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
+        end
+
+        curr_moves_points_hash = points_hash(curr_moves)
+
+        if !haskey(pool_index, curr_moves_points_hash)
+            pool_index[curr_moves_points_hash] = (curr_moves, 0)
+        else
+            moves, visits = pool_index[curr_moves_points_hash]
+            pool_index[curr_moves_points_hash] = (moves, visits + 1)
+        end
 
         eval_moves = modification_triple(copy(board_template), curr_moves)
         curr_score = length(curr_moves)
         eval_score = length(eval_moves)
         eval_hash = hash(eval_moves)
-        # println("$step. $score -> $eval_score")
-        if (eval_score >= curr_score + min_accept_delta)
-            # println("$step. $curr_score -> $eval_score")
-            curr_moves = eval_moves
-            # pool_visits[hash(curr_moves)] = 1
+
+        if (eval_score >= max_score + min_accept_delta)
+            eval_points_hash = points_hash(eval_moves)
+
+            if !haskey(pool_index, eval_points_hash)
+                pool_index[eval_points_hash] = (eval_moves, 0)
+                # push!(pool, eval_moves)
+                # indicator = "->"
+                if eval_score >= curr_score
+                    indicator = "=>"
+                    println("$step. $curr_score($curr_visits) $indicator $eval_score  $max_score")
+                end
+            else
+                m, v  = pool_index[eval_points_hash]
+                pool_index[eval_points_hash] = (eval_moves, v)               
+            end
         end
 
-        if (eval_score > curr_score)
-            println("$step. $curr_score -> $eval_score")
-            # pool_visits = Dict()
-            # pool = []
-            
-        end
-
-        # if step % 1000 == 0
-        #     println("visits: $(length(pool_visits))")
+        # if (eval_score > curr_score)
+        #     println("$step. $max_score $curr_score => $eval_score")
         # end
+
+        if eval_score > max_score
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            println(eval_moves)
+            println("$eval_score")
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            max_score = eval_score
+            max_moves = eval_moves
+            max_moves_points_hash = points_hash(max_moves)
+            # pool = [eval_moves]
+            pool_index = Dict(max_moves_points_hash => (max_moves, 0))
+        end
+
+        if step % 10000 == 0
+            current_time = Dates.now()
+            elapsed = current_time - timer
+            println("$step. $max_score ($elapsed) [index:$(length(pool_index))]")
+            timer = current_time
+        end
 
         step += 1
     end
 
-    # println(hash([initial_moves()]))
-    # println(hash([initial_moves()]))
-
-    
-
-    # println("$(length(moves)) -> $(length(mod_moves))")
-
-    # moves = random_completion(copy(board_template))
-
-    # dna = generate_dna(moves);
-    # eval_moves = eval_dna(copy(board_template), dna, moves)
-    # println()
-    # println(moves)
-    # println()
-    # println(eval_moves)
-
-    # println("$(length(moves)) -> $(length(eval_moves))")
-
-    # curr_possible_moves = initial_moves()
-    
-    # println()
-    # # println(curr_possible_moves)
-    # a = map(dna_index, curr_possible_moves);
-    # println("a is")
-    # println(a)
-    # b = map(move->dna[dna_index(move)], curr_possible_moves);
-    # println("b is")
-    # println(b)
-    
-    
-    
-    iterations = 1000
-    moves = random_completion(copy(board_template))
-
-    println(start_point(Move(3, 4, 3, -3)))
-    println("dict")
-    for i in 1:10
-        @time unit_dict(iterations, board_template, moves)
-    end
-
-    println("float array")
-    for i in 1:10
-        @time unit(iterations, board_template, moves)
-    end
 end
 
 run();
