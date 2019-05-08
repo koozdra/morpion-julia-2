@@ -7,15 +7,21 @@ struct Move
     start_offset::Int8
 end
 
-function board_index_at(x, y) 
+struct Node
+    move::Move
+    cadidate_possible_moves::Array{Move,1}
+    children::Array{Move,1}
+end
+
+function board_index_at(x::Number, y::Number) 
     return (x + 15) * 40 + (y + 15)
 end
 
-function is_direction_taken(board::Array{UInt8,1}, x, y, direction) 
+function is_direction_taken(board::Array{UInt8,1}, x::Number, y::Number, direction::Number) 
     return board[board_index_at(x, y)] & mask_dir()[direction + 1] != 0
 end
 
-function is_empty_at(board::Array{UInt8,1}, x, y) 
+function is_empty_at(board::Array{UInt8,1}, x::Number, y::Number) 
     return board[board_index_at(x, y)] == 0
 end
 
@@ -24,21 +30,13 @@ function is_move_valid(board::Array{UInt8,1}, move::Move)
     num_empty_points = 0
     empty_point = ()
 
-    # println("considering ", move)
-  
     for i in 0:4
         combined_offset = i + move.start_offset
         x = move.x + delta_x * combined_offset
         y = move.y + delta_y * combined_offset
 
-        # println " ", x, " ", y, " ", 
-        # println("$x $y $(is_direction_taken(board, x, y, move.direction))")
-
         # the inner points of the line cannot be taken in the direction of the line
         if i > 0 && i < 4 && is_direction_taken(board, x, y, move.direction)
-            # m = Move(x, y, move.direction, i)
-            # println("Removing: $m")
-            # println("dud")
             return false
         end
 
@@ -49,7 +47,6 @@ function is_move_valid(board::Array{UInt8,1}, move::Move)
         end
     end
 
-    # println(num_empty_points)
     return num_empty_points == 1
 end
 
@@ -129,7 +126,7 @@ function update_board(board::Array{UInt8,1}, move::Move)
     end
 end
 
-function eval_line(board::Array{UInt8,1}, start_x, start_y, direction) 
+function eval_line(board::Array{UInt8,1}, start_x::Number, start_y::Number, direction::Number) 
     (delta_x, delta_y) = direction_offsets()[direction + 1]
     num_empty_points = 0
     empty_point = 0
@@ -152,12 +149,11 @@ function eval_line(board::Array{UInt8,1}, start_x, start_y, direction)
 
     if num_empty_points == 1
         (point_x, point_y) = empty_point
-        # println("FOUND $point_x $point_y $direction $offs")
         return Move(point_x, point_y, direction, -empty_point_offset)
     end
 end
 
-function find_created_moves(board, point_x, point_y) 
+function find_created_moves(board::Array{UInt8,1}, point_x::Number, point_y::Number) 
     possible_moves = Move[]
 
     for direction in 0:3
@@ -177,7 +173,7 @@ function find_created_moves(board, point_x, point_y)
     possible_moves
 end
 
-function print_board(board) 
+function print_board(board::Array{UInt8,1}) 
     for y in -14:24
         for x in -14:24
             c = board[board_index_at(x, y)]
@@ -188,32 +184,41 @@ function print_board(board)
 end
 
 
-function random_completion(board)
+function eval_possible_move_reducer(board, possible_move_reducer)
+    curr_possible_moves = initial_moves()
     taken_moves = Move[]
 
-    curr_possible_moves = initial_moves();
     i = 1
-
+  
     while length(curr_possible_moves) > 0
-        move = curr_possible_moves[rand(1:end)]
-        
-        # move = curr_possible_moves[1]
-        # println()
-        # println("making move ($i): $move ($(is_move_valid(board, move)))")
-        # println("possibles $(length(curr_possible_moves)) $curr_possible_moves")
+        move = reduce(possible_move_reducer, curr_possible_moves)
         push!(taken_moves, move)
         update_board(board, move)
-        remove_moves = filter((move)->!is_move_valid(board, move), curr_possible_moves)
-        # println("remove moves $(length(remove_moves)) $remove_moves")
         filter!((move)->is_move_valid(board, move), curr_possible_moves)
         created_moves = find_created_moves(board, move.x, move.y)
-        # println("created moves $(length(created_moves)) $created_moves")
         union!(curr_possible_moves, created_moves)
-        # println("new possibles $(length(curr_possible_moves)) $curr_possible_moves")
+
         i += 1
     end
 
     taken_moves
+end
+
+
+function random_completion(board)
+    function random_possible_move_reducer(a, b)
+        rand(Bool) ? a : b
+    end
+
+    eval_possible_move_reducer(board, random_possible_move_reducer)
+end
+
+function eval_dna(board, dna::Array{Float64,1})
+    function dna_move_reducer(a, b)
+        (dna[dna_index(a)] > dna[dna_index(b)]) ? a : b
+    end
+
+    eval_possible_move_reducer(board, dna_move_reducer)
 end
 
 
@@ -240,10 +245,9 @@ function generate_dna(moves)
    	morpion_dna = rand(40 * 40 * 4)
     i = 0
     l = length(moves)
-    # println("generating dna:")
+
    	for move in moves
         morpion_dna[dna_index(move)] = l - i + 1
-        # println("$move $(dna_index(move)) $(morpion_dna[dna_index(move)])")
         i += 1
     end
 
@@ -261,31 +265,7 @@ function generate_dna_dict(moves::Array{Move})
     morpion_dna
 end
 
-function eval_dna(board, dna::Array{Float64,1})
-   	curr_possible_moves = initial_moves()
-    taken_moves = Move[]
 
-    function move_reducer(a, b)
-        (dna[dna_index(a)] > dna[dna_index(b)]) ? a : b
-    end
-    i = 1
-     
-    while length(curr_possible_moves) > 0
-        # println("possible moves:")
-        # map(possible_move->println("$possible_move $(dna[dna_index(possible_move)])"), curr_possible_moves)
-        move = reduce(move_reducer, curr_possible_moves)
-        # println("making move: $move $(dna[dna_index(move)]) $(is_move_valid(board, move)) $(moves[i])")
-        push!(taken_moves, move)
-        update_board(board, move)
-        filter!((move)->is_move_valid(board, move), curr_possible_moves)
-        created_moves = find_created_moves(board, move.x, move.y)
-        union!(curr_possible_moves, created_moves)
-
-        i += 1
-    end
-
-   	taken_moves
-end
 
 function eval_dna_dict(board, dna)
     curr_possible_moves = initial_moves()
@@ -345,29 +325,22 @@ function points_hash(moves)
    	hash(sort(map((move)->(move.x, move.y), moves)))
 end
 
+
+
 function run() 
     board_template = generate_initial_board()
 
-    min_accept_delta = -10
-
-    # curr_moves = random_completion(copy(board_template))
+    moves_119 = [Move(7, 0, 1, -4), Move(6, 5, 3, 0), Move(2, 2, 0, -2), Move(3, 4, 3, -4), Move(7, 2, 2, -2), Move(5, 6, 1, 0), Move(4, 5, 2, -2), Move(5, 4, 0, -2), Move(4, 3, 2, -1), Move(5, 2, 0, -2), Move(4, 2, 1, -2), Move(4, 6, 1, -3), Move(-1, 3, 1, 0), Move(5, 3, 1, -2), Move(5, 1, 3, -1), Move(6, 4, 3, -3), Move(1, 5, 2, -2), Move(0, 7, 3, -4), Move(3, 5, 3, -1), Move(9, 2, 3, 0), Move(7, -1, 0, -4), Move(7, 1, 3, -2), Move(4, 1, 1, -1), Move(1, 4, 0, 0), Move(1, 7, 3, -4), Move(2, -1, 2, 0), Move(4, 4, 3, -4), Move(7, 4, 1, -4), Move(8, 0, 0, -4), Move(10, 1, 0, -4), Move(0, 8, 0, 0), Move(8, 4, 2, -4), Move(7, 5, 2, -3), Move(5, 5, 1, -2), Move(8, 2, 0, -4), Move(10, 4, 2, -4), Move(10, 2, 1, -4), Move(11, 4, 1, -4), Move(8, 1, 3, -1), Move(10, 3, 2, -3), Move(8, 5, 0, -2), Move(11, 3, 1, -4), Move(7, 7, 0, 0), Move(10, 7, 2, -4), Move(10, 5, 3, -4), Move(5, 7, 0, 0), Move(2, 4, 2, -1), Move(2, 5, 3, -3), Move(-1, 5, 1, 0), Move(-1, 4, 1, 0), Move(2, 8, 2, -3), Move(2, 7, 2, -3), Move(4, 7, 1, -2), Move(-1, 7, 0, 0), Move(-1, 6, 3, -3), Move(2, 9, 0, 0), Move(2, 10, 3, -4), Move(1, 9, 1, 0), Move(0, 10, 0, 0), Move(-2, 6, 2, 0), Move(-3, 6, 1, 0), Move(-1, 8, 0, 0), Move(-2, 7, 1, 0), Move(-3, 8, 0, 0), Move(8, 8, 2, -4), Move(8, 7, 3, -3), Move(9, 7, 1, -3), Move(7, 8, 0, 0), Move(7, 9, 3, -4), Move(4, 8, 3, -3), Move(1, 8, 1, -1), Move(-2, 5, 2, 0), Move(-4, 7, 0, 0), Move(1, 11, 0, 0), Move(1, 10, 3, -3), Move(0, 9, 2, -3), Move(-1, 10, 0, 0), Move(3, 10, 1, -4), Move(0, 11, 3, -4), Move(5, 8, 1, -1), Move(5, 10, 3, -4), Move(2, 11, 0, 0), Move(7, 10, 2, -4), Move(-2, 9, 2, -2), Move(-2, 8, 3, -3), Move(-4, 8, 1, 0), Move(-3, 7, 0, -1), Move(-1, 9, 2, -2), Move(-1, 11, 3, -4), Move(3, 11, 1, -4), Move(4, 10, 0, -1), Move(6, 10, 1, -3), Move(5, 11, 0, 0), Move(7, 11, 2, -4), Move(3, 12, 3, -4), Move(11, 5, 1, -4), Move(9, 1, 2, -2), Move(11, 1, 1, -4), Move(11, 2, 3, -1), Move(-1, 2, 2, 0), Move(4, 11, 0, -1), Move(6, 11, 1, -3), Move(7, 12, 2, -4), Move(7, 13, 3, -4), Move(6, 12, 2, -3), Move(6, 13, 3, -4), Move(5, 12, 2, -3), Move(4, 12, 1, -1), Move(4, 13, 3, -4), Move(5, 14, 2, -4), Move(5, 13, 3, -3), Move(6, 14, 2, -4), Move(3, 13, 1, 0), Move(-3, 9, 1, 0), Move(-3, 10, 3, -4), Move(8, 9, 0, -4), Move(9, 9, 1, -4), Move(8, 10, 0, -3), Move(9, 11, 2, -4)]
 
 
-    # dna = generate_dna_dict(curr_moves)
-    # eval_moves = eval_dna_dict(copy(board_template), dna)
 
-    # println("$(length(curr_moves)) -> $(length(eval_moves))")
-    # println(curr_moves)
-    # println(eval_moves)
+    min_accept_delta = -3
+
     start_moves = random_completion(copy(board_template))
     start_moves_points_hash = points_hash(start_moves)
-    # pool = [start_moves]
     pool_index = Dict(start_moves_points_hash => (start_moves, 0))
-    # searched_index = Dict()
 
     function exploit_reducer(a, b)
-      # records 1
-      # t = 1
         t = 2
         (a_moves, a_visits) = a
         (b_moves, b_visits) = b
@@ -384,9 +357,7 @@ function run()
     end
 
     function explore_reducer(a, b)
-      # records 1
-      # t = 1
-        t = 0.01
+        t = 0.2
         (a_moves, a_visits) = a
         (b_moves, b_visits) = b
         a_score = length(a_moves)
@@ -409,13 +380,7 @@ function run()
     max_moves = Move[]
     
     while true
-        # curr_moves = pool[step % length(pool) + 1]
-
-        if step & 1 == 0
-            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
-        else
-            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
-        end
+        curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
 
         curr_moves_points_hash = points_hash(curr_moves)
 
@@ -431,13 +396,11 @@ function run()
         eval_score = length(eval_moves)
         eval_hash = hash(eval_moves)
 
-        if (eval_score >= max_score + min_accept_delta)
+        if (eval_score >= curr_score + min_accept_delta)
             eval_points_hash = points_hash(eval_moves)
 
             if !haskey(pool_index, eval_points_hash)
                 pool_index[eval_points_hash] = (eval_moves, 0)
-                # push!(pool, eval_moves)
-                # indicator = "->"
                 if eval_score >= curr_score
                     indicator = "=>"
                     println("$step. $curr_score($curr_visits) $indicator $eval_score  $max_score")
@@ -448,10 +411,6 @@ function run()
             end
         end
 
-        # if (eval_score > curr_score)
-        #     println("$step. $max_score $curr_score => $eval_score")
-        # end
-
         if eval_score > max_score
             println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             println(eval_moves)
@@ -460,8 +419,21 @@ function run()
             max_score = eval_score
             max_moves = eval_moves
             max_moves_points_hash = points_hash(max_moves)
-            # pool = [eval_moves]
-            pool_index = Dict(max_moves_points_hash => (max_moves, 0))
+            
+            before_size = length(pool_index)
+            for pair in pairs(pool_index)
+                pair_points_hash = pair[1]
+                pair_value = pair[2]
+                pair_moves, pair_visits = pair_value
+                pair_score = length(pair_moves);
+
+                if(pair_score < max_score + min_accept_delta)
+                    pop!(pool_index, pair_points_hash)
+                end
+            end
+            after_size = length(pool_index)
+
+            println("clearing index $before_size -> $after_size")
         end
 
         if step % 10000 == 0
@@ -470,8 +442,9 @@ function run()
             println("$step. $max_score ($elapsed) [index:$(length(pool_index))]")
             timer = current_time
         end
-
+      
         step += 1
+
     end
 
 end
