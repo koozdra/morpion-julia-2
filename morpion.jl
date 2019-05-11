@@ -1,4 +1,5 @@
 import Dates
+using Random
 
 struct Move
     x::Int8
@@ -15,6 +16,10 @@ mutable struct Node
     visits::UInt64
     average::Float64
 end
+
+# function isless(a::Move, b::Move)
+#     (a.x, a.y, a.direction, a.start_offset) < (b.x, b.y, b.direction, b.start_offset)
+# end
 
 function build_node(move, candidate_possible_moves)
     Node(move, candidate_possible_moves, [], 0, 0)
@@ -351,12 +356,43 @@ function random_completion_from_move(board, possible_moves)
 
 end
 
-function select_node(nodes)
+function select_node_e_greedy(nodes)
     if rand(Float64) < 0.1
         nodes[rand(1:end)]
     else
         maxby(node->node.average, nodes)
     end
+end
+
+function node_ucb_rank(total_visits, highest_average, node)
+    rescaled_average = highest_average / node.average
+
+    if total_visits == 0
+        return 0
+    end
+
+    rescaled_average + sqrt(2 * (log(total_visits) / node.visits))
+end
+
+function select_node_ucb(nodes)
+    total_visits = sum_node_visits(nodes)
+    highest_average_node = maxby(node->node.average, nodes)
+    maxby(node->node_ucb_rank(total_visits, highest_average_node.average, node), nodes)
+end
+
+function sum_node_visits(nodes)
+    # reduce((a, b)->a.visits + b.visits, nodes)
+    sum(map(a->a.visits, nodes))
+end
+
+function select_node(nodes)
+    select_node_e_greedy(nodes)
+    # select_node_ucb(nodes)
+    # first(nodes)
+end
+
+function update_node_average(observation, node)
+    node.average = node.average + (observation - node.average) / (node.visits)
 end
 
 # possible_moves: the possible moves on the board currently
@@ -377,7 +413,10 @@ function visit_node(board, possible_moves, taken_moves, node)
         curr_possible_moves = possible_moves
 
         # TODO can this selection be made smarter
-        move = pop!(node.candidate_possible_moves)
+        # move = pop!(node.candidate_possible_moves)
+
+        move = node.candidate_possible_moves[rand(1:end)]
+        node.candidate_possible_moves = without(move, node.candidate_possible_moves)
 
         new_node = build_node(move, copy(possible_moves))
         push!(node.children, new_node)
@@ -399,7 +438,7 @@ function visit_node(board, possible_moves, taken_moves, node)
             end
         end
 
-        node.average = length(taken_moves)
+        new_node.average = length(taken_moves)
 
         # println(" fv $(move) -> $(length(taken_moves))")
 
@@ -407,7 +446,7 @@ function visit_node(board, possible_moves, taken_moves, node)
     end
 
     if isempty(node.children) 
-        println("no chillin with length $(length(taken_moves))")
+        # println("no chillin with length $(length(taken_moves))")
         return taken_moves
     end
 
@@ -420,7 +459,9 @@ function visit_node(board, possible_moves, taken_moves, node)
     # return visit_node(node)
     moves = visit_node(board, possible_moves, taken_moves, select_node(node.children))
 
-    node.average = node.average + (length(moves) - node.average) / (node.visits)
+    
+    # node.average = node.average + ((length(moves) - node.average) / (node.visits))
+    update_node_average(length(moves), node)
 
     return moves
 end
@@ -434,6 +475,13 @@ function possible_moves_after_move(board, possible_moves, move)
     filter!((move)->is_move_valid(board, move), possible_moves)
 end
 
+function log_nodes(nodes)
+    for node in nodes
+        println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
+    end
+    println()
+end
+
 function run() 
     board_template = generate_initial_board()
 
@@ -443,9 +491,14 @@ function run()
     # end
 
     nodes = map(move->build_node(move, initial_moves()), initial_moves())
-    # root = Node(Move(0, 0, 0, 0), initial_moves(), [])
 
-    # moves = visit_node(copy(board_template), [], root)
+    # for i in 1:3
+    #     node = select_node(nodes)
+    #     moves = visit_node(copy(board_template), initial_moves(), [], node)
+    #     update_node_average(length(moves), node)
+    #     println("visit: $(length(moves))")
+    #     log_nodes(nodes)
+    # end
 
     # println(length(moves))
     # moves = initial_moves()
@@ -459,8 +512,9 @@ function run()
         # visit_node(select_node(nodes))
 
         # visit_node(board, possible_moves, taken_moves, node)
-
-        moves = visit_node(copy(board_template), initial_moves(), [], select_node(nodes))
+        node = select_node(nodes)
+        moves = visit_node(copy(board_template), initial_moves(), [], node)
+        update_node_average(length(moves), node)
 
         if length(moves) > max_score
             max_score = length(moves)
@@ -472,11 +526,13 @@ function run()
             println("$(step). $(max_score)")
         end
 
-        # if step % 10000 == 0
-        #     for node in nodes
-        #         println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
-        #     end
-        # end
+        if step % 10000 == 0
+            for node in nodes
+                println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
+            end
+
+            println()
+        end
         
 
         step += 1
