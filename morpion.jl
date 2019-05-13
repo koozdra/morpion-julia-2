@@ -371,7 +371,7 @@ function node_ucb_rank(total_visits, highest_average, node)
         return 0
     end
 
-    rescaled_average + sqrt(2.0 * (log(total_visits) / node.visits))
+    rescaled_average + sqrt(2 * (log(total_visits) / node.visits))
 end
 
 function select_node_ucb(nodes)
@@ -389,6 +389,12 @@ function select_node(nodes)
     # select_node_e_greedy(nodes)
     select_node_ucb(nodes)
     # first(nodes)
+
+    # if rand(Bool)
+    #     select_node_e_greedy(nodes)
+    # else
+    #     select_node_ucb(nodes)
+    # end
 end
 
 function update_node_average(observation, node)
@@ -498,29 +504,50 @@ function run()
     #     log_nodes(nodes)
     # end
 
+    timer = Dates.now()
+
 
     step = 0
     max_score = 0
+    episode_max_score = 0
+    episode_min_score = 1000
+    episode_mean = 0
+    episode_mean_counter = 1
     while true
         node = select_node(nodes)
-        moves = visit_node(copy(board_template), initial_moves(), [], node)
-        update_node_average(length(moves), node)
+        eval_moves = visit_node(copy(board_template), initial_moves(), [], node)
+        eval_score = length(eval_moves)
+        update_node_average(eval_score, node)
 
-        if length(moves) > max_score
-            max_score = length(moves)
+        episode_max_score = max(eval_score, episode_max_score)
+        episode_min_score = min(eval_score, episode_min_score)
+        episode_mean = episode_mean + (eval_score - episode_mean) / episode_mean_counter
+        episode_mean_counter += 1
+
+        if eval_score > max_score
+            max_score = eval_score
 
             println()
             println("!!!!!")
-            println(moves)
+            println(eval_moves)
             println()
             println("$(step). $(max_score)")
         end
 
-        # if step % 10000 == 0
-        #     for node in nodes
-        #         println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
-        #     end
-        # end
+        if step % 10000 == 0
+            # for node in nodes
+            #     println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
+            # end
+            current_time = Dates.now()
+            elapsed = current_time - timer
+            println("$step. $max_score ($elapsed) [$(episode_min_score), $(episode_mean), $(episode_max_score)]")
+            timer = current_time
+
+            episode_max_score = 0
+            episode_min_score = 1000
+            episode_mean = 0
+            episode_mean_counter = 1
+        end
         
 
         step += 1
@@ -648,4 +675,5 @@ function run()
 
 end
 
+run();
 run();
