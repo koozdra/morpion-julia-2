@@ -403,8 +403,9 @@ function select_node(nodes)
 end
 
 function update_node_average(observation, node)
-    node.average = node.average + (observation - node.average) / (node.visits)
+    # node.average = node.average + (observation - node.average) / (node.visits)
     # node.average = node.average + observation
+    node.average = max(node.average, observation)
 end
 
 # possible_moves: the possible moves on the board currently
@@ -571,6 +572,9 @@ function run()
             episode_mean = 0
             episode_mean_counter = 1
         end
+
+        # println(eval_score)
+        # println()
 
         # log_nodes(nodes)
         # readline()
