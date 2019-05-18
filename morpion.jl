@@ -10,8 +10,8 @@ end
 
 mutable struct Node
     move::Move
-    candidate_possible_moves::Array{Move,1}
-
+    # candidate_possible_moves::Array{Move,1}
+    all_children_created::Bool
     children::Array{Node,1}
     visits::UInt64
     average::Float64
@@ -21,9 +21,14 @@ end
 #     (a.x, a.y, a.direction, a.start_offset) < (b.x, b.y, b.direction, b.start_offset)
 # end
 
-function build_node(move, candidate_possible_moves)
-    Node(move, candidate_possible_moves, [], 0, 0)
+# function build_node(move, candidate_possible_moves)
+#     Node(move, candidate_possible_moves, [], 0, 0)
+# end
+
+function build_node(move)
+    Node(move, false, [], 0, 0)
 end
+
 
 function maxby(f, arr)
     reduce((a, b)->f(a) > f(b) ? a : b, arr)
@@ -357,7 +362,7 @@ function random_completion_from_move(board, possible_moves)
 end
 
 function select_node_e_greedy(nodes)
-    if rand(Float64) < 0.01
+    if rand(Float64) < 0.1
         nodes[rand(1:end)]
     else
         maxby(node->node.average, nodes)
@@ -399,6 +404,7 @@ end
 
 function update_node_average(observation, node)
     node.average = node.average + (observation - node.average) / (node.visits)
+    # node.average = node.average + observation
 end
 
 # possible_moves: the possible moves on the board currently
@@ -411,44 +417,64 @@ function visit_node(board, possible_moves, taken_moves, node)
     update_board(board, move)
     filter!((move)->is_move_valid(board, move), possible_moves)
 
-
-    # print("$(node.move)")
-
-    # if there candidate moves, pop one and create a child
-    if !isempty(node.candidate_possible_moves)
-        curr_possible_moves = possible_moves
-
-        # TODO can this selection be made smarter
-        # move = pop!(node.candidate_possible_moves)
-
-        move = node.candidate_possible_moves[rand(1:end)]
-        node.candidate_possible_moves = without(move, node.candidate_possible_moves)
-
-        new_node = build_node(move, copy(possible_moves))
-        push!(node.children, new_node)
-
-        done = false
+    # use setdiff to filter out moves that children have already been created for
+    # set flag when all children have been initialized
+    if !node.all_children_created
         
-        # TODO time against recursive implementation
+        children_moves = map(node->node.move, node.children)
 
-        while !done
-            push!(taken_moves, move)
-            update_board(board, move)
-            filter!((move)->is_move_valid(board, move), curr_possible_moves)
-            created_moves = find_created_moves(board, move.x, move.y)
-            union!(curr_possible_moves, created_moves)
-            if isempty(curr_possible_moves)
-                done = true
-            else
-                move = reduce(random_possible_move_reducer, curr_possible_moves)
-            end
+        candidate_possible_moves = setdiff(possible_moves, children_moves)
+
+        # println("possible moves: $(length(possible_moves))")
+        # println("children moves: $(length(children_moves))")
+        # println("candidates: $(length(candidate_possible_moves))")
+
+        
+
+        # print("$(node.move)")
+
+        if isempty(candidate_possible_moves)
+            node.all_children_created = true
         end
 
-        new_node.average = length(taken_moves)
 
-        # println(" fv $(move) -> $(length(taken_moves))")
+        # if there candidate moves, pop one and create a child
+        if !isempty(candidate_possible_moves)
+            curr_possible_moves = possible_moves
 
-        return taken_moves
+            # TODO can this selection be made smarter
+            # move = pop!(node.candidate_possible_moves)
+
+            # move = node.candidate_possible_moves[rand(1:end)]
+            # node.candidate_possible_moves = without(move, node.candidate_possible_moves)
+            move = candidate_possible_moves[rand(1:end)]
+
+            new_node = build_node(move)
+            push!(node.children, new_node)
+
+            done = false
+            
+            # TODO time against recursive implementation
+            while !done
+                push!(taken_moves, move)
+                update_board(board, move)
+                filter!((move)->is_move_valid(board, move), curr_possible_moves)
+                created_moves = find_created_moves(board, move.x, move.y)
+                union!(curr_possible_moves, created_moves)
+                if isempty(curr_possible_moves)
+                    done = true
+                else
+                    move = reduce(random_possible_move_reducer, curr_possible_moves)
+                end
+            end
+
+            # new_node.average = length(taken_moves)
+            update_node_average(length(taken_moves), node)
+
+            # println(" fv $(move) -> $(length(taken_moves))")
+
+            return taken_moves
+        end
     end
 
     if isempty(node.children) 
@@ -456,13 +482,6 @@ function visit_node(board, possible_moves, taken_moves, node)
         return taken_moves
     end
 
-    # all the candidate moves have been evaluated
-    # node = select_node()
-
-    # node = select_node(node.children)
-
-    # println("select node for $(node.move)")
-    # return visit_node(node)
     node = select_node(node.children)
     moves = visit_node(board, possible_moves, taken_moves, node)
     update_node_average(length(moves), node)
@@ -494,7 +513,7 @@ function run()
     #     println("$(move) $(length(moves))")
     # end
 
-    nodes = map(move->build_node(move, initial_moves()), initial_moves())
+    nodes = map(move->build_node(move), initial_moves())
 
     # for i in 1:3
     #     node = select_node_e_greedy(nodes)
@@ -505,6 +524,10 @@ function run()
     # end
 
     timer = Dates.now()
+
+    for node in nodes
+        visit_node(copy(board_template), initial_moves(), [], node)
+    end
 
 
     step = 0
@@ -535,9 +558,9 @@ function run()
         end
 
         if step % 10000 == 0
-            # for node in nodes
-            #     println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
-            # end
+            for node in nodes
+                println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
+            end
             current_time = Dates.now()
             elapsed = current_time - timer
             println("$step. $max_score ($elapsed) [$(episode_min_score), $(episode_mean), $(episode_max_score)]")
@@ -548,6 +571,10 @@ function run()
             episode_mean = 0
             episode_mean_counter = 1
         end
+
+        # log_nodes(nodes)
+        # readline()
+        
         
 
         step += 1
