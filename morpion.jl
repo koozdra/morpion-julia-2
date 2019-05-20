@@ -426,7 +426,7 @@ function visit_node(board, possible_moves, taken_moves, node)
     num_children = length(node.children)
     should_explore = rand(1:10) == 1
 
-    if num_children > 3 && !should_explore
+    if num_children > 1 && !should_explore
         node = select_node(node.children)
         moves = visit_node(board, possible_moves, taken_moves, node)
         update_node_average(length(moves), node)
@@ -493,10 +493,10 @@ function visit_node(board, possible_moves, taken_moves, node)
         end
     end
 
-    if isempty(node.children) 
-        # println("no chillin with length $(length(taken_moves)) possible moves $(length(possible_moves))")
-        return taken_moves
-    end
+    # if isempty(node.children) 
+    #     # println("no chillin with length $(length(taken_moves)) possible moves $(length(possible_moves))")
+    #     return taken_moves
+    # end
 
     node = select_node(node.children)
     moves = visit_node(board, possible_moves, taken_moves, node)
