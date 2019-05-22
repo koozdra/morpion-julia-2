@@ -564,21 +564,134 @@ function build_tree_from_moves(score, moves, node)
     end
 end
 
+function eval_verbose(board, moves)
+    curr_possible_moves = initial_moves()
+    taken_moves = Move[]
+
+    i = 1
+  
+    while length(curr_possible_moves) > 0
+        println("Making move: $move")
+        move = moves[i]
+        push!(taken_moves, move)
+        update_board(board, move)
+        filter!((move)->is_move_valid(board, move), curr_possible_moves)
+        created_moves = find_created_moves(board, move.x, move.y)
+        union!(curr_possible_moves, created_moves)
+        println(" possible moves: $curr_possible_moves")
+        i += 1
+    end
+
+    println()
+
+    println(length(taken_moves))
+end
+
+function eval_partial(board, moves)
+    curr_possible_moves = initial_moves()
+    taken_moves = Move[]
+
+    i = 1
+  
+    for move in moves
+        push!(taken_moves, move)
+        update_board(board, move)
+        filter!((move)->is_move_valid(board, move), curr_possible_moves)
+        created_moves = find_created_moves(board, move.x, move.y)
+        union!(curr_possible_moves, created_moves)
+        i += 1
+    end
+
+    (board, curr_possible_moves)
+end
+
+
+function loose_moves_last(moves)
+    loose_moves = find_loose_moves(moves)
+
+    for loose_move in loose_moves
+        moves = without(loose_move, moves)
+        push!(moves, loose_move)
+    end
+
+    (loose_moves, moves)
+end
+
+function remove_loose_moves(moves)
+    setdiff(moves, find_loose_moves(moves))
+end
+
+function random_completion_from(board, possible_moves, taken_moves)
+    curr_possible_moves = possible_moves
+    while !isempty(curr_possible_moves)
+        move = curr_possible_moves[rand(1:end)]
+        push!(taken_moves, move)
+        update_board(board, move)
+        filter!((move)->is_move_valid(board, move), curr_possible_moves)
+        created_moves = find_created_moves(board, move.x, move.y)
+        union!(curr_possible_moves, created_moves)
+    end
+    taken_moves
+end
+
+function end_search(board_template, min_accept_score, index, moves)
+    search_timeout = 100
+
+    without_loose_moves = remove_loose_moves(moves)
+    evaled_board, possible_moves = eval_partial(copy(board_template), copy(without_loose_moves))
+
+    eval_moves = random_completion_from(copy(evaled_board), possible_moves, copy(without_loose_moves))
+    eval_score = length(eval_moves)
+    eval_points_hash = points_hash(eval_moves)
+    
+    # println("searching: $(length(without_loose_moves))")
+
+    search_counter = 0
+    num_found = 0
+    while search_counter < search_timeout
+        if !haskey(index, eval_points_hash) && eval_score >= min_accept_score
+            search_counter = 0
+            num_found += 1
+            index[eval_points_hash] = eval_moves
+            # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
+        end
+
+        # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
+
+        search_counter += 1
+    end
+
+    if num_found > 0
+        end_search(board_template, min_accept_score, index, without_loose_moves)
+        # index = merge(index, sub_index)
+    end
+
+    # return index
+end
+
 function run() 
     board_template = generate_initial_board()
 
-    # for move in initial_moves()
-    #     moves = possible_moves_after_move(copy(board_template), initial_moves(), move)
-    #     println("$(move) $(length(moves))")
+    moves = [Move(7, 0, 1, -4), Move(6, 5, 3, 0), Move(2, 2, 0, -2), Move(3, 4, 3, -4), Move(7, 2, 2, -2), Move(5, 6, 1, 0), Move(4, 5, 2, -2), Move(5, 4, 0, -2), Move(4, 3, 2, -1), Move(5, 2, 0, -2), Move(4, 2, 1, -2), Move(4, 6, 1, -3), Move(-1, 3, 1, 0), Move(5, 3, 1, -2), Move(5, 1, 3, -1), Move(6, 4, 3, -3), Move(1, 5, 2, -2), Move(0, 7, 3, -4), Move(3, 5, 3, -1), Move(9, 2, 3, 0), Move(7, -1, 0, -4), Move(7, 1, 3, -2), Move(4, 1, 1, -1), Move(1, 4, 0, 0), Move(1, 7, 3, -4), Move(2, -1, 2, 0), Move(4, 4, 3, -4), Move(7, 4, 1, -4), Move(8, 0, 0, -4), Move(10, 1, 0, -4), Move(0, 8, 0, 0), Move(8, 4, 2, -4), Move(7, 5, 2, -3), Move(5, 5, 1, -2), Move(8, 2, 0, -4), Move(10, 4, 2, -4), Move(10, 2, 1, -4), Move(11, 4, 1, -4), Move(8, 1, 3, -1), Move(10, 3, 2, -3), Move(8, 5, 0, -2), Move(11, 3, 1, -4), Move(7, 7, 0, 0), Move(10, 7, 2, -4), Move(10, 5, 3, -4), Move(5, 7, 0, 0), Move(2, 4, 2, -1), Move(2, 5, 3, -3), Move(-1, 5, 1, 0), Move(-1, 4, 1, 0), Move(2, 8, 2, -3), Move(2, 7, 2, -3), Move(4, 7, 1, -2), Move(-1, 7, 0, 0), Move(-1, 6, 3, -3), Move(2, 9, 0, 0), Move(2, 10, 3, -4), Move(1, 9, 1, 0), Move(0, 10, 0, 0), Move(-2, 6, 2, 0), Move(-3, 6, 1, 0), Move(-1, 8, 0, 0), Move(-2, 7, 1, 0), Move(-3, 8, 0, 0), Move(8, 8, 2, -4), Move(8, 7, 3, -3), Move(9, 7, 1, -3), Move(7, 8, 0, 0), Move(7, 9, 3, -4), Move(4, 8, 3, -3), Move(1, 8, 1, -1), Move(-2, 5, 2, 0), Move(-4, 7, 0, 0), Move(1, 11, 0, 0), Move(1, 10, 3, -3), Move(0, 9, 2, -3), Move(-1, 10, 0, 0), Move(3, 10, 1, -4), Move(0, 11, 3, -4), Move(5, 8, 1, -1), Move(5, 10, 3, -4), Move(2, 11, 0, 0), Move(7, 10, 2, -4), Move(-2, 9, 2, -2), Move(-2, 8, 3, -3), Move(-4, 8, 1, 0), Move(-3, 7, 0, -1), Move(-1, 9, 2, -2), Move(-1, 11, 3, -4), Move(3, 11, 1, -4), Move(4, 10, 0, -1), Move(6, 10, 1, -3), Move(5, 11, 0, 0), Move(7, 11, 2, -4), Move(3, 12, 3, -4), Move(11, 5, 1, -4), Move(9, 1, 2, -2), Move(11, 1, 1, -4), Move(11, 2, 3, -1), Move(-1, 2, 2, 0), Move(4, 11, 0, -1), Move(6, 11, 1, -3), Move(7, 12, 2, -4), Move(7, 13, 3, -4), Move(6, 12, 2, -3), Move(6, 13, 3, -4), Move(5, 12, 2, -3), Move(4, 12, 1, -1), Move(4, 13, 3, -4), Move(5, 14, 2, -4), Move(5, 13, 3, -3), Move(6, 14, 2, -4), Move(3, 13, 1, 0), Move(-3, 9, 1, 0), Move(-3, 10, 3, -4), Move(8, 9, 0, -4), Move(9, 9, 1, -4), Move(8, 10, 0, -3), Move(9, 11, 2, -4)]
+
+    # for i in 1:100
+    #     start_moves = copy(moves)
+    #     for t in 1:16
+    #         start_moves = remove_loose_moves(start_moves)
+    #     end
+
+    #     eval_board = copy(board_template)
+    #     evaled_board, possible_moves = eval_partial(eval_board, copy(start_moves))
+
+    #     random_completion = random_completion_from(copy(evaled_board), possible_moves, copy(start_moves))
+    #     println("$(length(start_moves)) -> $(length(random_completion))")
     # end
 
-    # nodes = map(move->build_node(move), initial_moves())
 
-    # moves_119 = [Move(7, 0, 1, -4), Move(6, 5, 3, 0), Move(2, 2, 0, -2), Move(3, 4, 3, -4), Move(7, 2, 2, -2), Move(5, 6, 1, 0), Move(4, 5, 2, -2), Move(5, 4, 0, -2), Move(4, 3, 2, -1), Move(5, 2, 0, -2), Move(4, 2, 1, -2), Move(4, 6, 1, -3), Move(-1, 3, 1, 0), Move(5, 3, 1, -2), Move(5, 1, 3, -1), Move(6, 4, 3, -3), Move(1, 5, 2, -2), Move(0, 7, 3, -4), Move(3, 5, 3, -1), Move(9, 2, 3, 0), Move(7, -1, 0, -4), Move(7, 1, 3, -2), Move(4, 1, 1, -1), Move(1, 4, 0, 0), Move(1, 7, 3, -4), Move(2, -1, 2, 0), Move(4, 4, 3, -4), Move(7, 4, 1, -4), Move(8, 0, 0, -4), Move(10, 1, 0, -4), Move(0, 8, 0, 0), Move(8, 4, 2, -4), Move(7, 5, 2, -3), Move(5, 5, 1, -2), Move(8, 2, 0, -4), Move(10, 4, 2, -4), Move(10, 2, 1, -4), Move(11, 4, 1, -4), Move(8, 1, 3, -1), Move(10, 3, 2, -3), Move(8, 5, 0, -2), Move(11, 3, 1, -4), Move(7, 7, 0, 0), Move(10, 7, 2, -4), Move(10, 5, 3, -4), Move(5, 7, 0, 0), Move(2, 4, 2, -1), Move(2, 5, 3, -3), Move(-1, 5, 1, 0), Move(-1, 4, 1, 0), Move(2, 8, 2, -3), Move(2, 7, 2, -3), Move(4, 7, 1, -2), Move(-1, 7, 0, 0), Move(-1, 6, 3, -3), Move(2, 9, 0, 0), Move(2, 10, 3, -4), Move(1, 9, 1, 0), Move(0, 10, 0, 0), Move(-2, 6, 2, 0), Move(-3, 6, 1, 0), Move(-1, 8, 0, 0), Move(-2, 7, 1, 0), Move(-3, 8, 0, 0), Move(8, 8, 2, -4), Move(8, 7, 3, -3), Move(9, 7, 1, -3), Move(7, 8, 0, 0), Move(7, 9, 3, -4), Move(4, 8, 3, -3), Move(1, 8, 1, -1), Move(-2, 5, 2, 0), Move(-4, 7, 0, 0), Move(1, 11, 0, 0), Move(1, 10, 3, -3), Move(0, 9, 2, -3), Move(-1, 10, 0, 0), Move(3, 10, 1, -4), Move(0, 11, 3, -4), Move(5, 8, 1, -1), Move(5, 10, 3, -4), Move(2, 11, 0, 0), Move(7, 10, 2, -4), Move(-2, 9, 2, -2), Move(-2, 8, 3, -3), Move(-4, 8, 1, 0), Move(-3, 7, 0, -1), Move(-1, 9, 2, -2), Move(-1, 11, 3, -4), Move(3, 11, 1, -4), Move(4, 10, 0, -1), Move(6, 10, 1, -3), Move(5, 11, 0, 0), Move(7, 11, 2, -4), Move(3, 12, 3, -4), Move(11, 5, 1, -4), Move(9, 1, 2, -2), Move(11, 1, 1, -4), Move(11, 2, 3, -1), Move(-1, 2, 2, 0), Move(4, 11, 0, -1), Move(6, 11, 1, -3), Move(7, 12, 2, -4), Move(7, 13, 3, -4), Move(6, 12, 2, -3), Move(6, 13, 3, -4), Move(5, 12, 2, -3), Move(4, 12, 1, -1), Move(4, 13, 3, -4), Move(5, 14, 2, -4), Move(5, 13, 3, -3), Move(6, 14, 2, -4), Move(3, 13, 1, 0), Move(-3, 9, 1, 0), Move(-3, 10, 3, -4), Move(8, 9, 0, -4), Move(9, 9, 1, -4), Move(8, 10, 0, -3), Move(9, 11, 2, -4)]
-
-    # println(find_loose_moves(moves_119))
     
+
     # readline()
+
 
     # head = moves_119[1]
     # tail = moves_119[2:end]
@@ -661,11 +774,12 @@ function run()
 
     # @time unit(board_template, moves_119)
 
-    min_accept_delta = -3
+    min_accept_delta = -10
 
     start_moves = random_completion(copy(board_template))
     start_moves_points_hash = points_hash(start_moves)
     pool_index = Dict(start_moves_points_hash => (start_moves, 0, 0))
+    end_searched_index = Dict()
 
     function exploit_reducer(a, b)
         t = 100
@@ -692,8 +806,29 @@ function run()
     
     while true
         curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
-
+        curr_score = length(curr_moves)
         curr_moves_points_hash = points_hash(curr_moves)
+
+        if !haskey(end_searched_index, curr_moves_points_hash)
+            end_search_index = Dict()
+            end_search(board_template, curr_score + min_accept_delta, end_search_index, curr_moves)
+
+            # println("end search $(curr_score) ===> $(length(end_search_index))")
+
+            for pair in pairs(end_search_index)
+                pair_points_hash, pair_moves = pair
+                pair_score = length(pair_moves)
+                
+                if !haskey(pool_index, pair_points_hash)
+                    pool_index[curr_moves_points_hash] = (curr_moves, 0, step)
+                    if (pair_score >= curr_score)
+                        println(" es $(curr_score) => $(pair_score)")
+                    end
+                end
+            end
+
+            end_searched_index[curr_moves_points_hash] = true
+        end
 
         if !haskey(pool_index, curr_moves_points_hash)
             pool_index[curr_moves_points_hash] = (curr_moves, 0, step)
@@ -705,7 +840,7 @@ function run()
         eval_moves = modification_triple(copy(board_template), curr_moves)
         curr_score = length(curr_moves)
         eval_score = length(eval_moves)
-        eval_hash = hash(eval_moves)
+        # eval_hash = hash(eval_moves)
 
         if (eval_score >= curr_score + min_accept_delta)
             eval_points_hash = points_hash(eval_moves)
@@ -774,4 +909,4 @@ function run()
 
 end
 
-run();
+run()
