@@ -635,7 +635,7 @@ function random_completion_from(board, possible_moves, taken_moves)
 end
 
 function end_search(board_template, min_accept_score, index, moves)
-    search_timeout = 100
+    search_timeout = 10000
 
     without_loose_moves = remove_loose_moves(moves)
     evaled_board, possible_moves = eval_partial(copy(board_template), copy(without_loose_moves))
@@ -790,7 +790,23 @@ function run()
         sa = a_score - (a_visits / t)
         sb = b_score - (b_visits / t)
   
-        if sa > sb || sa == sb #&& randbool()
+        if sa > sb || sa == sb && rand(Bool)
+            return a
+        else
+            return b
+        end
+    end
+
+    function explore_reducer(a, b)
+        t = 10
+        (a_moves, a_visits, a_last_visited_index) = a
+        (b_moves, b_visits, b_last_visitid_index) = b
+        a_score = length(a_moves)
+        b_score = length(b_moves)
+        sa = a_score - (a_visits / t)
+        sb = b_score - (b_visits / t)
+  
+        if sa > sb || sa == sb && rand(Bool)
             return a
         else
             return b
@@ -804,10 +820,26 @@ function run()
     max_score = 0
     max_moves = Move[]
     
+    
     while true
-        curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
+        if rand(Bool)
+            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
+        else
+            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
+        end
         curr_score = length(curr_moves)
         curr_moves_points_hash = points_hash(curr_moves)
+
+        if curr_score > max_score
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            println(curr_score)
+            println(curr_moves)
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            max_score = curr_score
+            max_moves = curr_score
+        end
+
+        # println("$step. $curr_score $curr_visits")
 
         if !haskey(end_searched_index, curr_moves_points_hash)
             end_search_index = Dict()
@@ -820,7 +852,7 @@ function run()
                 pair_score = length(pair_moves)
                 
                 if !haskey(pool_index, pair_points_hash)
-                    pool_index[curr_moves_points_hash] = (curr_moves, 0, step)
+                    pool_index[pair_points_hash] = (pair_moves, 0, step)
                     if (pair_score >= curr_score)
                         println(" es $(curr_score) => $(pair_score)")
                     end
@@ -855,31 +887,6 @@ function run()
                 m, v, t  = pool_index[eval_points_hash]
                 pool_index[eval_points_hash] = (eval_moves, v, step)
             end
-        end
-
-        if eval_score > max_score
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            println(eval_moves)
-            println("$eval_score")
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            max_score = eval_score
-            max_moves = eval_moves
-            max_moves_points_hash = points_hash(max_moves)
-            
-            # before_size = length(pool_index)
-            # for pair in pairs(pool_index)
-            #     pair_points_hash = pair[1]
-            #     pair_value = pair[2]
-            #     pair_moves, pair_visits = pair_value
-            #     pair_score = length(pair_moves);
-
-            #     if(pair_score < max_score + min_accept_delta)
-            #         pop!(pool_index, pair_points_hash)
-            #     end
-            # end
-            # after_size = length(pool_index)
-
-            # println("clearing index $before_size -> $after_size")
         end
 
         if step % 10000 == 0
