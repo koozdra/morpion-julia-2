@@ -123,6 +123,25 @@ function direction_offsets()
     return [(1, -1), (1, 0), (1, 1), (0, 1)]
 end
 
+function pentasol_directions()
+    return ['/','-','\\', '|']
+end
+
+function pentasol_move(move)
+    pentasol_direction = pentasol_directions()[move.direction + 1]
+    pentasol_offset = move.start_offset + 2
+    x = move.x
+    y = move.y
+    return "($x,$y) $pentasol_direction $pentasol_offset"
+end
+
+function pentasol_representation(moves)
+    pentasol_moves = map(move->pentasol_move(move), moves)
+    preamble = ["GameType=5T", "(3,3)"]
+    
+    return join([preamble; pentasol_moves], '\n')
+end
+
 function generate_initial_board()
     board = zeros(UInt8, 40 * 40)
 
@@ -551,12 +570,11 @@ function log_nodes(nodes)
     println()
 end
 
-function build_tree_from_moves(score, moves, node)
+function build_tree_from_moves(score, moves::Array{Move,1}, node)
     head = moves[1]
     new_node = build_node(head)
     new_node.average = score
     push!(node.children, new_node)
-
 
     if length(moves) > 1
         tail = moves[2:end]
@@ -564,7 +582,7 @@ function build_tree_from_moves(score, moves, node)
     end
 end
 
-function eval_verbose(board, moves)
+function eval_verbose(board, moves::Array{Move,1})
     curr_possible_moves = initial_moves()
     taken_moves = Move[]
 
@@ -587,26 +605,20 @@ function eval_verbose(board, moves)
     println(length(taken_moves))
 end
 
-function eval_partial(board, moves)
+function eval_partial(board, moves::Array{Move,1})
     curr_possible_moves = initial_moves()
-    taken_moves = Move[]
-
-    i = 1
   
     for move in moves
-        push!(taken_moves, move)
         update_board(board, move)
         filter!((move)->is_move_valid(board, move), curr_possible_moves)
-        created_moves = find_created_moves(board, move.x, move.y)
-        union!(curr_possible_moves, created_moves)
-        i += 1
+        union!(curr_possible_moves, find_created_moves(board, move.x, move.y))
     end
 
     (board, curr_possible_moves)
 end
 
 
-function loose_moves_last(moves)
+function loose_moves_last(moves::Array{Move,1})
     loose_moves = find_loose_moves(moves)
 
     for loose_move in loose_moves
@@ -621,59 +633,159 @@ function remove_loose_moves(moves)
     setdiff(moves, find_loose_moves(moves))
 end
 
+function make_move_on_board(taken_moves, board, possible_moves, move)
+    push!(taken_moves, move)
+    update_board(board, move)
+    filter!((move)->is_move_valid(board, move), possible_moves)
+    union!(possible_moves, find_created_moves(board, move.x, move.y))
+end
+
 function random_completion_from(board, possible_moves, taken_moves)
     curr_possible_moves = possible_moves
     while !isempty(curr_possible_moves)
         move = curr_possible_moves[rand(1:end)]
-        push!(taken_moves, move)
-        update_board(board, move)
-        filter!((move)->is_move_valid(board, move), curr_possible_moves)
-        created_moves = find_created_moves(board, move.x, move.y)
-        union!(curr_possible_moves, created_moves)
+        # push!(taken_moves, move)
+        # update_board(board, move)
+        # filter!((move)->is_move_valid(board, move), curr_possible_moves)
+        # union!(curr_possible_moves, find_created_moves(board, move.x, move.y))
+        make_move_on_board(taken_moves, board, curr_possible_moves, move)
     end
     taken_moves
 end
 
-function end_search(board_template, min_accept_score, index, moves)
-    search_timeout = 10000
+# function end_search(board_template, min_accept_score, index, moves)
+#     search_timeout = 10000
 
-    without_loose_moves = remove_loose_moves(moves)
-    evaled_board, possible_moves = eval_partial(copy(board_template), copy(without_loose_moves))
+#     without_loose_moves = remove_loose_moves(moves)
+#     evaled_board, possible_moves = eval_partial(copy(board_template), copy(without_loose_moves))
 
-    eval_moves = random_completion_from(copy(evaled_board), possible_moves, copy(without_loose_moves))
-    eval_score = length(eval_moves)
-    eval_points_hash = points_hash(eval_moves)
+#     eval_moves = random_completion_from(copy(evaled_board), possible_moves, copy(without_loose_moves))
+#     eval_score = length(eval_moves)
+#     eval_points_hash = points_hash(eval_moves)
     
-    # println("searching: $(length(without_loose_moves))")
+#     # println("searching: $(length(without_loose_moves))")
+
+#     search_counter = 0
+#     num_found = 0
+#     while search_counter < search_timeout
+#         if !haskey(index, eval_points_hash) && eval_score >= min_accept_score
+#             search_counter = 0
+#             num_found += 1
+#             index[eval_points_hash] = eval_moves
+#             # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
+#         end
+
+#         # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
+
+#         search_counter += 1
+#     end
+
+#     if num_found > 0
+#         end_search(board_template, min_accept_score, index, without_loose_moves)
+#         # index = merge(index, sub_index)
+#     end
+
+#     # return index
+# end
+
+function end_search(board_template,  min_accept_score, index, moves)
+    # reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
+    reordered_moves = copy(moves)
+
+    # println(moves)
+
+    # println(reordered_moves)
+
+    reordered_moves_score = length(reordered_moves)
+
+    # dimitri
+
+    eval_moves = reordered_moves[1:(reordered_moves_score - 5)]
+
+    evaled_template_board, possible_moves = eval_partial(copy(board_template), copy(eval_moves))
 
     search_counter = 0
-    num_found = 0
+    search_timeout = 20
+    num_new_found = 0
     while search_counter < search_timeout
-        if !haskey(index, eval_points_hash) && eval_score >= min_accept_score
+        rando_moves = random_completion_from(copy(evaled_template_board), copy(possible_moves), copy(eval_moves))
+        rando_score = length(rando_moves)
+        rando_points_hash = points_hash(rando_moves)
+        if !haskey(index, rando_points_hash) && (rando_score >= min_accept_score)
+            # println(length(rando_moves))
+            index[rando_points_hash] = rando_moves
+            num_new_found += 1
             search_counter = 0
-            num_found += 1
-            index[eval_points_hash] = eval_moves
-            # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
         end
-
-        # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
-
         search_counter += 1
     end
 
-    if num_found > 0
-        end_search(board_template, min_accept_score, index, without_loose_moves)
-        # index = merge(index, sub_index)
+    if num_new_found > 0
+        end_search(board_template, min_accept_score, index, eval_moves)
+    end
+    
+end
+
+function end_search(board_template,  min_accept_score, moves)
+    index = Dict()
+    end_search(board_template,  min_accept_score, index, moves)
+    index
+end
+
+function reorder_moves_by_layers(board, moves::Array{Move,1}, possible_moves::Array{Move,1}, taken_moves::Array{Move,1}, taboo_moves::Array{Move,1})
+    layer_possible_moves = setdiff(possible_moves, taboo_moves)
+    layer_moves = intersect(layer_possible_moves, moves)
+    moves_not_taken = setdiff(layer_possible_moves, moves)
+
+    for move in layer_moves
+        push!(taken_moves, move)
+        update_board(board, move)
+        filter!((move)->is_move_valid(board, move), possible_moves)
+        union!(possible_moves, find_created_moves(board, move.x, move.y))
     end
 
-    # return index
+    if (!isempty(layer_possible_moves))
+        reorder_moves_by_layers(board, moves, possible_moves, taken_moves, [taboo_moves; moves_not_taken])
+    end
+end
+
+function reorder_moves_by_layers(board, moves)
+    taken_moves = Move[]
+    reorder_moves_by_layers(board, moves, initial_moves(), taken_moves, Move[])
+    taken_moves
 end
 
 function run() 
     board_template = generate_initial_board()
 
-    moves = [Move(7, 0, 1, -4), Move(6, 5, 3, 0), Move(2, 2, 0, -2), Move(3, 4, 3, -4), Move(7, 2, 2, -2), Move(5, 6, 1, 0), Move(4, 5, 2, -2), Move(5, 4, 0, -2), Move(4, 3, 2, -1), Move(5, 2, 0, -2), Move(4, 2, 1, -2), Move(4, 6, 1, -3), Move(-1, 3, 1, 0), Move(5, 3, 1, -2), Move(5, 1, 3, -1), Move(6, 4, 3, -3), Move(1, 5, 2, -2), Move(0, 7, 3, -4), Move(3, 5, 3, -1), Move(9, 2, 3, 0), Move(7, -1, 0, -4), Move(7, 1, 3, -2), Move(4, 1, 1, -1), Move(1, 4, 0, 0), Move(1, 7, 3, -4), Move(2, -1, 2, 0), Move(4, 4, 3, -4), Move(7, 4, 1, -4), Move(8, 0, 0, -4), Move(10, 1, 0, -4), Move(0, 8, 0, 0), Move(8, 4, 2, -4), Move(7, 5, 2, -3), Move(5, 5, 1, -2), Move(8, 2, 0, -4), Move(10, 4, 2, -4), Move(10, 2, 1, -4), Move(11, 4, 1, -4), Move(8, 1, 3, -1), Move(10, 3, 2, -3), Move(8, 5, 0, -2), Move(11, 3, 1, -4), Move(7, 7, 0, 0), Move(10, 7, 2, -4), Move(10, 5, 3, -4), Move(5, 7, 0, 0), Move(2, 4, 2, -1), Move(2, 5, 3, -3), Move(-1, 5, 1, 0), Move(-1, 4, 1, 0), Move(2, 8, 2, -3), Move(2, 7, 2, -3), Move(4, 7, 1, -2), Move(-1, 7, 0, 0), Move(-1, 6, 3, -3), Move(2, 9, 0, 0), Move(2, 10, 3, -4), Move(1, 9, 1, 0), Move(0, 10, 0, 0), Move(-2, 6, 2, 0), Move(-3, 6, 1, 0), Move(-1, 8, 0, 0), Move(-2, 7, 1, 0), Move(-3, 8, 0, 0), Move(8, 8, 2, -4), Move(8, 7, 3, -3), Move(9, 7, 1, -3), Move(7, 8, 0, 0), Move(7, 9, 3, -4), Move(4, 8, 3, -3), Move(1, 8, 1, -1), Move(-2, 5, 2, 0), Move(-4, 7, 0, 0), Move(1, 11, 0, 0), Move(1, 10, 3, -3), Move(0, 9, 2, -3), Move(-1, 10, 0, 0), Move(3, 10, 1, -4), Move(0, 11, 3, -4), Move(5, 8, 1, -1), Move(5, 10, 3, -4), Move(2, 11, 0, 0), Move(7, 10, 2, -4), Move(-2, 9, 2, -2), Move(-2, 8, 3, -3), Move(-4, 8, 1, 0), Move(-3, 7, 0, -1), Move(-1, 9, 2, -2), Move(-1, 11, 3, -4), Move(3, 11, 1, -4), Move(4, 10, 0, -1), Move(6, 10, 1, -3), Move(5, 11, 0, 0), Move(7, 11, 2, -4), Move(3, 12, 3, -4), Move(11, 5, 1, -4), Move(9, 1, 2, -2), Move(11, 1, 1, -4), Move(11, 2, 3, -1), Move(-1, 2, 2, 0), Move(4, 11, 0, -1), Move(6, 11, 1, -3), Move(7, 12, 2, -4), Move(7, 13, 3, -4), Move(6, 12, 2, -3), Move(6, 13, 3, -4), Move(5, 12, 2, -3), Move(4, 12, 1, -1), Move(4, 13, 3, -4), Move(5, 14, 2, -4), Move(5, 13, 3, -3), Move(6, 14, 2, -4), Move(3, 13, 1, 0), Move(-3, 9, 1, 0), Move(-3, 10, 3, -4), Move(8, 9, 0, -4), Move(9, 9, 1, -4), Move(8, 10, 0, -3), Move(9, 11, 2, -4)]
+    moves = Move[Move(2, 9, 1, 0), Move(10, 6, 1, -4), Move(6, 10, 3, -4), Move(4, 8, 2, -2), Move(2, 7, 2, -2), Move(3, 10, 3, -4), Move(5, 8, 0, -2), Move(2, 8, 1, 0), Move(2, 5, 3, 0), Move(0, 7, 3, -4), Move(4, 7, 2, -2), Move(7, 0, 1, -4), Move(1, 7, 1, -1), Move(3, 4, 3, -4), Move(4, 10, 2, -4), Move(7, 7, 0, -3), Move(9, 2, 3, 0), Move(8, 4, 2, -2), Move(4, 6, 3, 0), Move(5, 6, 1, -3), Move(6, 5, 0, -4), Move(4, 3, 0, -4), Move(5, 3, 1, -2), Move(6, 4, 3, -2), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(8, 7, 2, -4), Move(5, 7, 1, -1), Move(5, 5, 3, 0), Move(7, 5, 0, -4), Move(4, 2, 2, 0), Move(8, 5, 3, -2), Move(3, 5, 1, 0), Move(4, 4, 0, -3), Move(2, 2, 2, 0), Move(7, 4, 1, -3), Move(10, 1, 0, -4), Move(4, 1, 3, 0), Move(-1, 5, 0, 0), Move(10, 7, 2, -4), Move(7, 8, 3, -4), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(11, 5, 1, -4), Move(7, 1, 3, -1), Move(5, 1, 1, -2), Move(5, 2, 3, -1), Move(8, 2, 1, -4), Move(10, 4, 2, -3), Move(7, -1, 0, -4), Move(10, 3, 3, 0), Move(11, 2, 0, -4), Move(8, -1, 0, -4), Move(2, -1, 2, 0), Move(11, 3, 1, -4), Move(12, 2, 0, -4), Move(10, 2, 1, -2), Move(11, 1, 0, -4), Move(11, 4, 3, -3), Move(12, 4, 1, -4), Move(8, 1, 2, -1), Move(9, 1, 1, -2), Move(10, 0, 0, -4), Move(8, 0, 2, 0), Move(9, -1, 0, -4), Move(10, -1, 3, 0), Move(6, -1, 1, 0), Move(7, -2, 0, -4), Move(8, -2, 2, 0), Move(8, -3, 3, 0), Move(2, 4, 2, -1), Move(1, 4, 1, -1), Move(-1, 6, 0, 0), Move(9, 0, 0, -3), Move(6, -3, 2, 0), Move(1, 9, 0, 0), Move(1, 8, 2, -2), Move(11, 0, 1, -4), Move(-1, 3, 1, 0), Move(6, -2, 3, 0), Move(9, -2, 3, 0), Move(7, -4, 2, 0), Move(7, -3, 3, -1), Move(5, -2, 1, 0), Move(5, -1, 0, -2), Move(5, -3, 3, 0), Move(4, -3, 1, 0), Move(3, -4, 2, 0), Move(4, -4, 2, 0), Move(4, -1, 0, -1), Move(4, -2, 3, -2), Move(3, -3, 2, 0), Move(2, 1, 3, 0), Move(1, 5, 3, 0), Move(-2, 5, 1, 0), Move(-2, 2, 2, 0), Move(-1, 7, 0, 0), Move(-1, 4, 3, -1), Move(1, 2, 0, -3), Move(0, 2, 1, 0), Move(-2, 6, 1, 0), Move(1, 1, 3, 0), Move(3, -1, 1, -1), Move(2, -2, 2, 0), Move(3, -2, 3, -2), Move(1, -2, 1, 0), Move(2, -3, 2, 0), Move(2, 0, 3, -3), Move(6, -4, 0, -4), Move(5, -4, 1, -2), Move(1, 0, 0, 0), Move(0, -1, 2, 0), Move(-1, 0, 0, 0), Move(0, 0, 1, -1), Move(1, -1, 0, -1), Move(0, 1, 3, -2), Move(-2, 4, 0, 0), Move(-2, -1, 2, 0), Move(-1, -1, 1, -1), Move(-1, 1, 1, 0), Move(-1, 2, 3, -3), Move(-2, -2, 2, 0), Move(-2, 1, 2, 0), Move(-2, 0, 3, -2), Move(-3, -1, 2, 0), Move(-2, 3, 3, -1), Move(-3, 4, 0, 0), Move(-4, 4, 1, 0), Move(-3, 3, 0, -1), Move(-4, 2, 2, 0), Move(-3, 2, 1, -1), Move(-4, 1, 2, 0), Move(0, -2, 2, 0), Move(-3, 1, 0, -1), Move(-3, 5, 3, -4), Move(-5, 3, 2, 0), Move(-4, 3, 1, -1), Move(-5, 2, 2, 0), Move(-5, 1, 1, 0), Move(-4, 0, 3, 0), Move(-5, 4, 0, 0), Move(-5, 0, 3, 0), Move(-3, 0, 1, -2), Move(-1, -2, 0, -4), Move(-3, -2, 1, 0), Move(-3, -3, 3, 0), Move(-6, 2, 0, 0), Move(1, -3, 3, 0), Move(0, -3, 1, 0)]
 
+    eval_board = copy(board_template)
+
+    reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
+
+    println(length(reordered_moves))
+
+    timer = Dates.now()
+    max_found = 0
+    min_found = 100000
+    for i in 1:100
+        end_search_index = end_search(board_template, length(moves) - 10, moves)
+
+        num_found = length(end_search_index)
+        max_found = max(num_found, max_found)
+        min_found = min(num_found, min_found)
+        
+        # println(length(end_search_index))
+    end
+
+    println("$min_found $max_found")
+    current_time = Dates.now()
+    elapsed = current_time - timer
+
+    println(elapsed)
+
+    readline()
     # for i in 1:100
     #     start_moves = copy(moves)
     #     for t in 1:16
@@ -822,11 +934,11 @@ function run()
     
     
     while true
-        if rand(Bool)
-            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
-        else
-            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
-        end
+        # if rand(Bool)
+        curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
+        # else
+        #     curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
+        # end
         curr_score = length(curr_moves)
         curr_moves_points_hash = points_hash(curr_moves)
 
@@ -836,12 +948,12 @@ function run()
             println(curr_moves)
             println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             max_score = curr_score
-            max_moves = curr_score
+            max_moves = curr_moves
         end
 
         # println("$step. $curr_score $curr_visits")
 
-        if !haskey(end_searched_index, curr_moves_points_hash)
+        if !haskey(end_searched_index, curr_moves_points_hash) && curr_score > 100
             end_search_index = Dict()
             end_search(board_template, curr_score + min_accept_delta, end_search_index, curr_moves)
 
@@ -877,15 +989,17 @@ function run()
         if (eval_score >= curr_score + min_accept_delta)
             eval_points_hash = points_hash(eval_moves)
 
+            # if a new configuration is found
             if !haskey(pool_index, eval_points_hash)
+                # enter the configuration into the index
                 pool_index[eval_points_hash] = (eval_moves, 0, step)
+
                 if eval_score >= curr_score
-                    indicator = "=>"
-                    println("$step. $curr_score($curr_visits) $indicator $eval_score  $max_score")
+                    println("$step. $curr_score($curr_visits) => $eval_score  $max_score")
                 end
             else
                 m, v, t  = pool_index[eval_points_hash]
-                pool_index[eval_points_hash] = (eval_moves, v, step)
+                pool_index[eval_points_hash] = (eval_moves, v, t)
             end
         end
 
@@ -908,6 +1022,13 @@ function run()
             after_size = length(pool_index)
             println("clearing index $before_size -> $after_size")
             println()
+        end
+
+        if step % 100000 == 0
+            println("------------------------------------------------------------------------")
+            println(max_score)
+            println(max_moves)
+            println("------------------------------------------------------------------------")
         end
       
         step += 1
