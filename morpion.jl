@@ -760,32 +760,34 @@ function run()
 
     moves = Move[Move(2, 9, 1, 0), Move(10, 6, 1, -4), Move(6, 10, 3, -4), Move(4, 8, 2, -2), Move(2, 7, 2, -2), Move(3, 10, 3, -4), Move(5, 8, 0, -2), Move(2, 8, 1, 0), Move(2, 5, 3, 0), Move(0, 7, 3, -4), Move(4, 7, 2, -2), Move(7, 0, 1, -4), Move(1, 7, 1, -1), Move(3, 4, 3, -4), Move(4, 10, 2, -4), Move(7, 7, 0, -3), Move(9, 2, 3, 0), Move(8, 4, 2, -2), Move(4, 6, 3, 0), Move(5, 6, 1, -3), Move(6, 5, 0, -4), Move(4, 3, 0, -4), Move(5, 3, 1, -2), Move(6, 4, 3, -2), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(8, 7, 2, -4), Move(5, 7, 1, -1), Move(5, 5, 3, 0), Move(7, 5, 0, -4), Move(4, 2, 2, 0), Move(8, 5, 3, -2), Move(3, 5, 1, 0), Move(4, 4, 0, -3), Move(2, 2, 2, 0), Move(7, 4, 1, -3), Move(10, 1, 0, -4), Move(4, 1, 3, 0), Move(-1, 5, 0, 0), Move(10, 7, 2, -4), Move(7, 8, 3, -4), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(11, 5, 1, -4), Move(7, 1, 3, -1), Move(5, 1, 1, -2), Move(5, 2, 3, -1), Move(8, 2, 1, -4), Move(10, 4, 2, -3), Move(7, -1, 0, -4), Move(10, 3, 3, 0), Move(11, 2, 0, -4), Move(8, -1, 0, -4), Move(2, -1, 2, 0), Move(11, 3, 1, -4), Move(12, 2, 0, -4), Move(10, 2, 1, -2), Move(11, 1, 0, -4), Move(11, 4, 3, -3), Move(12, 4, 1, -4), Move(8, 1, 2, -1), Move(9, 1, 1, -2), Move(10, 0, 0, -4), Move(8, 0, 2, 0), Move(9, -1, 0, -4), Move(10, -1, 3, 0), Move(6, -1, 1, 0), Move(7, -2, 0, -4), Move(8, -2, 2, 0), Move(8, -3, 3, 0), Move(2, 4, 2, -1), Move(1, 4, 1, -1), Move(-1, 6, 0, 0), Move(9, 0, 0, -3), Move(6, -3, 2, 0), Move(1, 9, 0, 0), Move(1, 8, 2, -2), Move(11, 0, 1, -4), Move(-1, 3, 1, 0), Move(6, -2, 3, 0), Move(9, -2, 3, 0), Move(7, -4, 2, 0), Move(7, -3, 3, -1), Move(5, -2, 1, 0), Move(5, -1, 0, -2), Move(5, -3, 3, 0), Move(4, -3, 1, 0), Move(3, -4, 2, 0), Move(4, -4, 2, 0), Move(4, -1, 0, -1), Move(4, -2, 3, -2), Move(3, -3, 2, 0), Move(2, 1, 3, 0), Move(1, 5, 3, 0), Move(-2, 5, 1, 0), Move(-2, 2, 2, 0), Move(-1, 7, 0, 0), Move(-1, 4, 3, -1), Move(1, 2, 0, -3), Move(0, 2, 1, 0), Move(-2, 6, 1, 0), Move(1, 1, 3, 0), Move(3, -1, 1, -1), Move(2, -2, 2, 0), Move(3, -2, 3, -2), Move(1, -2, 1, 0), Move(2, -3, 2, 0), Move(2, 0, 3, -3), Move(6, -4, 0, -4), Move(5, -4, 1, -2), Move(1, 0, 0, 0), Move(0, -1, 2, 0), Move(-1, 0, 0, 0), Move(0, 0, 1, -1), Move(1, -1, 0, -1), Move(0, 1, 3, -2), Move(-2, 4, 0, 0), Move(-2, -1, 2, 0), Move(-1, -1, 1, -1), Move(-1, 1, 1, 0), Move(-1, 2, 3, -3), Move(-2, -2, 2, 0), Move(-2, 1, 2, 0), Move(-2, 0, 3, -2), Move(-3, -1, 2, 0), Move(-2, 3, 3, -1), Move(-3, 4, 0, 0), Move(-4, 4, 1, 0), Move(-3, 3, 0, -1), Move(-4, 2, 2, 0), Move(-3, 2, 1, -1), Move(-4, 1, 2, 0), Move(0, -2, 2, 0), Move(-3, 1, 0, -1), Move(-3, 5, 3, -4), Move(-5, 3, 2, 0), Move(-4, 3, 1, -1), Move(-5, 2, 2, 0), Move(-5, 1, 1, 0), Move(-4, 0, 3, 0), Move(-5, 4, 0, 0), Move(-5, 0, 3, 0), Move(-3, 0, 1, -2), Move(-1, -2, 0, -4), Move(-3, -2, 1, 0), Move(-3, -3, 3, 0), Move(-6, 2, 0, 0), Move(1, -3, 3, 0), Move(0, -3, 1, 0)]
 
-    eval_board = copy(board_template)
+    # eval_board = copy(board_template)
 
-    reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
+    # reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
 
-    println(length(reordered_moves))
+    # println(length(reordered_moves))
 
-    timer = Dates.now()
-    max_found = 0
-    min_found = 100000
-    for i in 1:100
-        end_search_index = end_search(board_template, length(moves) - 10, moves)
+    # timer = Dates.now()
+    # max_found = 0
+    # min_found = 100000
+    # for i in 1:100
+    #     end_search_index = end_search(board_template, length(moves) - 10, moves)
 
-        num_found = length(end_search_index)
-        max_found = max(num_found, max_found)
-        min_found = min(num_found, min_found)
+    #     num_found = length(end_search_index)
+    #     max_found = max(num_found, max_found)
+    #     min_found = min(num_found, min_found)
         
-        # println(length(end_search_index))
-    end
+    #     # println(length(end_search_index))
+    # end
 
-    println("$min_found $max_found")
-    current_time = Dates.now()
-    elapsed = current_time - timer
+    # println("$min_found $max_found")
+    # current_time = Dates.now()
+    # elapsed = current_time - timer
 
-    println(elapsed)
+    # println(elapsed)
 
-    readline()
+    # readline()
+
+
     # for i in 1:100
     #     start_moves = copy(moves)
     #     for t in 1:16
@@ -891,10 +893,17 @@ function run()
     start_moves = random_completion(copy(board_template))
     start_moves_points_hash = points_hash(start_moves)
     pool_index = Dict(start_moves_points_hash => (start_moves, 0, 0))
+
+    for i in 1:100
+        start_moves = random_completion(copy(board_template))
+        start_moves_points_hash = points_hash(start_moves)
+        pool_index[start_moves_points_hash] = (start_moves, 0, 0)
+    end
+
     end_searched_index = Dict()
 
     function exploit_reducer(a, b)
-        t = 100
+        t = 500
         (a_moves, a_visits, a_last_visited_index) = a
         (b_moves, b_visits, b_last_visitid_index) = b
         a_score = length(a_moves)
@@ -910,7 +919,7 @@ function run()
     end
 
     function explore_reducer(a, b)
-        t = 10
+        t = 500
         (a_moves, a_visits, a_last_visited_index) = a
         (b_moves, b_visits, b_last_visitid_index) = b
         a_score = length(a_moves)
@@ -934,21 +943,22 @@ function run()
     
     
     while true
-        # if rand(Bool)
-        curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
-        # else
-        #     curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
-        # end
+        if rand(Bool)
+            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
+        else
+            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
+        end
         curr_score = length(curr_moves)
         curr_moves_points_hash = points_hash(curr_moves)
 
         if curr_score > max_score
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            println(curr_score)
-            println(curr_moves)
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             max_score = curr_score
             max_moves = curr_moves
+
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            println(max_score)
+            println(max_moves)
+            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end
 
         # println("$step. $curr_score $curr_visits")
