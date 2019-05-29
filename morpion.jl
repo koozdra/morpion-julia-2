@@ -919,7 +919,7 @@ function run()
     end
 
     function explore_reducer(a, b)
-        t = 500
+        t = 100
         (a_moves, a_visits, a_last_visited_index) = a
         (b_moves, b_visits, b_last_visitid_index) = b
         a_score = length(a_moves)
@@ -943,7 +943,7 @@ function run()
     
     
     while true
-        if rand(Bool)
+        if rand(1:10) == 1
             curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
         else
             curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
@@ -961,13 +961,13 @@ function run()
             println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end
 
-        # println("$step. $curr_score $curr_visits")
-
         if !haskey(end_searched_index, curr_moves_points_hash) && curr_score > 100
             end_search_index = Dict()
+            end_search_start_time = Dates.now()
             end_search(board_template, curr_score + min_accept_delta, end_search_index, curr_moves)
+            end_search_end_time = Dates.now()
 
-            # println("end search $(curr_score) ===> $(length(end_search_index))")
+            println("end search $(curr_score) ===> $(length(end_search_index)) ($(end_search_end_time - end_search_start_time))")
 
             for pair in pairs(end_search_index)
                 pair_points_hash, pair_moves = pair
@@ -1021,16 +1021,23 @@ function run()
 
             before_size = length(pool_index)
             max_age = 10000
+            pool_max = 0
+            pool_min = 100000
             for pair in pairs(pool_index)
                 pair_points_hash, pair_value = pair
                 pair_moves, pair_visits, pair_last_visit_step = pair_value
+                pair_score = length(pair_moves)
                 age = step - pair_last_visit_step
                 if(age > max_age)
                     pop!(pool_index, pair_points_hash)
+                else
+                    pool_max = max(pool_max, pair_score)
+                    pool_min = min(pool_min, pair_score)
                 end
             end
             after_size = length(pool_index)
-            println("clearing index $before_size -> $after_size")
+            println("cleaning index $before_size -> $after_size")
+            println(" min: $pool_min, max: $pool_max")
             println()
         end
 
