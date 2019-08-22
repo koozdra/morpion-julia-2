@@ -521,7 +521,7 @@ function build_subject(board_template)
     start_moves = random_completion(copy(board_template))
     start_moves_points_hash = points_hash(start_moves)
     pool_index = Dict(start_moves_points_hash => (start_moves, 0, 0))
-    Subject(0, pool_index, Dict{UInt64, Bool}(), 0, [])
+    Subject(1, pool_index, Dict{UInt64, Bool}(), 0, [])
 end
 
 function visit_subject(subject, board_template)
@@ -613,16 +613,50 @@ function run()
         push!(subjects, build_subject(board_template))
     end
 
+    iterations = 400
+
     max_score = 0
     max_moves = []
 
+    step = 1
+
     while true
 
-        for i in 1:400
-            for subject in subjects
-                visit_subject(subject, board_template)
+        for i in 1:iterations
+            # a/b test
+            # for subject in subjects
+            #     visit_subject(subject, board_template)
+            # end
+
+            #epsilon greedy
+            if rand(Bool)# > 0.5
+                subject = maxby(function(subject)
+                    subject.max_score
+                end, subjects)
+            else
+                subject = subjects[rand(1:end)]
             end
+
+            #UCB TODO
+            # subject = maxby(function(subject)
+            #     ucb = (step / subject.step) + √(200 * (log(step) / subject.step))
+
+            #     # println("$(subject.max_score) $(ucb)")
+
+            #     # readline()
+
+            #     ucb
+            # end, subjects)
+
+            visit_subject(subject, board_template)
+
+            step = step + 1
         end
+
+
+
+
+
 
         println()
         println(max_score)
@@ -633,15 +667,12 @@ function run()
         max_moves = []
 
         for subject in subjects
-            println(subject.max_score)
+            println("$(subject.step). $(subject.max_score)")
             if (subject.max_score > max_score)
                 max_score = subject.max_score
                 max_moves = subject.max_moves
             end
         end
-
-        
-
     end
 end
 
