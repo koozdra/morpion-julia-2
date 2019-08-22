@@ -8,35 +8,6 @@ struct Move
     start_offset::Int8
 end
 
-mutable struct Node
-    move::Move
-    # candidate_possible_moves::Array{Move,1}
-    all_children_created::Bool
-    children::Array{Node,1}
-    visits::UInt64
-    average::Float64
-end
-
-mutable struct ConfigurationNode
-    moves::Array{Move,1}
-    children::Array{ConfigurationNode,1}
-    # probability distribution over children, including staying on self
-    # idea: insert current node as child to keep the option of visiting this node
-end
-
-# function isless(a::Move, b::Move)
-#     (a.x, a.y, a.direction, a.start_offset) < (b.x, b.y, b.direction, b.start_offset)
-# end
-
-# function build_node(move, candidate_possible_moves)
-#     Node(move, candidate_possible_moves, [], 0, 0)
-# end
-
-function build_node(move)
-    Node(move, false, [], 1, 0)
-end
-
-
 function maxby(f, arr)
     reduce((a, b)->f(a) > f(b) ? a : b, arr)
 end
@@ -401,187 +372,6 @@ function unit(board_template, curr_moves)
     end
 end
 
-function find_loose_moves(moves)
-
-end
-
-function random_completion_from_move(board, possible_moves)
-    move = reduce(random_possible_move_reducer, possible_moves)
-
-end
-
-function select_node_e_greedy(nodes)
-    if rand(Float64) < 0.1
-        nodes[rand(1:end)]
-    else
-        maxby(node->node.average, nodes)
-    end
-end
-
-function node_ucb_rank(total_visits, highest_average, node)
-    rescaled_average = node.average / highest_average
-
-    if total_visits == 0
-        return 0
-    end
-
-    rescaled_average + sqrt(2 * (log(total_visits) / node.visits))
-end
-
-function select_node_ucb(nodes)
-    total_visits = sum_node_visits(nodes)
-    highest_average_node = maxby(node->node.average, nodes)
-    maxby(node->node_ucb_rank(total_visits, highest_average_node.average, node), nodes)
-end
-
-function sum_node_visits(nodes)
-    # reduce((a, b)->a.visits + b.visits, nodes)
-    sum(map(a->a.visits, nodes))
-end
-
-function select_node(nodes)
-    # select_node_e_greedy(nodes)
-    select_node_ucb(nodes)
-    # first(nodes)
-
-    # if rand(Bool)
-    #     select_node_e_greedy(nodes)
-    # else
-    #     select_node_ucb(nodes)
-    # end
-end
-
-function update_node_average(observation, node)
-    node.average = node.average + (observation - node.average) / (node.visits)
-    # node.average = node.average + observation
-    # node.average = max(node.average, observation)
-end
-
-# possible_moves: the possible moves on the board currently
-function visit_node(board, possible_moves, taken_moves, node)
-
-    node.visits += 1
-
-    # println("visiting $(node.move)")
-    # println("children")
-    # log_nodes(node.children)
-    # println()
-
-    move = node.move
-    push!(taken_moves, move)
-    update_board(board, move)
-    filter!((move)->is_move_valid(board, move), possible_moves)
-
-    num_children = length(node.children)
-    should_explore = rand(1:10) == 1
-
-    if num_children > 1 && !should_explore
-        node = select_node(node.children)
-        moves = visit_node(board, possible_moves, taken_moves, node)
-        update_node_average(length(moves), node)
-
-        return moves
-    end
-
-    # use setdiff to filter out moves that children have already been created for
-    # set flag when all children have been initialized
-    if !node.all_children_created
-        
-        children_moves = map(node->node.move, node.children)
-
-        candidate_possible_moves = setdiff(possible_moves, children_moves)
-
-        # println("possible moves: $(length(possible_moves))")
-        # println("children moves: $(length(children_moves))")
-        # println("candidates: $(length(candidate_possible_moves))")
-
-        
-
-        # print("$(node.move)")
-
-        if isempty(candidate_possible_moves)
-            node.all_children_created = true
-        end
-
-
-        # if there candidate moves, pop one and create a child
-        if !isempty(candidate_possible_moves)
-            curr_possible_moves = possible_moves
-
-            # TODO can this selection be made smarter
-            # move = pop!(node.candidate_possible_moves)
-
-            # move = node.candidate_possible_moves[rand(1:end)]
-            # node.candidate_possible_moves = without(move, node.candidate_possible_moves)
-            move = candidate_possible_moves[rand(1:end)]
-
-            new_node = build_node(move)
-            push!(node.children, new_node)
-
-            done = false
-            
-            # TODO time against recursive implementation
-            while !done
-                push!(taken_moves, move)
-                update_board(board, move)
-                filter!((move)->is_move_valid(board, move), curr_possible_moves)
-                created_moves = find_created_moves(board, move.x, move.y)
-                union!(curr_possible_moves, created_moves)
-                if isempty(curr_possible_moves)
-                    done = true
-                else
-                    move = reduce(random_possible_move_reducer, curr_possible_moves)
-                end
-            end
-
-            
-
-            new_node.average = length(taken_moves)
-
-            return taken_moves
-        end
-    end
-
-    # if isempty(node.children) 
-    #     # println("no chillin with length $(length(taken_moves)) possible moves $(length(possible_moves))")
-    #     return taken_moves
-    # end
-
-    node = select_node(node.children)
-    moves = visit_node(board, possible_moves, taken_moves, node)
-    update_node_average(length(moves), node)
-
-    return moves
-end
-
-function without(element, arr)
-    filter(e->e != element, arr)
-end
-
-function possible_moves_after_move(board, possible_moves, move)
-    update_board(board, move)
-    filter!((move)->is_move_valid(board, move), possible_moves)
-end
-
-function log_nodes(nodes)
-    for node in nodes
-        println("$(node.move) $(node.visits) $(length(node.children)) $(node.average)")
-    end
-    println()
-end
-
-function build_tree_from_moves(score, moves::Array{Move,1}, node)
-    head = moves[1]
-    new_node = build_node(head)
-    new_node.average = score
-    push!(node.children, new_node)
-
-    if length(moves) > 1
-        tail = moves[2:end]
-        build_tree_from_moves(score, tail, new_node)
-    end
-end
-
 function eval_verbose(board, moves::Array{Move,1})
     curr_possible_moves = initial_moves()
     taken_moves = Move[]
@@ -617,18 +407,6 @@ function eval_partial(board, moves::Array{Move,1})
     (board, curr_possible_moves)
 end
 
-
-function loose_moves_last(moves::Array{Move,1})
-    loose_moves = find_loose_moves(moves)
-
-    for loose_move in loose_moves
-        moves = without(loose_move, moves)
-        push!(moves, loose_move)
-    end
-
-    (loose_moves, moves)
-end
-
 function remove_loose_moves(moves)
     setdiff(moves, find_loose_moves(moves))
 end
@@ -644,61 +422,15 @@ function random_completion_from(board, possible_moves, taken_moves)
     curr_possible_moves = possible_moves
     while !isempty(curr_possible_moves)
         move = curr_possible_moves[rand(1:end)]
-        # push!(taken_moves, move)
-        # update_board(board, move)
-        # filter!((move)->is_move_valid(board, move), curr_possible_moves)
-        # union!(curr_possible_moves, find_created_moves(board, move.x, move.y))
         make_move_on_board(taken_moves, board, curr_possible_moves, move)
     end
     taken_moves
 end
 
-# function end_search(board_template, min_accept_score, index, moves)
-#     search_timeout = 10000
-
-#     without_loose_moves = remove_loose_moves(moves)
-#     evaled_board, possible_moves = eval_partial(copy(board_template), copy(without_loose_moves))
-
-#     eval_moves = random_completion_from(copy(evaled_board), possible_moves, copy(without_loose_moves))
-#     eval_score = length(eval_moves)
-#     eval_points_hash = points_hash(eval_moves)
-    
-#     # println("searching: $(length(without_loose_moves))")
-
-#     search_counter = 0
-#     num_found = 0
-#     while search_counter < search_timeout
-#         if !haskey(index, eval_points_hash) && eval_score >= min_accept_score
-#             search_counter = 0
-#             num_found += 1
-#             index[eval_points_hash] = eval_moves
-#             # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
-#         end
-
-#         # println("$(search_counter) $(length(without_loose_moves)) -> $(length(eval_moves))")
-
-#         search_counter += 1
-#     end
-
-#     if num_found > 0
-#         end_search(board_template, min_accept_score, index, without_loose_moves)
-#         # index = merge(index, sub_index)
-#     end
-
-#     # return index
-# end
-
 function end_search(board_template,  min_accept_score, index, moves)
-    # reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
     reordered_moves = copy(moves)
 
-    # println(moves)
-
-    # println(reordered_moves)
-
     reordered_moves_score = length(reordered_moves)
-
-    # dimitri
 
     eval_moves = reordered_moves[1:(reordered_moves_score - 5)]
 
@@ -732,6 +464,22 @@ function end_search(board_template,  min_accept_score, moves)
     index
 end
 
+function explore_reducer(a, b)
+    t = 200
+    (a_moves, a_visits, a_last_visited_index) = a
+    (b_moves, b_visits, b_last_visitid_index) = b
+    a_score = length(a_moves)
+    b_score = length(b_moves)
+    sa = a_score - (a_visits / t)
+    sb = b_score - (b_visits / t)
+
+    if sa > sb || sa == sb && rand(Bool)
+        return a
+    else
+        return b
+    end
+end
+
 function reorder_moves_by_layers(board, moves::Array{Move,1}, possible_moves::Array{Move,1}, taken_moves::Array{Move,1}, taboo_moves::Array{Move,1})
     layer_possible_moves = setdiff(possible_moves, taboo_moves)
     layer_moves = intersect(layer_possible_moves, moves)
@@ -755,303 +503,146 @@ function reorder_moves_by_layers(board, moves)
     taken_moves
 end
 
-function run() 
-    board_template = generate_initial_board()
+mutable struct Subject
+    step::UInt64
+    pool_index::Dict{UInt64,Tuple{Array{Move,1},Int64,Int64}}
+    end_searched_index::Dict{UInt64, Bool}
+    max_score::UInt64
+    max_moves::Array{Move}
+end
 
-    moves = Move[Move(2, 9, 1, 0), Move(10, 6, 1, -4), Move(6, 10, 3, -4), Move(4, 8, 2, -2), Move(2, 7, 2, -2), Move(3, 10, 3, -4), Move(5, 8, 0, -2), Move(2, 8, 1, 0), Move(2, 5, 3, 0), Move(0, 7, 3, -4), Move(4, 7, 2, -2), Move(7, 0, 1, -4), Move(1, 7, 1, -1), Move(3, 4, 3, -4), Move(4, 10, 2, -4), Move(7, 7, 0, -3), Move(9, 2, 3, 0), Move(8, 4, 2, -2), Move(4, 6, 3, 0), Move(5, 6, 1, -3), Move(6, 5, 0, -4), Move(4, 3, 0, -4), Move(5, 3, 1, -2), Move(6, 4, 3, -2), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(8, 7, 2, -4), Move(5, 7, 1, -1), Move(5, 5, 3, 0), Move(7, 5, 0, -4), Move(4, 2, 2, 0), Move(8, 5, 3, -2), Move(3, 5, 1, 0), Move(4, 4, 0, -3), Move(2, 2, 2, 0), Move(7, 4, 1, -3), Move(10, 1, 0, -4), Move(4, 1, 3, 0), Move(-1, 5, 0, 0), Move(10, 7, 2, -4), Move(7, 8, 3, -4), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(11, 5, 1, -4), Move(7, 1, 3, -1), Move(5, 1, 1, -2), Move(5, 2, 3, -1), Move(8, 2, 1, -4), Move(10, 4, 2, -3), Move(7, -1, 0, -4), Move(10, 3, 3, 0), Move(11, 2, 0, -4), Move(8, -1, 0, -4), Move(2, -1, 2, 0), Move(11, 3, 1, -4), Move(12, 2, 0, -4), Move(10, 2, 1, -2), Move(11, 1, 0, -4), Move(11, 4, 3, -3), Move(12, 4, 1, -4), Move(8, 1, 2, -1), Move(9, 1, 1, -2), Move(10, 0, 0, -4), Move(8, 0, 2, 0), Move(9, -1, 0, -4), Move(10, -1, 3, 0), Move(6, -1, 1, 0), Move(7, -2, 0, -4), Move(8, -2, 2, 0), Move(8, -3, 3, 0), Move(2, 4, 2, -1), Move(1, 4, 1, -1), Move(-1, 6, 0, 0), Move(9, 0, 0, -3), Move(6, -3, 2, 0), Move(1, 9, 0, 0), Move(1, 8, 2, -2), Move(11, 0, 1, -4), Move(-1, 3, 1, 0), Move(6, -2, 3, 0), Move(9, -2, 3, 0), Move(7, -4, 2, 0), Move(7, -3, 3, -1), Move(5, -2, 1, 0), Move(5, -1, 0, -2), Move(5, -3, 3, 0), Move(4, -3, 1, 0), Move(3, -4, 2, 0), Move(4, -4, 2, 0), Move(4, -1, 0, -1), Move(4, -2, 3, -2), Move(3, -3, 2, 0), Move(2, 1, 3, 0), Move(1, 5, 3, 0), Move(-2, 5, 1, 0), Move(-2, 2, 2, 0), Move(-1, 7, 0, 0), Move(-1, 4, 3, -1), Move(1, 2, 0, -3), Move(0, 2, 1, 0), Move(-2, 6, 1, 0), Move(1, 1, 3, 0), Move(3, -1, 1, -1), Move(2, -2, 2, 0), Move(3, -2, 3, -2), Move(1, -2, 1, 0), Move(2, -3, 2, 0), Move(2, 0, 3, -3), Move(6, -4, 0, -4), Move(5, -4, 1, -2), Move(1, 0, 0, 0), Move(0, -1, 2, 0), Move(-1, 0, 0, 0), Move(0, 0, 1, -1), Move(1, -1, 0, -1), Move(0, 1, 3, -2), Move(-2, 4, 0, 0), Move(-2, -1, 2, 0), Move(-1, -1, 1, -1), Move(-1, 1, 1, 0), Move(-1, 2, 3, -3), Move(-2, -2, 2, 0), Move(-2, 1, 2, 0), Move(-2, 0, 3, -2), Move(-3, -1, 2, 0), Move(-2, 3, 3, -1), Move(-3, 4, 0, 0), Move(-4, 4, 1, 0), Move(-3, 3, 0, -1), Move(-4, 2, 2, 0), Move(-3, 2, 1, -1), Move(-4, 1, 2, 0), Move(0, -2, 2, 0), Move(-3, 1, 0, -1), Move(-3, 5, 3, -4), Move(-5, 3, 2, 0), Move(-4, 3, 1, -1), Move(-5, 2, 2, 0), Move(-5, 1, 1, 0), Move(-4, 0, 3, 0), Move(-5, 4, 0, 0), Move(-5, 0, 3, 0), Move(-3, 0, 1, -2), Move(-1, -2, 0, -4), Move(-3, -2, 1, 0), Move(-3, -3, 3, 0), Move(-6, 2, 0, 0), Move(1, -3, 3, 0), Move(0, -3, 1, 0)]
+function build_initial_pool_index()
+    start_moves = random_completion(copy(board_template))
+    start_moves_points_hash = points_hash(start_moves)
+    Dict(start_moves_points_hash => (start_moves, 0, 0))
+end
 
-    # eval_board = copy(board_template)
-
-    # reordered_moves = reorder_moves_by_layers(copy(board_template), moves)
-
-    # println(length(reordered_moves))
-
-    # timer = Dates.now()
-    # max_found = 0
-    # min_found = 100000
-    # for i in 1:100
-    #     end_search_index = end_search(board_template, length(moves) - 10, moves)
-
-    #     num_found = length(end_search_index)
-    #     max_found = max(num_found, max_found)
-    #     min_found = min(num_found, min_found)
-        
-    #     # println(length(end_search_index))
-    # end
-
-    # println("$min_found $max_found")
-    # current_time = Dates.now()
-    # elapsed = current_time - timer
-
-    # println(elapsed)
-
-    # readline()
-
-
-    # for i in 1:100
-    #     start_moves = copy(moves)
-    #     for t in 1:16
-    #         start_moves = remove_loose_moves(start_moves)
-    #     end
-
-    #     eval_board = copy(board_template)
-    #     evaled_board, possible_moves = eval_partial(eval_board, copy(start_moves))
-
-    #     random_completion = random_completion_from(copy(evaled_board), possible_moves, copy(start_moves))
-    #     println("$(length(start_moves)) -> $(length(random_completion))")
-    # end
-
-
-    
-
-    # readline()
-
-
-    # head = moves_119[1]
-    # tail = moves_119[2:end]
-
-    # root = build_node(head)
-    # root.average = length(moves_119)
-    # build_tree_from_moves(length(moves_119), tail, root)
-
-    # nodes = [root]
-
-    # for i in 1:3
-    #     node = select_node_e_greedy(nodes)
-    #     moves = visit_node(copy(board_template), initial_moves(), [], node)
-    #     update_node_average(length(moves), node)
-    #     println("visit: $(length(moves))")
-    #     log_nodes(nodes)
-    # end
-
-    # timer = Dates.now()
-
-    # for node in nodes
-    #     visit_node(copy(board_template), initial_moves(), [], node)
-    # end
-
-
-    # step = 0
-    # max_score = 0
-    # episode_max_score = 0
-    # episode_min_score = 1000
-    # episode_mean = 0
-    # episode_mean_counter = 1
-    # while true
-    #     node = select_node(nodes)
-    #     eval_moves = visit_node(copy(board_template), initial_moves(), [], node)
-    #     eval_score = length(eval_moves)
-    #     update_node_average(eval_score, node)
-
-    #     episode_max_score = max(eval_score, episode_max_score)
-    #     episode_min_score = min(eval_score, episode_min_score)
-    #     episode_mean = episode_mean + (eval_score - episode_mean) / episode_mean_counter
-    #     episode_mean_counter += 1
-
-    #     if eval_score > max_score
-    #         max_score = eval_score
-
-    #         println()
-    #         println("!!!!!")
-    #         println(eval_moves)
-    #         println()
-    #         println("$(step). $(max_score)")
-    #     end
-
-    #     if step % 10000 == 0
-    #         log_nodes(nodes)
-    #         current_time = Dates.now()
-    #         elapsed = current_time - timer
-    #         println("$step. $max_score ($elapsed) [$(episode_min_score), $(episode_mean), $(episode_max_score)]")
-    #         timer = current_time
-
-    #         episode_max_score = 0
-    #         episode_min_score = 1000
-    #         episode_mean = 0
-    #         episode_mean_counter = 1
-    #     end
-
-    #     # println(eval_score)
-    #     # println()
-    #     # log_nodes(nodes)
-    #     # readline()
-        
-        
-
-    #     step += 1
-    # end
-
-    
-
-
-    
-
-    # @time unit(board_template, moves_119)
-
-    min_accept_delta = -10
-
+function build_subject(board_template)
     start_moves = random_completion(copy(board_template))
     start_moves_points_hash = points_hash(start_moves)
     pool_index = Dict(start_moves_points_hash => (start_moves, 0, 0))
+    Subject(0, pool_index, Dict{UInt64, Bool}(), 0, [])
+end
 
-    for i in 1:100
-        start_moves = random_completion(copy(board_template))
-        start_moves_points_hash = points_hash(start_moves)
-        pool_index[start_moves_points_hash] = (start_moves, 0, 0)
+function visit_subject(subject, board_template)
+    pool_index = subject.pool_index
+    step = subject.step
+    end_searched_index = subject.end_searched_index
+    max_score = subject.max_score
+    max_moves = subject.max_moves
+
+    min_accept_delta = -10
+
+    curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
+    
+    curr_score = length(curr_moves)
+    curr_moves_points_hash = points_hash(curr_moves)
+
+    if curr_score > max_score || max_score == 0
+        subject.max_score = curr_score
+        subject.max_moves = curr_moves
     end
 
-    end_searched_index = Dict()
+    if !haskey(end_searched_index, curr_moves_points_hash) && curr_score > 100
+        end_search_index = Dict()
+        end_search_start_time = Dates.now()
+        end_search(board_template, curr_score + min_accept_delta, end_search_index, curr_moves)
+        end_search_end_time = Dates.now()
 
-    function exploit_reducer(a, b)
-        t = 500
-        (a_moves, a_visits, a_last_visited_index) = a
-        (b_moves, b_visits, b_last_visitid_index) = b
-        a_score = length(a_moves)
-        b_score = length(b_moves)
-        sa = a_score - (a_visits / t)
-        sb = b_score - (b_visits / t)
-  
-        if sa > sb || sa == sb && rand(Bool)
-            return a
+        for pair in pairs(end_search_index)
+            pair_points_hash, pair_moves = pair
+            pair_score = length(pair_moves)
+            
+            if !haskey(pool_index, pair_points_hash)
+                pool_index[pair_points_hash] = (pair_moves, 0, step)
+            end
+        end
+
+        end_searched_index[curr_moves_points_hash] = true
+    end
+
+    if !haskey(pool_index, curr_moves_points_hash)
+        pool_index[curr_moves_points_hash] = (curr_moves, 0, step)
+    else
+        moves, visits, last_visited_step = pool_index[curr_moves_points_hash]
+        pool_index[curr_moves_points_hash] = (moves, visits + 1, step)
+    end
+
+    eval_moves = modification_triple(copy(board_template), curr_moves)
+    curr_score = length(curr_moves)
+    eval_score = length(eval_moves)
+
+    if (eval_score >= curr_score + min_accept_delta)
+        eval_points_hash = points_hash(eval_moves)
+
+        # if a new configuration is found
+        if !haskey(pool_index, eval_points_hash)
+            # enter the configuration into the index
+            pool_index[eval_points_hash] = (eval_moves, 0, step)
+
         else
-            return b
+            m, v, t  = pool_index[eval_points_hash]
+            pool_index[eval_points_hash] = (eval_moves, v, t)
         end
     end
 
-    function explore_reducer(a, b)
-        t = 100
-        (a_moves, a_visits, a_last_visited_index) = a
-        (b_moves, b_visits, b_last_visitid_index) = b
-        a_score = length(a_moves)
-        b_score = length(b_moves)
-        sa = a_score - (a_visits / t)
-        sb = b_score - (b_visits / t)
-  
-        if sa > sb || sa == sb && rand(Bool)
-            return a
-        else
-            return b
+    if step % 10000 == 0
+        max_age = 10000
+        for pair in pairs(pool_index)
+            pair_points_hash, pair_value = pair
+            pair_moves, pair_visits, pair_last_visit_step = pair_value
+            pair_score = length(pair_moves)
+            age = step - pair_last_visit_step
+            if(age > max_age)
+                pop!(pool_index, pair_points_hash)
+            end
         end
     end
+    
+    subject.step += 1
+end
 
-    step = 1
+function run() 
+    board_template = generate_initial_board()
+    # subject = build_subject(board_template)
 
-    timer = Dates.now()
+
+    subjects = Subject[]
+
+    for i in 1:10
+        push!(subjects, build_subject(board_template))
+    end
 
     max_score = 0
-    max_moves = Move[]
-    
-    
+    max_moves = []
+
     while true
-        if rand(1:10) == 1
-            curr_moves, curr_visits = reduce(exploit_reducer, values(pool_index))
-        else
-            curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
-        end
-        curr_score = length(curr_moves)
-        curr_moves_points_hash = points_hash(curr_moves)
 
-        if curr_score > max_score
-            max_score = curr_score
-            max_moves = curr_moves
-
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            println(max_score)
-            println(max_moves)
-            println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        end
-
-        if !haskey(end_searched_index, curr_moves_points_hash) && curr_score > 100
-            end_search_index = Dict()
-            end_search_start_time = Dates.now()
-            end_search(board_template, curr_score + min_accept_delta, end_search_index, curr_moves)
-            end_search_end_time = Dates.now()
-
-            println("end search $(curr_score) ===> $(length(end_search_index)) ($(end_search_end_time - end_search_start_time))")
-
-            for pair in pairs(end_search_index)
-                pair_points_hash, pair_moves = pair
-                pair_score = length(pair_moves)
-                
-                if !haskey(pool_index, pair_points_hash)
-                    pool_index[pair_points_hash] = (pair_moves, 0, step)
-                    if (pair_score >= curr_score)
-                        println(" es $(curr_score) => $(pair_score)")
-                    end
-                end
-            end
-
-            end_searched_index[curr_moves_points_hash] = true
-        end
-
-        if !haskey(pool_index, curr_moves_points_hash)
-            pool_index[curr_moves_points_hash] = (curr_moves, 0, step)
-        else
-            moves, visits, last_visited_step = pool_index[curr_moves_points_hash]
-            pool_index[curr_moves_points_hash] = (moves, visits + 1, step)
-        end
-
-        eval_moves = modification_triple(copy(board_template), curr_moves)
-        curr_score = length(curr_moves)
-        eval_score = length(eval_moves)
-        # eval_hash = hash(eval_moves)
-
-        if (eval_score >= curr_score + min_accept_delta)
-            eval_points_hash = points_hash(eval_moves)
-
-            # if a new configuration is found
-            if !haskey(pool_index, eval_points_hash)
-                # enter the configuration into the index
-                pool_index[eval_points_hash] = (eval_moves, 0, step)
-
-                if eval_score >= curr_score
-                    println("$step. $curr_score($curr_visits) => $eval_score  $max_score")
-                end
-            else
-                m, v, t  = pool_index[eval_points_hash]
-                pool_index[eval_points_hash] = (eval_moves, v, t)
+        for i in 1:400
+            for subject in subjects
+                visit_subject(subject, board_template)
             end
         end
 
-        if step % 10000 == 0
-            current_time = Dates.now()
-            elapsed = current_time - timer
-            println("$step. $max_score ($elapsed) [index:$(length(pool_index))]")
-            timer = current_time
+        println()
+        println(max_score)
+        println(max_moves)
+        println()
 
-            before_size = length(pool_index)
-            max_age = 10000
-            pool_max = 0
-            pool_min = 100000
-            for pair in pairs(pool_index)
-                pair_points_hash, pair_value = pair
-                pair_moves, pair_visits, pair_last_visit_step = pair_value
-                pair_score = length(pair_moves)
-                age = step - pair_last_visit_step
-                if(age > max_age)
-                    pop!(pool_index, pair_points_hash)
-                else
-                    pool_max = max(pool_max, pair_score)
-                    pool_min = min(pool_min, pair_score)
-                end
+        max_score = 0
+        max_moves = []
+
+        for subject in subjects
+            println(subject.max_score)
+            if (subject.max_score > max_score)
+                max_score = subject.max_score
+                max_moves = subject.max_moves
             end
-            after_size = length(pool_index)
-            println("cleaning index $before_size -> $after_size")
-            println(" min: $pool_min, max: $pool_max")
-            println()
         end
 
-        if step % 100000 == 0
-            println("------------------------------------------------------------------------")
-            println(max_score)
-            println(max_moves)
-            println("------------------------------------------------------------------------")
-        end
-      
-        step += 1
+        
 
     end
-
 end
 
 run()
