@@ -1,6 +1,17 @@
 import Dates
 using Random
 
+mutable struct StateStat
+    visits::Int64
+    total_count::Int64
+    total::Int64
+    max::Int64
+end
+
+function build_state_stat(score)
+    StateStat(1, 1, score, score)
+end
+
 struct Move
     x::Int8
     y::Int8
@@ -224,6 +235,31 @@ function print_board(board::Array{UInt8,1})
     end
 end
 
+#dimitri
+mutable struct morpion_evaluator
+    curr_possible_moves::Array{Move,1}
+    taken_moves::Array{Move,1}
+    board::Array{UInt8,1}
+end
+
+function new_morpion_evaluator(board)
+    morpion_evaluator(initial_moves(), Move[], board)
+end
+
+function evaluator_make_move(evaluator, move)
+    push!(evaluator.taken_moves, move)
+    update_board(evaluator.board, move)
+    filter!((move)->is_move_valid(evaluator.board, move), evaluator.curr_possible_moves)
+    created_moves = find_created_moves(evaluator.board, move.x, move.y)
+    union!(evaluator.curr_possible_moves, created_moves)
+end
+
+function evaluator_random_completion(evaluator)
+    while length(evaluator.curr_possible_moves) > 0
+        move = evaluator.curr_possible_moves[rand(1:end)]
+        evaluator_make_move(evaluator, move)
+    end
+end
 
 function eval_possible_move_reducer(board, possible_move_reducer)
     curr_possible_moves = initial_moves()
@@ -602,78 +638,306 @@ function visit_subject(subject, board_template)
     subject.step += 1
 end
 
+function build_new_states(taken_moves, move)
+    cat(taken_moves, [move], dims = 1)
+end
+
+function build_state_hash(moves)
+    hash(moves)
+end
+
+function has_state_value(state_stats, taken_moves, move)
+    new_state = build_new_states(taken_moves, move)
+    new_state_hash = build_state_hash(new_state)
+    haskey(state_stats, new_state_hash)
+end
+
+function evaluator_with_moves(board, moves)
+    n = new_morpion_evaluator(board)
+    for move in moves
+        evaluator_make_move(n, move)
+    end
+    n
+end
+
+function random_completion_from(board, taken_moves, move)
+    n = new_morpion_evaluator(board)
+    for taken_move in taken_moves
+        evaluator_make_move(n, taken_move)
+    end
+    evaluator_random_completion(n)
+    n.taken_moves
+end
+
+# function first_visit(state_stats, board, taken_moves, move)
+#     random_completion_moves = random_completion_from(board, taken_moves, move)
+
+#     new_state = build_new_states(taken_moves, move)
+#     new_state_hash = build_state_hash(new_state)
+
+#     state_stats[new_state_hash] = (1, length(random_completion_moves))
+# end
+
+function print_root_stats(state_stats)
+    for move in initial_moves()
+        state = [move]
+        state_hash = build_state_hash(state)
+        if haskey(state_stats, state_hash)
+            stat = state_stats[state_hash]
+            score = state_score(state_stats, state_hash)
+            println("$move $stat $score")
+        else
+            println("$move *")
+        end
+    end
+end
+
+function arg_max_by(f, arr)
+    reduce((sum, num) -> f(num) > f(sum) ? num : sum, arr, init=first(arr))
+end
+
+function mcts_expand(evaluator, move)
+
+end
+
+function evaluator_score(evaluator)
+    length(evaluator.taken_moves)
+end
+
+function visit_state(state_stats, state_hash)
+    state_stat = state_stats[state_hash]
+    
+    # state_stats[state_hash] = (stat_visits + 1, stat_score)
+    state_stat.visits += 1
+end
+
+function update_state_score(state_stats, state_hash, score)
+    state_stat = state_stats[state_hash]
+    
+    state_stat.max = max(state_stat.max, score)
+    state_stat.total += score
+    state_stat.total_count += 1
+end
+
+function state_score(state_stats, state_hash)
+    state_stat = state_stats[state_hash]
+    state_stat.total / state_stat.total_count
+end
+
+# select children til leaf node is reached
+function mcts_selection(board_template, state_stats, evaluator)
+    # TODO optimization - cache if all children visited in state stats and don't do this filter
+    unvisited_possible_moves = filter((move)->!has_state_value(state_stats, evaluator.taken_moves, move), evaluator.curr_possible_moves)
+    curr_taken_moves = copy(evaluator.taken_moves)
+
+    if length(unvisited_possible_moves) > 0
+        random_unvisited_move = unvisited_possible_moves[rand(1:end)]
+        evaluator_make_move(evaluator, random_unvisited_move)
+        evaluator_random_completion(evaluator)
+        rollout_score = evaluator_score(evaluator)
+
+        new_state = build_new_states(curr_taken_moves, random_unvisited_move)
+        new_state_hash = build_state_hash(new_state)
+
+        # state_stats[new_state_hash] = (1, rollout_score)
+        state_stats[new_state_hash] = build_state_stat(rollout_score)
+
+
+        # println("$random_unvisited_move $rollout_score ($(length(unvisited_possible_moves)))")
+
+        return rollout_score
+    end
+
+    # TODO more here
+    if (length(evaluator.curr_possible_moves) == 0)
+        # println("end $(length(evaluator.taken_moves)) $(build_state_hash(evaluator.taken_moves))")
+        return length(evaluator.taken_moves)
+    end
+
+    
+
+    # move_score_ucb = function (move)
+
+    # end
+
+    
+
+    # choose child to visits
+    # e-greedy
+    move_score_state_score = function (move)
+        new_state = build_new_states(evaluator.taken_moves, move)
+        new_state_hash = build_state_hash(new_state)
+        state_score(state_stats, new_state_hash)
+    end
+    explore = rand(1:10) == 1
+    best_move = explore ? evaluator.curr_possible_moves[rand(1:end)] : arg_max_by(move_score_state_score, evaluator.curr_possible_moves)
+    
+
+    # max_score = 0
+    # total_visits = reduce(function (sum, move) 
+    #     new_state = build_new_states(curr_taken_moves, move)
+    #     new_state_hash = build_state_hash(new_state)
+    #     state_stat = state_stats[new_state_hash]
+    #     score = state_score(state_stats, new_state_hash)
+    #     max_score = max(max_score, score)
+    #     sum + state_stat.visits
+    # end, evaluator.curr_possible_moves, init=0)
+
+    # best_move = arg_max_by(function (move)
+    #     new_state = build_new_states(curr_taken_moves, move)
+    #     new_state_hash = build_state_hash(new_state)
+    #     state_stat = state_stats[new_state_hash]
+    #     score = state_score(state_stats, new_state_hash)
+    #     (score / max_score) + sqrt(2 * (log(total_visits)/state_stat.visits))
+    # end, evaluator.curr_possible_moves)
+
+    # println("best move $best_move")
+
+    evaluator_make_move(evaluator, best_move)
+
+    # new_state = build_new_states(curr_taken_moves, best_move)
+    new_state_hash = build_state_hash(evaluator.taken_moves)
+
+    visit_state(state_stats, new_state_hash)
+
+    rollout_score = mcts_selection(board_template, state_stats, evaluator)
+
+    # println("rollout scroe ", rollout_score)
+    # println("curr_taken_moves ", curr_taken_moves)
+
+    update_state_score(state_stats, build_state_hash(curr_taken_moves), rollout_score)
+
+    rollout_score
+    
+end
+
 function run() 
     board_template = generate_initial_board()
-    # subject = build_subject(board_template)
+    state_stats = Dict()
 
+    state_stats[build_state_hash([])] = build_state_stat(0)
 
-    subjects = Subject[]
+    #dimitri
+    # curr_possible_moves = initial_moves()
+    # unvisited_possible_moves = filter((move)->!has_state_value(state_stats, [], move), curr_possible_moves)
+    # while length(unvisited_possible_moves) > 0
+    #     random_unvisited_possible_move = unvisited_possible_moves[rand(1:end)]
+    #     first_visit(state_stats, copy(board_template), [], random_unvisited_possible_move)
+    #     unvisited_possible_moves = filter((move)->!has_state_value(state_stats, [], move), curr_possible_moves)
+    # end
 
-    for i in 1:10
-        push!(subjects, build_subject(board_template))
-    end
-
-    iterations = 400
-
-    max_score = 0
-    max_moves = []
-
-    step = 1
-
+    # print_root_stats(state_stats)
     while true
-
-        for i in 1:iterations
-            # a/b test
-            # for subject in subjects
-            #     visit_subject(subject, board_template)
-            # end
-
-            #epsilon greedy
-            if rand(Bool)# > 0.5
-                subject = maxby(function(subject)
-                    subject.max_score
-                end, subjects)
-            else
-                subject = subjects[rand(1:end)]
-            end
-
-            #UCB TODO
-            # subject = maxby(function(subject)
-            #     ucb = (step / subject.step) + √(200 * (log(step) / subject.step))
-
-            #     # println("$(subject.max_score) $(ucb)")
-
-            #     # readline()
-
-            #     ucb
-            # end, subjects)
-
-            visit_subject(subject, board_template)
-
-            step = step + 1
+        for i in 1:100
+            mcts_selection(copy(board_template), state_stats, new_morpion_evaluator(copy(board_template)))
         end
-
-
-
-
-
-
         println()
-        println(max_score)
-        println(max_moves)
-        println()
-
-        max_score = 0
-        max_moves = []
-
-        for subject in subjects
-            println("$(subject.step). $(subject.max_score)")
-            if (subject.max_score > max_score)
-                max_score = subject.max_score
-                max_moves = subject.max_moves
-            end
-        end
+        print_root_stats(state_stats)
     end
+
+    
+
+
+    
+    
+
+
+
+    # taken_moves = Move[]
+
+    # i = 1
+  
+    # while length(curr_possible_moves) > 0
+    #     move = reduce(possible_move_reducer, curr_possible_moves)
+    #     push!(taken_moves, move)
+    #     update_board(board, move)
+    #     filter!((move)->is_move_valid(board, move), curr_possible_moves)
+    #     created_moves = find_created_moves(board, move.x, move.y)
+    #     union!(curr_possible_moves, created_moves)
+
+    #     i += 1
+    # end
+
+    # taken_moves
+
+
+
+
+    # board_template = generate_initial_board()
+    # # subject = build_subject(board_template)
+
+
+    # subjects = Subject[]
+
+    # for i in 1:20
+    #     push!(subjects, build_subject(board_template))
+    # end
+
+    # iterations = 1000
+
+    # max_score = 0
+    # max_moves = []
+
+    # step = 1
+
+    # while true
+
+    #     for i in 1:iterations
+    #         # a/b test
+    #         # for subject in subjects
+    #         #     visit_subject(subject, board_template)
+    #         # end
+
+    #         #epsilon greedy
+    #         # if rand(Bool)# > 0.5
+    #         #     subject = maxby(function(subject)
+    #         #         subject.max_score
+    #         #     end, subjects)
+    #         # else
+    #         #     subject = subjects[rand(1:end)]
+    #         # end
+
+    #         #UCB TODO
+    #         total_score = 0
+    #         for subject in subjects
+    #             total_score += subject.max_score
+    #         end
+    #         subject = maxby(function(subject)
+    #             ucb = (subject.max_score / total_score) + √(200 * (log(step) / subject.step))
+
+    #             # println("$(subject.max_score) $(ucb)")
+
+    #             # readline()
+
+    #             ucb
+    #         end, subjects)
+
+    #         visit_subject(subject, board_template)
+
+    #         step = step + 1
+    #     end
+
+
+
+
+
+
+    #     println()
+    #     println(max_score)
+    #     println(max_moves)
+    #     println()
+
+    #     max_score = 0
+    #     max_moves = []
+
+    #     for subject in subjects
+    #         println("$(subject.step). $(subject.max_score)")
+    #         if (subject.max_score > max_score)
+    #             max_score = subject.max_score
+    #             max_moves = subject.max_moves
+    #         end
+    #     end
+    # end
 end
 
 run()
