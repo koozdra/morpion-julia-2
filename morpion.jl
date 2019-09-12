@@ -818,20 +818,23 @@ function switch_search(board_template, min_accept_score_modifier, moves)
 
     evaluator = new_morpion_evaluator(copy(board_template))
     moves_index = 1
+    searches = 0
+    morpion_dna_template = generate_dna(moves)
 
     while (!isempty(evaluator.curr_possible_moves))
         move = moves[moves_index]
         move_dna_index = dna_index(move)
 
         for possible_move in evaluator.curr_possible_moves
-            board = copy(board_template)
-            morpion_dna = generate_dna(moves)
-            
+            morpion_dna = copy(morpion_dna_template)
+
             morpion_dna[move_dna_index] = -1000
             morpion_dna[dna_index(possible_move)] = 1000
 
-            eval_moves = eval_dna(board, morpion_dna)
+            eval_moves = eval_dna(copy(board_template), morpion_dna)
             eval_moves_hash = points_hash(eval_moves)
+
+            searches += 1
 
             eval_score = length(eval_moves)
 
@@ -847,11 +850,11 @@ function switch_search(board_template, min_accept_score_modifier, moves)
         evaluator_make_move(evaluator, move)
     end
 
-    pool_index
+    (pool_index, searches)
 end
 
 function switch_search_exploit_reducer_pairs(a, b)
-    t = 5
+    t = 100
     (a_key, (a_moves, a_visits, a_last_visited_index)) = a
     (b_key, (b_moves, b_visits, b_last_visitid_index)) = b
     a_score = length(a_moves)
@@ -867,7 +870,7 @@ function switch_search_exploit_reducer_pairs(a, b)
 end
 
 function switch_search_explore_reducer_pairs(a, b)
-    t = 1
+    t = 0.1
     (a_key, (a_moves, a_visits, a_last_visited_index)) = a
     (b_key, (b_moves, b_visits, b_last_visitid_index)) = b
     a_score = length(a_moves)
@@ -890,6 +893,7 @@ function run()
     step = 0
     max_moves = []
     max_score = 0
+    total_searches = 0
 
     pool_index = Dict{UInt64,Tuple{Array{Move,1},Int64,Int64}}()
     taboo_index = Dict{UInt64, Int64}()
@@ -900,15 +904,18 @@ function run()
 
     while true
         if step % 2 == 0
-            (curr_moves_points_hash, (curr_moves, curr_visits)) = reduce(switch_search_exploit_reducer_pairs, pairs(pool_index))
+            (curr_moves_points_hash, (curr_moves, curr_visits, curr_last_visited_step)) = reduce(switch_search_exploit_reducer_pairs, pairs(pool_index))
         else
-            (curr_moves_points_hash, (curr_moves, curr_visits)) = reduce(switch_search_explore_reducer_pairs, pairs(pool_index))
+            (curr_moves_points_hash, (curr_moves, curr_visits, curr_last_visited_step)) = reduce(switch_search_explore_reducer_pairs, pairs(pool_index))
         end
 
         curr_score = length(curr_moves)
+        curr_age = step - curr_last_visited_step
 
         # curr_moves_points_hash = points_hash(curr_moves)
-        switch_search_results = switch_search(board_template, -10, curr_moves)
+        (switch_search_results, num_searches) = switch_search(board_template, -10, curr_moves)
+
+        total_searches += num_searches
         
         new_found = 0
         for pair in pairs(switch_search_results)
@@ -928,7 +935,8 @@ function run()
             
             if !haskey(taboo_index, pair_points_hash)
                 if !haskey(pool_index, pair_points_hash)
-                    pool_index[pair_points_hash] = pair_value
+                    t_moves, t_visits, t_last = pair_value
+                    pool_index[pair_points_hash] = (t_moves, t_visits, step)
                     new_found += 1
                 else
                     t_moves, t_visits, t_step = pool_index[pair_points_hash]
@@ -940,27 +948,37 @@ function run()
         # dimitri
         if new_found > 4
             t_moves, t_visits, t_step = pool_index[curr_moves_points_hash]
-            # println("pixel $(pool_index[curr_moves_points_hash])")
             pool_index[curr_moves_points_hash] = (t_moves, 0, t_step)
-            # println("pixel after $(pool_index[curr_moves_points_hash])")
-        else
-            visits_update = curr_visits + 1
-            pool_index[curr_moves_points_hash] = (curr_moves, visits_update, step)
-
-            if visits_update >= taboo_visits
-                taboo_index[curr_moves_points_hash] = curr_score
-                pop!(pool_index, curr_moves_points_hash)
-
-                println(" --- $(curr_score)")
-            end
         end
 
-        println("$(step). $(length(curr_moves)) ($(curr_visits), $(length(switch_search_results))($(new_found)), $(max_score))")
+        println("$(total_searches)($(step)). $(length(curr_moves)) ($(curr_visits), $(curr_age), $(length(switch_search_results))($(new_found)), $(max_score), $(length(pool_index)))")
 
-        
+        if step % 100 == 0
+            
+            max_age = 100
+            before_size = length(pool_index)
+            for pair in pairs(pool_index)
+                pair_points_hash, pair_value = pair
+                pair_moves, pair_visits, pair_last_visit_step = pair_value
+                pair_score = length(pair_moves)
+                age = step - pair_last_visit_step
+                if(age > max_age)
+                    pop!(pool_index, pair_points_hash)
+                end
+            end
+            println("cleaning $(before_size) -> $(length(pool_index))")
+        end
 
-
+        t_curr_moves, t_curr_visits, t_step = pool_index[curr_moves_points_hash]
+        pool_index[curr_moves_points_hash] = (t_curr_moves, t_curr_visits + 1, step)
         step += 1
+
+        if curr_visits >= taboo_visits
+            taboo_index[curr_moves_points_hash] = curr_score
+            pop!(pool_index, curr_moves_points_hash)
+
+            println(" --- $(curr_score)")
+        end
     end
 
     # test_index = Dict{UInt64,Int64}()
