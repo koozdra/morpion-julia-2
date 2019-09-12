@@ -903,9 +903,11 @@ function run()
     pool_index[points_hash(start_moves)] = (start_moves, 0, 0)
 
     while true
+        is_explore = false
         if step % 2 == 0
             (curr_moves_points_hash, (curr_moves, curr_visits, curr_last_visited_step)) = reduce(switch_search_exploit_reducer_pairs, pairs(pool_index))
         else
+            is_explore = true
             (curr_moves_points_hash, (curr_moves, curr_visits, curr_last_visited_step)) = reduce(switch_search_explore_reducer_pairs, pairs(pool_index))
         end
 
@@ -938,6 +940,10 @@ function run()
                     t_moves, t_visits, t_last = pair_value
                     pool_index[pair_points_hash] = (t_moves, t_visits, step)
                     new_found += 1
+
+                    if (pair_score >= curr_score)
+                        println("  $curr_score => $pair_score")
+                    end
                 else
                     t_moves, t_visits, t_step = pool_index[pair_points_hash]
                     pool_index[pair_points_hash] = (pair_moves, t_visits, t_step)
@@ -946,12 +952,23 @@ function run()
         end
 
         # dimitri
-        if new_found > 4
+        if new_found > 4 #&& !is_explore
             t_moves, t_visits, t_step = pool_index[curr_moves_points_hash]
             pool_index[curr_moves_points_hash] = (t_moves, 0, t_step)
         end
 
         println("$(total_searches)($(step)). $(length(curr_moves)) ($(curr_visits), $(curr_age), $(length(switch_search_results))($(new_found)), $(max_score), $(length(pool_index)))")
+
+        t_curr_moves, t_curr_visits, t_step = pool_index[curr_moves_points_hash]
+        pool_index[curr_moves_points_hash] = (t_curr_moves, t_curr_visits + 1, step)
+        step += 1
+
+        if curr_visits >= taboo_visits
+            taboo_index[curr_moves_points_hash] = curr_score
+            pop!(pool_index, curr_moves_points_hash)
+
+            println(" --- $(curr_score)")
+        end
 
         if step % 100 == 0
             
@@ -967,17 +984,6 @@ function run()
                 end
             end
             println("cleaning $(before_size) -> $(length(pool_index))")
-        end
-
-        t_curr_moves, t_curr_visits, t_step = pool_index[curr_moves_points_hash]
-        pool_index[curr_moves_points_hash] = (t_curr_moves, t_curr_visits + 1, step)
-        step += 1
-
-        if curr_visits >= taboo_visits
-            taboo_index[curr_moves_points_hash] = curr_score
-            pop!(pool_index, curr_moves_points_hash)
-
-            println(" --- $(curr_score)")
         end
     end
 
