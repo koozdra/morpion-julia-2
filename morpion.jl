@@ -819,14 +819,15 @@ function switch_search(board_template, min_accept_score_modifier, moves)
     evaluator = new_morpion_evaluator(copy(board_template))
     moves_index = 1
     searches = 0
-    morpion_dna_template = generate_dna(moves)
+    # morpion_dna_template = generate_dna(moves)
 
     while (!isempty(evaluator.curr_possible_moves))
         move = moves[moves_index]
         move_dna_index = dna_index(move)
 
         for possible_move in evaluator.curr_possible_moves
-            morpion_dna = copy(morpion_dna_template)
+            # morpion_dna = copy(morpion_dna_template)
+            morpion_dna = generate_dna(moves)
 
             morpion_dna[move_dna_index] = -1000
             morpion_dna[dna_index(possible_move)] = 1000
@@ -920,6 +921,7 @@ function run()
         total_searches += num_searches
         
         new_found = 0
+        has_improvement = false
         for pair in pairs(switch_search_results)
             pair_points_hash, pair_value = pair
             pair_moves, pair_visits, pair_last_visit_step = pair_value
@@ -942,6 +944,7 @@ function run()
                     new_found += 1
 
                     if (pair_score >= curr_score)
+                        has_improvement = true
                         println("  $curr_score => $pair_score")
                     end
                 else
@@ -952,7 +955,7 @@ function run()
         end
 
         # dimitri
-        if new_found > 4 #&& !is_explore
+        if has_improvement#new_found > 4 #&& !is_explore
             t_moves, t_visits, t_step = pool_index[curr_moves_points_hash]
             pool_index[curr_moves_points_hash] = (t_moves, 0, t_step)
         end
@@ -970,9 +973,9 @@ function run()
             println(" --- $(curr_score)")
         end
 
-        if step % 100 == 0
+        if step % 1000 == 0
             
-            max_age = 100
+            max_age = 1000
             before_size = length(pool_index)
             for pair in pairs(pool_index)
                 pair_points_hash, pair_value = pair
