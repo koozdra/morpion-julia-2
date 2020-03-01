@@ -306,6 +306,32 @@ function generate_dna_dict(moves::Array{Move})
     morpion_dna
 end
 
+function eval_dna_exp(board, dna::Array{Int16,1})
+    function dna_move_reducer(a, b)
+        a_val = dna[dna_index(a)]
+        b_val = dna[dna_index(b)]
+        m = a_val == 0 ? rand(-40:0) : a_val
+        n = b_val == 0 ? rand(-40:0) : b_val
+        (m > n) ? a : b
+    end
+
+    eval_possible_move_reducer(board, dna_move_reducer)
+end
+
+function generate_dna_exp(moves)
+    morpion_dna = zeros(Int16, 40 * 40 * 4)
+    i = 0
+    # l = length(moves)
+
+    for move in moves
+        # morpion_dna[dna_index(move)] = l - i + 1
+        morpion_dna[dna_index(move)] = i + 1
+        i += 1
+    end
+
+    morpion_dna
+end
+
 function eval_dna_dict(board, dna)
     curr_possible_moves = initial_moves()
     taken_moves = Move[]
@@ -880,17 +906,21 @@ function modification_dna_search(moves, visits, iterations, board_template)
     results = []
     score = length(moves)
     for i in 1:iterations
-        current_dna = generate_dna(moves)
+        current_dna = generate_dna_exp(moves)
         current_visits = visits + (i - 1)
 
+       
         if div(current_visits, score) % 3 == 0
-            current_dna[dna_index(moves[rand(1:end)])] = -rand()
+            # current_dna[dna_index(moves[rand(1:end)])] = -rand()
+            current_dna[dna_index(moves[rand(1:end)])] = -200
         elseif div(current_visits, score) % 3 == 1
             move_index = current_visits % score + 1
-            current_dna[dna_index(moves[move_index])] = -rand()
+            # current_dna[dna_index(moves[move_index])] = -rand()
+            current_dna[dna_index(moves[move_index])] = -200
         else
             for i in 0:1
-                current_dna[dna_index(moves[rand(1:end)])] = -rand()
+                # current_dna[dna_index(moves[rand(1:end)])] = -rand()
+                current_dna[dna_index(moves[rand(1:end)])] = -200
             end
         end
 
@@ -898,7 +928,8 @@ function modification_dna_search(moves, visits, iterations, board_template)
         # current_dna[dna_index(moves[rand(1:end)])] = -rand()
         # end
 
-        eval_moves = eval_dna(copy(board_template), current_dna)
+        # eval_moves = eval_dna(copy(board_template), current_dna)
+        eval_moves = eval_dna_exp(copy(board_template), current_dna)
 
         push!(results, eval_moves)
     end
@@ -994,8 +1025,9 @@ function run()
 
     iteration = 1
     total_evaluations = 0
+    min_accept_default = 1
 
-    min_accept_offset = 0
+    min_accept_offset = min_accept_default
 
     inactivity_counter = 0
     improvements = 0
@@ -1020,7 +1052,7 @@ function run()
         if improvements >= 20
             improvements = 0
 
-            min_accept_offset = max(min_accept_offset - 1, 0)
+            min_accept_offset = max(min_accept_offset - 1, min_accept_default)
 
             # min_accept_offset = 1
             # end_searched_index = Dict()
@@ -1115,7 +1147,7 @@ function run()
                         max_score = eval_score
                         max_moves = eval_moves
 
-                        min_accept_offset = 0
+                        min_accept_offset = min_accept_default
                         improvements = 0
                     end
                 else
@@ -1178,7 +1210,7 @@ function run()
                                 # println(eval_moves)
                                 max_score = score
                                 max_moves = moves
-                                min_accept_offset = 0
+                                min_accept_offset = min_accept_default
                                 improvements = 0
                             end
 
@@ -2121,7 +2153,5 @@ function run()
     #     end
     # end
 end
-
-run()
 
 run()
