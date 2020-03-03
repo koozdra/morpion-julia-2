@@ -310,8 +310,8 @@ function eval_dna_exp(board, dna::Array{Int16,1})
     function dna_move_reducer(a, b)
         a_val = dna[dna_index(a)]
         b_val = dna[dna_index(b)]
-        m = a_val == 0 ? rand(-40:0) : a_val
-        n = b_val == 0 ? rand(-40:0) : b_val
+        m = a_val == 0 ? rand(-200:0) : a_val
+        n = b_val == 0 ? rand(-200:0) : b_val
         (m > n) ? a : b
     end
 
@@ -1021,7 +1021,7 @@ function run()
 
     trip_time = Dates.now()
 
-    end_search_interval = 200
+    end_search_interval = 100
 
     iteration = 1
     total_evaluations = 0
@@ -1042,14 +1042,14 @@ function run()
             inactivity_counter = 0
             improvements = 0
 
-            # end_searched_index = Dict()
+            end_searched_index = Dict()
 
             println()
             println("dropping: $min_accept_offset")
             println()
         end
 
-        if improvements >= 20
+        if improvements >= 100
             improvements = 0
 
             min_accept_offset = max(min_accept_offset - 1, min_accept_default)
@@ -1113,7 +1113,7 @@ function run()
                     
                     if eval_score >= min_accept_score
                         pool_size = length(pool_keys)
-                        println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size, $inactivity_counter($min_accept_offset, $improvements))")
+                        println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size, ($inactivity_counter, $min_accept_offset, $improvements))")
 
                         push!(pool_keys, eval_moves_hash)
                         pool_index[eval_moves_hash] = (eval_moves, 0)
@@ -1130,6 +1130,10 @@ function run()
 
                     if eval_score > min_accept_score
                         improvements += 1
+                        
+                    end
+
+                    if eval_score >= min_accept_score
                         inactivity_counter = 0
                     end
 
@@ -1217,6 +1221,9 @@ function run()
 
                             if score > min_accept_score
                                 improvements += 1
+                            end
+
+                            if score >= min_accept_score
                                 inactivity_counter = 0
                             end
 
