@@ -908,15 +908,18 @@ function modification_dna_search(moves, visits, iterations, board_template)
     for i in 1:iterations
         current_dna = generate_dna_exp(moves)
         current_visits = visits + (i - 1)
-
-       
-        if div(current_visits, score) % 3 == 0
+        if div(current_visits, score) % 4 == 0
+            for i in 0:2
+                # current_dna[dna_index(moves[rand(1:end)])] = -rand()
+                current_dna[dna_index(moves[rand(1:end)])] = -200
+            end
+        elseif div(current_visits, score) % 4 == 1
             for i in 0:1
                 # current_dna[dna_index(moves[rand(1:end)])] = -rand()
                 current_dna[dna_index(moves[rand(1:end)])] = -200
             end
             
-        elseif div(current_visits, score) % 3 == 1
+        elseif div(current_visits, score) % 4 == 2
             # current_dna[dna_index(moves[rand(1:end)])] = -rand()
             current_dna[dna_index(moves[rand(1:end)])] = -200
             
@@ -1038,7 +1041,7 @@ function run()
 
         # min_accept_offset =  trunc(Int, total_evaluations / 1000000)
 
-        if inactivity_counter > 1000
+        if inactivity_counter > 100000
             
             min_accept_offset += 1
             inactivity_counter = 0
