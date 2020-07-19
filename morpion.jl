@@ -629,17 +629,28 @@ function visit_subject(subject, board_template)
     subject.step += 1
 end
 
+function build_move_position_key(move::Move)
+    start_point(move)
+end
+
+function move_position_hash(moves::Array{Move,1})
+    hash(sort(map(build_move_position_key, moves)))
+end
+
 function build_move_line_key(move::Move)
-    (x, y) = start_point(move)
-    (x, y, move.direction)
+    # (x, y) = start_point(move)
+    # (x, y, move.direction)
+    (move.x,  move.y, move.direction, move.start_offset)
 end
 
 function lines_hash(moves::Array{Move,1})
+    # experimentin' over here, don't sort the lines
     hash(sort(map(build_move_line_key, moves)))
 end
 
 function get_q_key(state::Array{Move}, action::Move)
     lines_hash([state;[action]])
+    # move_position_hash([state;[action]])
 end
 
 function store_q_value(state, action, value, q)
@@ -685,6 +696,13 @@ function select_possible_move_by_policy(q_table, state, possible_moves)
     
 end
 
+function select_possible_move_by_preference(move_preferences, possible_moves)
+    possible_moves[
+        argmax(map(possible_move->haskey(move_preferences, possible_move)
+                ? move_preferences[possible_move]
+                : -rand(1000:100000), possible_moves))]
+end
+
 function select_possible_move_by_policy_e_greedy(q_table, state, possible_moves, epsilon)
     if (rand() < epsilon)
         possible_moves[rand(1:end)]
@@ -707,6 +725,12 @@ end
 function step_randomely_to_end(gym::Gym)
     while length(gym.possible_moves) > 0
         step(gym, select_random_possible_move(gym))
+    end
+end
+
+function step_by_move_preferences_to_end(move_preferences, gym::Gym)
+    while length(gym.possible_moves) > 0
+        step(gym, select_possible_move_by_preference(move_preferences, gym.possible_moves))
     end
 end
 
@@ -989,295 +1013,498 @@ function new_end_search(moves, min_accept_score, board_template, iterations, max
     index
 end
 
+function step_all_q_table_and_update(board_template, learning_rate, discount, q_table, epsilon, iteration_number)
+    gym = new_gym(board_template)
+
+    while !isempty(gym.possible_moves)
+
+        is_explore = rand() < epsilon
+        # is_explore = length(gym.taken_moves) % iteration_number == 0
+
+        state = gym.taken_moves
+        action = if (is_explore) 
+            # println("explore $(length(gym.taken_moves)) $(iteration_number)")
+            select_random_possible_move(gym)
+        else
+            select_possible_move_by_policy(q_table, gym.taken_moves, gym.possible_moves)
+        end
+        
+        current_q_key = get_q_key(state, action)
+        current_q_value = get_q_value(q_table, current_q_key)
+
+        step(gym, action)
+
+        next_state = gym.taken_moves
+        reward = 1
+        if length(gym.possible_moves) > 0
+            max_next_q_value = max_q_value_for_state(q_table, gym.taken_moves, gym.possible_moves)
+
+            new_q_value = current_q_value + learning_rate * ((reward + discount * max_next_q_value) - current_q_value)
+
+            # println("$current_q_value $max_next_q_value $reward $new_q_value")
+
+            q_table[current_q_key] = new_q_value
+        end
+    end
+
+    gym
+end
+
+function update_q_table(board_template, learning_rate, discount, q_table, gym)
+    eval_gym = new_gym(board_template)
+    # reward = length(gym.taken_moves)
+    move_index = 1
+    for move in gym.taken_moves
+
+        reward = move_index
+        state = eval_gym.taken_moves
+        action = move
+        current_q_key = get_q_key(state, action)
+        current_q_value = get_q_value(q_table, current_q_key)
+        step(eval_gym, move);
+        next_state = eval_gym.taken_moves
+
+        if length(eval_gym.possible_moves) > 0
+            max_next_q_value = max_q_value_for_state(q_table, eval_gym.taken_moves, eval_gym.possible_moves)
+
+            new_q_value = current_q_value + learning_rate * ((reward + discount * max_next_q_value) - current_q_value)
+
+            # println("$current_q_value $max_next_q_value $reward $new_q_value")
+
+            q_table[current_q_key] = new_q_value
+        end
+
+        move_index += 1
+    end
+end
+
+function possible_move_preference_search(board_template, gym)
+
+
+    move_preferences = Dict{Move,Integer}()
+    i = 0
+    score = length(gym.taken_moves)
+    for taken_move in gym.taken_moves
+        move_preferences[taken_move] = score - i
+        i += 1
+    end
+
+    search_max_score = 0
+    search_max_gym = gym
+
+    # println(move_preferences)
+
+    for taken_move in gym.taken_moves
+        eval_gym = new_gym(board_template)
+
+        # println()
+        # println("taken_move: $taken_move")
+        for possible_move in eval_gym.possible_moves
+            # println("possible_move: $possible_move")
+            # if haskey(move_preferences, possible_move)
+            #     println(move_preferences[possible_move])
+            # end
+            if (taken_move != possible_move)
+                inner_eval_gym = copy(eval_gym)
+                eval_move_preferences = copy(move_preferences)
+
+                eval_move_preferences[taken_move] = -1000
+                eval_move_preferences[possible_move] = 1000
+
+                step_by_move_preferences_to_end(eval_move_preferences, inner_eval_gym)
+
+                eval_score = length(inner_eval_gym.taken_moves)
+
+                # search_max_score = max(search_max_score, eval_score)
+                # println("eval_score: $eval_score")
+
+                # readline()
+                if (eval_score > search_max_score)
+                    search_max_score = eval_score
+                    search_max_gym = inner_eval_gym
+                end
+            end
+        end
+    end
+
+
+    search_max_gym
+end
+
+function modify_dna(moves, dna)
+
+    for i in rand(2:3)
+        move = moves[rand(1:end)]
+        move_index = dna_index(move)
+        eval_index = rand(1:(length(dna)))
+
+        temp = dna[eval_index]
+        dna[eval_index] = dna[move_index]
+        dna[move_index] = temp
+    end
+
+
+    dna
+end
+
 function run() 
     board_template = generate_initial_board()
 
+    # dimitri
 
-    # for i in 1:10
-
-    #     start_moves = Move[Move(2, 0, 1, 0), Move(9, 2, 3, 0), Move(0, 2, 3, 0), Move(10, 3, 1, -4), Move(6, 4, 3, -4), Move(2, 2, 0, -2), Move(8, 5, 0, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(4, 6, 1, -4), Move(2, 4, 2, -2), Move(2, 5, 3, -3), Move(6, 5, 3, -1), Move(5, 6, 1, 0), Move(7, 4, 0, -2), Move(5, 2, 2, 0), Move(4, 2, 1, -2), Move(4, 3, 0, -2), Move(5, 3, 1, -3), Move(7, 5, 2, -3), Move(1, 5, 0, -1), Move(4, 5, 1, -4), Move(4, 4, 3, -2), Move(5, 4, 1, -2), Move(5, 1, 3, -1), Move(5, 5, 1, -1), Move(8, 2, 0, -4), Move(7, 1, 0, -4), Move(4, 1, 1, -1), Move(10, 4, 2, -4), Move(7, 7, 0, -1), Move(1, 2, 2, 0), Move(1, 4, 0, -1), Move(1, 7, 3, -4), Move(-1, 2, 2, 0), Move(-1, 4, 1, 0), Move(-2, 2, 1, 0), Move(-1, 3, 2, -1), Move(-2, 3, 1, 0), Move(2, 7, 2, -4), Move(2, 1, 0, -3), Move(1, 0, 2, 0), Move(1, 1, 2, 0), Move(3, -1, 0, -4), Move(2, -2, 2, 0), Move(2, -1, 3, -1), Move(1, -2, 2, 0), Move(1, -1, 3, -1), Move(0, 1, 0, -2), Move(-1, 1, 1, 0), Move(-1, 0, 3, 0), Move(0, 0, 0, -2), Move(-2, 0, 1, 0), Move(0, -2, 2, 0), Move(0, -1, 3, -1), Move(4, -1, 1, -4), Move(4, -2, 3, 0), Move(3, -2, 1, -3), Move(3, -3, 3, 0), Move(2, -3, 2, 0), Move(-2, 1, 0, 0), Move(-2, -1, 3, 0), Move(-3, -2, 2, 0), Move(2, 9, 1, 0), Move(7, 2, 3, -1), Move(10, 5, 2, -4), Move(10, 2, 1, -4), Move(10, 6, 3, -4), Move(8, 4, 2, -2), Move(5, 7, 0, 0), Move(5, 8, 3, -4), Move(11, 4, 1, -4), Move(4, 7, 1, -3), Move(8, 7, 3, -4), Move(7, 8, 0, 0), Move(9, 8, 2, -4), Move(8, 8, 1, -3), Move(9, 7, 1, -4), Move(9, 9, 2, -4), Move(8, 1, 0, -4), Move(12, 5, 2, -4), Move(11, 5, 1, -3), Move(9, 10, 3, -4), Move(8, 9, 2, -3), Move(1, 10, 0, 0), Move(7, 9, 3, -4), Move(6, 10, 0, 0), Move(4, 8, 2, -2), Move(8, 10, 2, -4), Move(4, 10, 3, -4), Move(2, 8, 2, -2), Move(10, 9, 1, -4), Move(8, 11, 3, -4), Move(1, 8, 1, 0), Move(0, 9, 0, 0), Move(2, 10, 3, -4), Move(1, 11, 0, 0), Move(1, 9, 3, -2), Move(0, 10, 0, 0), Move(3, 10, 1, -3), Move(2, 11, 0, 0), Move(7, 10, 2, -3), Move(5, 10, 1, -1), Move(6, 11, 2, -4), Move(5, 12, 0, 0), Move(5, 11, 3, -3), Move(6, 12, 3, -4), Move(4, 11, 2, -3), Move(3, 12, 0, 0), Move(4, 13, 2, -4), Move(3, 11, 1, -2), Move(2, 12, 0, 0), Move(3, 13, 3, -4), Move(-1, 9, 2, 0), Move(0, 8, 0, -1), Move(4, 12, 2, -4), Move(2, 14, 0, 0), Move(2, 13, 3, -3), Move(0, 7, 3, -1), Move(-2, 9, 1, 0), Move(-1, 8, 0, -1), Move(4, 14, 3, -4), Move(7, 12, 1, -4), Move(6, 13, 0, 0), Move(5, 13, 1, -3), Move(7, 11, 0, -2), Move(9, 11, 1, -4), Move(7, 13, 3, -4), Move(8, 14, 2, -4)]
-
-    #     result = new_end_search(start_moves, length(start_moves) - 6, board_template, 1)
-        
-    #     println(length(result))
-    # end
-
-    # readline()
+    dna = rand(40 * 40 * 4)
+    moves = eval_dna(copy(board_template), dna)
     
-    
-    gym = new_gym(board_template)
-    step_randomely_to_end(gym)
-
-    pool_index = Dict()
-
-    for i in 1:100
-        start_searchy = (gym.taken_moves, 0)
-        start_searchy_hash = points_hash(gym.taken_moves)
-        pool_index[start_searchy_hash] = start_searchy
-    end
-
-    pool_keys = collect(keys(pool_index))
-
-    end_searched_index = Dict()
-
-    max_score = length(gym.taken_moves)
-    max_moves = 0
-    pool_score = max_score
+    iteration = 0
 
     trip_time = Dates.now()
 
-    end_search_interval = 100
+    while(true)
+        modified_dna = modify_dna(moves, copy(dna))
+        eval_moves = eval_dna(copy(board_template), modified_dna)
+        eval_score = length(eval_moves)
 
-    iteration = 1
-    total_evaluations = 0
-    min_accept_default = 1
-
-    min_accept_offset = min_accept_default
-
-    inactivity_counter = 0
-    improvements = 0
-
-    while true
-
-        # min_accept_offset =  trunc(Int, total_evaluations / 1000000)
-
-        if inactivity_counter > 100000
-            
-            min_accept_offset += 1
-            inactivity_counter = 0
-            improvements = 0
-
-            end_searched_index = Dict()
-
-            println()
-            println("dropping: $min_accept_offset")
-            println()
+        if(length(eval_moves) > length(moves))
+            println("$iteration. $eval_score")
         end
 
-        if improvements >= 100
-            improvements = 0
-
-            min_accept_offset = max(min_accept_offset - 1, min_accept_default)
-
-            # min_accept_offset = 1
-            # end_searched_index = Dict()
-            # println("reseting end_search_index")
-
-            println()
-            println("rising: $min_accept_offset")
-            println()
+        if(length(eval_moves) >= length(moves))
+            moves = eval_moves
+            dna = modified_dna
         end
+    
 
-        min_accept_score = max_score - min_accept_offset
-        
-        current_index = (iteration % length(pool_keys)) + 1
-        current_pool_key = pool_keys[current_index]
-
-        (current_moves, current_visits) = pool_index[current_pool_key]
-        current_score = length(current_moves)
-
-        if current_score < min_accept_score
-            deleteat!(pool_keys, current_index)
-            delete!(pool_index, current_pool_key)
-            # println(" - $current_score")
-            
-        else
-            times = (min_accept_offset - (max_score - current_score)) + 1
-            # times = times * times
-            # times = times * 100
-            # times = [1, 6][times]
-            # times = [1, 1, 1, 1, 2][times]
-
-            # times = 1
-            # if current_score == max_score
-            #     times = 3
-            # end
-            # if current_score == max_score - 1
-            #     times = 2
-            # end
-
-            # times = [1, 1, 1, 1, 1, 1, 1, 10, 20, 50, 100][times]
-            # n = 2
-            # times = times * 2
-            # times =
-
-            modification_search_results = modification_dna_search(current_moves, current_visits, times, board_template)
-            num_visits = times
-
-            total_evaluations += num_visits
-
-            for eval_moves in modification_search_results
-
-                eval_score = length(eval_moves)
-                eval_moves_hash = points_hash(eval_moves)
-                is_new = !haskey(pool_index, eval_moves_hash)
-
-                if is_new
-                    
-                    
-                    
-                    if eval_score >= min_accept_score
-                        pool_size = length(pool_keys)
-                        println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size, ($inactivity_counter, $min_accept_offset, $improvements))")
-
-                        push!(pool_keys, eval_moves_hash)
-                        pool_index[eval_moves_hash] = (eval_moves, 0)
-
-                        # min_accept_offset = max(min(max_score - eval_score, min_accept_offset), 0)
-
-                        # min_accept_offset += eval_score - min_accept_score
-
-                        # pool_moves, pool_visits = pool_index[current_pool_key]
-                        # pool_index[current_pool_key] = (current_moves, 0)
-
-                        
-                    end
-
-                    if eval_score > min_accept_score
-                        improvements += 1
-                        
-                    end
-
-                    if eval_score >= min_accept_score
-                        inactivity_counter = 0
-                    end
-
-                    # if eval_score > current_score
-                    #     pool_size = length(pool_keys)
-                    #     println("$total_evaluations. $current_score ($current_visits) => $eval_score ($max_score, $pool_size)")
-                    # elseif eval_score >= current_score
-                    #     pool_size = length(pool_keys)
-                    #     println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size)")
-                    # end
-
-                    if eval_score > max_score
-                        println("$total_evaluations. $current_score ($current_visits) ==> $eval_score")
-                        # println(eval_moves)
-                        max_score = eval_score
-                        max_moves = eval_moves
-
-                        min_accept_offset = min_accept_default
-                        improvements = 0
-                    end
-                else
-                    pool_moves, pool_visits = pool_index[eval_moves_hash]
-                    pool_index[eval_moves_hash] = (eval_moves, pool_visits)
-                end
-
-            end
-
-            (pool_moves, pool_visits) = pool_index[current_pool_key]
-            pool_index[current_pool_key] = (pool_moves, pool_visits + num_visits)
-
-            # if !haskey(end_searched_index, current_pool_key) && current_score >= 100 && iteration % 200 == 0
-
-            if max_score >= 100 && iteration % end_search_interval == 0
-                
-                pool_key_value_pairs = collect(pool_index)
-                endy_moves = []
-                # (endy_key, (endy_moves, endy_visits)) =  pool_key_value_pairs[1]
-                # endy_score = length(endy_moves)
-                endy_score = 0
-                endy_visits = 9999999
-                endy_key = 0
-
-                for (key, (moves, visits)) in pool_key_value_pairs
-                    score = length(moves)
-
-                    if !haskey(end_searched_index, key)
+        # println(length(moves))
+        # println(length(eval_moves))
 
 
-                        if (score == endy_score && visits <= endy_visits) ||
-                            score > endy_score
-                        
-                            endy_moves = moves
-                            endy_visits = visits
-                            endy_score = score
-                            endy_key = key
-                        end
-                    end
+        iteration += 1
 
-                end
-
-                if endy_score >= min_accept_score
-                    
-                    result = new_end_search(endy_moves, min_accept_score, board_template, 10, 200)
-
-                    println(" ES:: $endy_score (found: $(length(result))) ")
-
-                    for (pair_hash, pair_value) in collect(result)
-                        if !haskey(pool_index, pair_hash)
-                            push!(pool_keys, pair_hash)
-                            pool_index[pair_hash] = pair_value
-
-                            (moves, visits) = pair_value
-
-                            score = length(moves)
-
-                            if score > max_score
-                                println("$total_evaluations. $endy_score ($endy_visits) ==> $score")
-                                # println(eval_moves)
-                                max_score = score
-                                max_moves = moves
-                                min_accept_offset = min_accept_default
-                                improvements = 0
-                            end
-
-
-                            if score > min_accept_score
-                                improvements += 1
-                            end
-
-                            if score >= min_accept_score
-                                inactivity_counter = 0
-                            end
-
-                            println(" es. $endy_score -> $(length(moves))")
-
-                            # pool_moves, pool_visits = pool_index[current_pool_key]
-                            # pool_index[current_pool_key] = (current_moves, 0)
-                            
-                            
-                        end
-
-                        end_searched_index[pair_hash] = true
-                    end
-
-                    
-
-                    end_searched_index[endy_key] = true
-                end
-            end
-
-            # if iteration % 1000000 == 0
-            #     min_accept_offset = max(min_accept_offset - 1, 0)
-
-            #     # min_accept_offset = 0
-            #     println()
-            #     println("rising: $min_accept_offset")
-            #     println()
-            # end
-
-            # if iteration % 1000000 == 0
-            #     min_accept_offset = max(min_accept_offset - 1, 0)
-
-            #     # min_accept_offset = 1
-            #     end_searched_index = Dict()
-            #     println("reseting end_search_index")
-            # end
-
-
-            iteration += 1
-            inactivity_counter += 1
-
-            if iteration % 1000000 == 0
-                println(max_score)
-                println(max_moves)
-            end
-
+        if iteration % 10000 == 0
+            current_time = Dates.now()
+            println("$iteration. $(length(moves)) $(current_time - trip_time)")
+            trip_time = Dates.now()
         end
 
     end
+
+    # gym = new_gym(board_template)
+    # step_randomely_to_end(gym)
+    
+    # for i in 1:100000
+
+        
+    #     search_gym = possible_move_preference_search(board_template, gym)
+
+    #     current_score = length(gym.taken_moves)
+    #     search_score = length(search_gym.taken_moves)
+
+    #     println("$i $current_score -> $search_score")
+
+    #     gym = search_gym
+    # end
+
+
+    # discount = 1
+    # learning_rate = 1
+    # epsilon = 0.01
+    # q_table = Dict{UInt64,Float64}()
+    # max_score = 0
+    # running = 0
+
+    # for i in 1:10000000
+    #     gym = step_all_q_table_and_update(board_template, learning_rate, discount, q_table, epsilon, i)
+    #     # update_q_table(board_template, learning_rate, discount, q_table, gym)
+    #     score = length(gym.taken_moves)
+    #     max_score = max(max_score, score)
+
+    #     # running = running + 0.1 * (score - running)
+
+    #     println("$i. $score $max_score")
+    # end
+
+    # # println()
+    # # println(q_table)
+
+    
+
+    
+
+    # readline()
+    
+    # gym = new_gym(board_template)
+    # step_randomely_to_end(gym)
+
+    # pool_index = Dict()
+
+    # for i in 1:100
+    #     start_searchy = (gym.taken_moves, 0)
+    #     start_searchy_hash = points_hash(gym.taken_moves)
+    #     pool_index[start_searchy_hash] = start_searchy
+    # end
+
+    # pool_keys = collect(keys(pool_index))
+
+    # end_searched_index = Dict()
+
+    # max_score = length(gym.taken_moves)
+    # max_moves = 0
+    # pool_score = max_score
+
+    # trip_time = Dates.now()
+
+    # end_search_interval = 100
+
+    # iteration = 1
+    # total_evaluations = 0
+    # min_accept_default = 1
+
+    # min_accept_offset = min_accept_default
+
+    # inactivity_counter = 0
+    # improvements = 0
+
+    # while true
+
+    #     # min_accept_offset =  trunc(Int, total_evaluations / 1000000)
+
+    #     if inactivity_counter > 100000
+            
+    #         min_accept_offset += 1
+    #         inactivity_counter = 0
+    #         improvements = 0
+
+    #         end_searched_index = Dict()
+
+    #         println()
+    #         println("dropping: $min_accept_offset")
+    #         println()
+    #     end
+
+    #     if improvements >= 100
+    #         improvements = 0
+
+    #         min_accept_offset = max(min_accept_offset - 1, min_accept_default)
+
+    #         # min_accept_offset = 1
+    #         # end_searched_index = Dict()
+    #         # println("reseting end_search_index")
+
+    #         println()
+    #         println("rising: $min_accept_offset")
+    #         println()
+    #     end
+
+    #     min_accept_score = max_score - min_accept_offset
+        
+    #     current_index = (iteration % length(pool_keys)) + 1
+    #     current_pool_key = pool_keys[current_index]
+
+    #     (current_moves, current_visits) = pool_index[current_pool_key]
+    #     current_score = length(current_moves)
+
+    #     if current_score < min_accept_score
+    #         deleteat!(pool_keys, current_index)
+    #         delete!(pool_index, current_pool_key)
+    #         # println(" - $current_score")
+            
+    #     else
+    #         times = (min_accept_offset - (max_score - current_score)) + 1
+    #         # times = times * times
+    #         # times = times * 100
+    #         # times = [1, 6][times]
+    #         # times = [1, 1, 1, 1, 2][times]
+
+    #         # times = 1
+    #         # if current_score == max_score
+    #         #     times = 3
+    #         # end
+    #         # if current_score == max_score - 1
+    #         #     times = 2
+    #         # end
+
+    #         # times = [1, 1, 1, 1, 1, 1, 1, 10, 20, 50, 100][times]
+    #         # n = 2
+    #         # times = times * 2
+    #         # times =
+
+    #         modification_search_results = modification_dna_search(current_moves, current_visits, times, board_template)
+    #         num_visits = times
+
+    #         total_evaluations += num_visits
+
+    #         for eval_moves in modification_search_results
+
+    #             eval_score = length(eval_moves)
+    #             eval_moves_hash = points_hash(eval_moves)
+    #             is_new = !haskey(pool_index, eval_moves_hash)
+
+    #             if is_new
+                    
+                    
+                    
+    #                 if eval_score >= min_accept_score
+    #                     pool_size = length(pool_keys)
+    #                     println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size, ($inactivity_counter, $min_accept_offset, $improvements))")
+
+    #                     push!(pool_keys, eval_moves_hash)
+    #                     pool_index[eval_moves_hash] = (eval_moves, 0)
+
+    #                     # min_accept_offset = max(min(max_score - eval_score, min_accept_offset), 0)
+
+    #                     # min_accept_offset += eval_score - min_accept_score
+
+    #                     # pool_moves, pool_visits = pool_index[current_pool_key]
+    #                     # pool_index[current_pool_key] = (current_moves, 0)
+
+                        
+    #                 end
+
+    #                 if eval_score > min_accept_score
+    #                     improvements += 1
+                        
+    #                 end
+
+    #                 if eval_score >= min_accept_score
+    #                     inactivity_counter = 0
+    #                 end
+
+    #                 # if eval_score > current_score
+    #                 #     pool_size = length(pool_keys)
+    #                 #     println("$total_evaluations. $current_score ($current_visits) => $eval_score ($max_score, $pool_size)")
+    #                 # elseif eval_score >= current_score
+    #                 #     pool_size = length(pool_keys)
+    #                 #     println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size)")
+    #                 # end
+
+    #                 if eval_score > max_score
+    #                     println("$total_evaluations. $current_score ($current_visits) ==> $eval_score")
+    #                     # println(eval_moves)
+    #                     max_score = eval_score
+    #                     max_moves = eval_moves
+
+    #                     min_accept_offset = min_accept_default
+    #                     improvements = 0
+    #                 end
+    #             else
+    #                 pool_moves, pool_visits = pool_index[eval_moves_hash]
+    #                 pool_index[eval_moves_hash] = (eval_moves, pool_visits)
+    #             end
+
+    #         end
+
+    #         (pool_moves, pool_visits) = pool_index[current_pool_key]
+    #         pool_index[current_pool_key] = (pool_moves, pool_visits + num_visits)
+
+    #         # if !haskey(end_searched_index, current_pool_key) && current_score >= 100 && iteration % 200 == 0
+
+    #         if max_score >= 100 && iteration % end_search_interval == 0
+                
+    #             pool_key_value_pairs = collect(pool_index)
+    #             endy_moves = []
+    #             # (endy_key, (endy_moves, endy_visits)) =  pool_key_value_pairs[1]
+    #             # endy_score = length(endy_moves)
+    #             endy_score = 0
+    #             endy_visits = 9999999
+    #             endy_key = 0
+
+    #             for (key, (moves, visits)) in pool_key_value_pairs
+    #                 score = length(moves)
+
+    #                 if !haskey(end_searched_index, key)
+
+
+    #                     if (score == endy_score && visits <= endy_visits) ||
+    #                         score > endy_score
+                        
+    #                         endy_moves = moves
+    #                         endy_visits = visits
+    #                         endy_score = score
+    #                         endy_key = key
+    #                     end
+    #                 end
+
+    #             end
+
+    #             if endy_score >= min_accept_score
+                    
+    #                 result = new_end_search(endy_moves, min_accept_score, board_template, 10, 200)
+
+    #                 println(" ES:: $endy_score (found: $(length(result))) ")
+
+    #                 for (pair_hash, pair_value) in collect(result)
+    #                     if !haskey(pool_index, pair_hash)
+    #                         push!(pool_keys, pair_hash)
+    #                         pool_index[pair_hash] = pair_value
+
+    #                         (moves, visits) = pair_value
+
+    #                         score = length(moves)
+
+    #                         if score > max_score
+    #                             println("$total_evaluations. $endy_score ($endy_visits) ==> $score")
+    #                             # println(eval_moves)
+    #                             max_score = score
+    #                             max_moves = moves
+    #                             min_accept_offset = min_accept_default
+    #                             improvements = 0
+    #                         end
+
+
+    #                         if score > min_accept_score
+    #                             improvements += 1
+    #                         end
+
+    #                         if score >= min_accept_score
+    #                             inactivity_counter = 0
+    #                         end
+
+    #                         println(" es. $endy_score -> $(length(moves))")
+
+    #                         # pool_moves, pool_visits = pool_index[current_pool_key]
+    #                         # pool_index[current_pool_key] = (current_moves, 0)
+                            
+                            
+    #                     end
+
+    #                     end_searched_index[pair_hash] = true
+    #                 end
+
+                    
+
+    #                 end_searched_index[endy_key] = true
+    #             end
+    #         end
+
+    #         # if iteration % 1000000 == 0
+    #         #     min_accept_offset = max(min_accept_offset - 1, 0)
+
+    #         #     # min_accept_offset = 0
+    #         #     println()
+    #         #     println("rising: $min_accept_offset")
+    #         #     println()
+    #         # end
+
+    #         # if iteration % 1000000 == 0
+    #         #     min_accept_offset = max(min_accept_offset - 1, 0)
+
+    #         #     # min_accept_offset = 1
+    #         #     end_searched_index = Dict()
+    #         #     println("reseting end_search_index")
+    #         # end
+
+
+    #         iteration += 1
+    #         inactivity_counter += 1
+
+    #         if iteration % 1000000 == 0
+    #             println(max_score)
+    #             println(max_moves)
+    #         end
+
+    #     end
+
+    # end
 
     # for iteration in 1:100000000
 
@@ -1462,8 +1689,7 @@ function run()
     #     iteration += 1
     # end
     
-    
-    # dimitri
+
 
     
     # current_moves = random_completion(copy(board_template))
