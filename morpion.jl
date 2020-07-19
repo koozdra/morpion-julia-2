@@ -1131,9 +1131,36 @@ function possible_move_preference_search(board_template, gym)
     search_max_gym
 end
 
+function generate_modifications(moves, dna)
+    modifications = []
+
+    for i in 1:3
+        move = moves[rand(1:end)]
+        move_index = dna_index(move)
+        eval_index = rand(1:(length(dna)))
+
+        push!(modifications, (move_index, eval_index))
+    end
+
+    modifications
+end
+
+function run_modifications(modifications, dna)
+    for modification in modifications
+        (move_index, eval_index) = modification
+        temp = dna[eval_index]
+        dna[eval_index] = dna[move_index]
+        dna[move_index] = temp
+    end
+end
+
+function undo_modifications(modifications, dna)
+    run_modifications(reverse(modifications), dna)
+end
+
 function modify_dna(moves, dna)
 
-    for i in rand(2:3)
+    for i in 1:3
         move = moves[rand(1:end)]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
@@ -1142,7 +1169,6 @@ function modify_dna(moves, dna)
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
     end
-
 
     dna
 end
@@ -1160,8 +1186,13 @@ function run()
     trip_time = Dates.now()
 
     while(true)
-        modified_dna = modify_dna(moves, copy(dna))
-        eval_moves = eval_dna(copy(board_template), modified_dna)
+        modifications = generate_modifications(moves, dna)
+
+        # println(modifications)
+        # readline()
+        # modified_dna = modify_dna(moves, copy(dna))
+        run_modifications(modifications, dna)
+        eval_moves = eval_dna(copy(board_template), dna)
         eval_score = length(eval_moves)
 
         if(length(eval_moves) > length(moves))
@@ -1170,7 +1201,8 @@ function run()
 
         if(length(eval_moves) >= length(moves))
             moves = eval_moves
-            dna = modified_dna
+        else
+            undo_modifications(modifications, dna)
         end
     
 
