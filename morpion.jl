@@ -1185,9 +1185,12 @@ function run()
 
     trip_time = Dates.now()
 
-    pool_index = Dict()
-    
+    pool_index = Dict(points_hash(moves) => true)
+    pool = [dna]
+
     while(true)
+
+        dna = pool[(iteration % length(pool)) + 1]
         modifications = generate_modifications(moves, dna)
 
         run_modifications(modifications, dna)
@@ -1195,7 +1198,8 @@ function run()
         eval_score = length(eval_moves)
 
         if(length(eval_moves) > length(moves))
-            println("$iteration. $eval_score")
+            println("$iteration. ** $eval_score **")
+            pool = []
         end
 
         if(length(eval_moves) >= length(moves))
@@ -1205,6 +1209,7 @@ function run()
 
             if is_new
                 pool_index[eval_moves_hash] = true
+                push!(pool, dna)
                 println("$iteration. $(length(moves))")
             end
         else
