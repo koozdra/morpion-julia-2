@@ -1160,7 +1160,7 @@ end
 
 function modify_dna(moves, dna)
 
-    for i in 1:3
+    for i in 1:2
         move = moves[rand(1:end)]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
@@ -1185,12 +1185,11 @@ function run()
 
     trip_time = Dates.now()
 
+    pool_index = Dict()
+    
     while(true)
         modifications = generate_modifications(moves, dna)
 
-        # println(modifications)
-        # readline()
-        # modified_dna = modify_dna(moves, copy(dna))
         run_modifications(modifications, dna)
         eval_moves = eval_dna(copy(board_template), dna)
         eval_score = length(eval_moves)
@@ -1201,6 +1200,13 @@ function run()
 
         if(length(eval_moves) >= length(moves))
             moves = eval_moves
+            eval_moves_hash = points_hash(eval_moves)
+            is_new = !haskey(pool_index, eval_moves_hash)
+
+            if is_new
+                pool_index[eval_moves_hash] = true
+                println("$iteration. $(length(moves))")
+            end
         else
             undo_modifications(modifications, dna)
         end
