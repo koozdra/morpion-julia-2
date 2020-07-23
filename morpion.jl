@@ -1187,6 +1187,7 @@ function run()
 
     pool_index = Dict(points_hash(moves) => true)
     pool = [dna]
+    max_score = length(moves)
 
     while(true)
 
@@ -1197,20 +1198,20 @@ function run()
         eval_moves = eval_dna(copy(board_template), dna)
         eval_score = length(eval_moves)
 
-        if(length(eval_moves) > length(moves))
-            println("$iteration. ** $eval_score **")
+        if(eval_score > max_score)
+            println("$iteration. ** $max_score **")
+            max_score = eval_score
             pool = []
         end
 
-        if(length(eval_moves) >= length(moves))
-            moves = eval_moves
+        if(eval_score >= (max_score - 1))
             eval_moves_hash = points_hash(eval_moves)
             is_new = !haskey(pool_index, eval_moves_hash)
 
             if is_new
                 pool_index[eval_moves_hash] = true
                 push!(pool, dna)
-                println("$iteration. $(length(moves))")
+                println("$iteration. $(eval_score)")
             end
         else
             undo_modifications(modifications, dna)
@@ -1225,7 +1226,7 @@ function run()
 
         if iteration % 10000 == 0
             current_time = Dates.now()
-            println("$iteration. $(length(moves)) $(current_time - trip_time)")
+            println("$iteration. $(max_score) $(current_time - trip_time) pool: $(length(pool))")
             trip_time = Dates.now()
         end
 
