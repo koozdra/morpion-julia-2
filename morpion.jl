@@ -1146,12 +1146,14 @@ function generate_modifications(moves, dna)
 end
 
 function run_modifications(modifications, dna)
+    copy_dna = copy(dna)
     for modification in modifications
         (move_index, eval_index) = modification
-        temp = dna[eval_index]
-        dna[eval_index] = dna[move_index]
-        dna[move_index] = temp
+        temp = copy_dna[eval_index]
+        copy_dna[eval_index] = copy_dna[move_index]
+        copy_dna[move_index] = temp
     end
+    copy_dna
 end
 
 function undo_modifications(modifications, dna)
@@ -1173,6 +1175,13 @@ function modify_dna(moves, dna)
     dna
 end
 
+function build_pool_from_pool_index(pool_index)
+    map(function(value) 
+        (score, dna) = value
+        dna
+    end, collect(values(pool_index)))
+end
+
 function run() 
     board_template = generate_initial_board()
 
@@ -1180,43 +1189,45 @@ function run()
 
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
-    
+    max_score = length(moves)
     iteration = 0
 
     trip_time = Dates.now()
 
-    pool_index = Dict(points_hash(moves) => true)
-    pool = [dna]
-    max_score = length(moves)
+    pool_index = Dict(points_hash(moves) => (max_score, dna))
+    # pool = build_pool_from_pool_index(pool_index)
+    
 
     while(true)
 
-        dna = pool[(iteration % length(pool)) + 1]
+        (dna_score, dna) = collect(values(pool_index))[(iteration % length(pool_index)) + 1]
         modifications = generate_modifications(moves, dna)
 
-        run_modifications(modifications, dna)
-        eval_moves = eval_dna(copy(board_template), dna)
+        subject_dna = run_modifications(modifications, dna)
+        eval_moves = eval_dna(copy(board_template), subject_dna)
+        # undo_modifications(modifications, dna)
+
         eval_score = length(eval_moves)
 
-        if(eval_score > max_score)
-            println("$iteration. ** $max_score **")
-            max_score = eval_score
-            pool = []
-        end
 
-        if(eval_score >= (max_score - 1))
+        if(eval_score > max_score)
+            
+            max_score = eval_score
+            println("$iteration. ** $max_score **")
+            pool_index = Dict(points_hash(moves) => (max_score, subject_dna))
+        
+        elseif(eval_score >= (max_score - 1))
+            
             eval_moves_hash = points_hash(eval_moves)
             is_new = !haskey(pool_index, eval_moves_hash)
+            
+
+            pool_index[eval_moves_hash] = (eval_score, subject_dna)
 
             if is_new
-                pool_index[eval_moves_hash] = true
-                push!(pool, dna)
                 println("$iteration. $(eval_score)")
             end
-        else
-            undo_modifications(modifications, dna)
         end
-    
 
         # println(length(moves))
         # println(length(eval_moves))
@@ -1226,8 +1237,14 @@ function run()
 
         if iteration % 10000 == 0
             current_time = Dates.now()
-            println("$iteration. $(max_score) $(current_time - trip_time) pool: $(length(pool))")
+            println("$iteration. $(max_score) $(current_time - trip_time) pool_index: $(length(pool_index))")
             trip_time = Dates.now()
+
+
+            map(function(value) 
+                (score, dna) = value
+                println(score, "  ", length(eval_dna(copy(board_template), dna)))
+            end, collect(values(pool_index)))
         end
 
     end
