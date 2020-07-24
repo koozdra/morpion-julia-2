@@ -1185,49 +1185,27 @@ end
 function run() 
     board_template = generate_initial_board()
 
-    # dimitri
-
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
-    max_score = length(moves)
+    
     iteration = 0
 
     trip_time = Dates.now()
 
-    pool_index = Dict(points_hash(moves) => (max_score, dna))
-    # pool = build_pool_from_pool_index(pool_index)
-    
-
     while(true)
-
-        (dna_score, dna) = collect(values(pool_index))[(iteration % length(pool_index)) + 1]
-        modifications = generate_modifications(moves, dna)
-
-        subject_dna = run_modifications(modifications, dna)
-        eval_moves = eval_dna(copy(board_template), subject_dna)
-        # undo_modifications(modifications, dna)
-
+        modified_dna = modify_dna(moves, copy(dna))
+        eval_moves = eval_dna(copy(board_template), modified_dna)
         eval_score = length(eval_moves)
 
-
-        if(eval_score > max_score)
-            
-            max_score = eval_score
-            println("$iteration. ** $max_score **")
-            pool_index = Dict(points_hash(moves) => (max_score, subject_dna))
-        
-        elseif(eval_score >= (max_score - 1))
-            
-            eval_moves_hash = points_hash(eval_moves)
-            is_new = !haskey(pool_index, eval_moves_hash)
-            
-
-            pool_index[eval_moves_hash] = (eval_score, subject_dna)
-
-            if is_new
-                println("$iteration. $(eval_score)")
-            end
+        if(length(eval_moves) > length(moves))
+            println("$iteration. $eval_score")
         end
+
+        if(length(eval_moves) >= length(moves))
+            moves = eval_moves
+            dna = modified_dna
+        end
+    
 
         # println(length(moves))
         # println(length(eval_moves))
@@ -1237,14 +1215,8 @@ function run()
 
         if iteration % 10000 == 0
             current_time = Dates.now()
-            println("$iteration. $(max_score) $(current_time - trip_time) pool_index: $(length(pool_index))")
+            println("$iteration. $(length(moves)) $(current_time - trip_time)")
             trip_time = Dates.now()
-
-
-            map(function(value) 
-                (score, dna) = value
-                println(score, "  ", length(eval_dna(copy(board_template), dna)))
-            end, collect(values(pool_index)))
         end
 
     end
