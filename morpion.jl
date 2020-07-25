@@ -1194,14 +1194,17 @@ function run()
     iteration = 0
     evaluation_count = 0
 
-    focus = 0
-    focus_period = 30000
+    focus = 0.5
+    current_min_accept_score = 0
+
+    focus_period = 100000
     focus_increment = 1 / focus_period
 
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (0, dna, moves))
     pool_score = length(moves)
-    back_accept = 6
+    dump = Dict(points_hash(moves) => (0, dna, moves))
+    back_accept = 4
     min_accept_modifier = -back_accept
 
     # dimitri
@@ -1210,12 +1213,29 @@ function run()
 
         focus_display = round(focus, digits = 2)
 
-        (subject_moves_hash, (subject_visits, subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+        (subject_moves_hash, subject) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+        (subject_visits, subject_dna, subject_moves) = subject
         subject_score = length(subject_moves)
 
-
-
         focus_min_score = (pool_score - back_accept) + floor(focus * (back_accept + 1))
+
+        # search throught the dump and find anything useful
+        if focus_min_score != current_min_accept_score
+            current_min_accept_score = focus_min_score
+            # println("cleaning dump for $current_min_accept_score: $(length(dump))")
+            filter!(function(p)
+                (key, (visits, dna, moves)) = p
+                score = length(moves)
+                is_interesting = score >= focus_min_score
+
+                if is_interesting
+                    pool_index[key] = (visits, dna, moves)
+                end
+
+                !is_interesting
+            end, dump)
+            # println("after: $(length(dump))")
+        end
 
         if subject_score >= focus_min_score
 
@@ -1260,24 +1280,33 @@ function run()
                     (key, (score, dna, moves)) = p
                     (score >= (pool_score + min_accept_modifier))
                 end, pool_index)
+                filter!(function (p)
+                    (key, (score, dna, moves)) = p
+                    (score >= (pool_score + min_accept_modifier))
+                end, dump)
                 println("after: $(length(pool_index))")
                 pool_score = length(eval_moves)
             end
 
             if(length(eval_moves) >= (pool_score + min_accept_modifier))
-                is_new = !haskey(pool_index, eval_moves_hash)
+                is_new = !haskey(pool_index, eval_moves_hash) && !haskey(dump, eval_moves_hash)
 
                 if is_new
-                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score) $(length(pool_index))")
+                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score) index: $(length(pool_index)), dump: $(length(dump))")
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                 else
-                    (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
-                    pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+                    if haskey(pool_index, eval_moves_hash)
+                        (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+                        pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+                    end
                 end
             end
 
             focus += focus_increment
+        else
             
+            dump[subject_moves_hash] = subject
+            delete!(pool_index, subject_moves_hash)
         end   
 
         
