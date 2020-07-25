@@ -1191,19 +1191,38 @@ function run()
     iteration = 0
 
     trip_time = Dates.now()
+    pool_index = Dict(points_hash(moves) => (dna, moves))
+    pool_score = length(moves)
+
+    # dimitri
 
     while(true)
-        modified_dna = modify_dna(moves, copy(dna))
+
+        (subject_moves_hash, (subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+        
+        modified_dna = modify_dna(subject_moves, copy(subject_dna))
         eval_moves = eval_dna(copy(board_template), modified_dna)
+        eval_moves_hash = points_hash(eval_moves)
         eval_score = length(eval_moves)
 
-        if(length(eval_moves) > length(moves))
-            println("$iteration. $eval_score")
+        if(length(eval_moves) > pool_score)
+            println("$iteration. **** $eval_score ****")
+            pool_index = Dict(eval_moves_hash => (copy(modified_dna), eval_moves))
+            pool_score = length(eval_moves)
         end
 
-        if(length(eval_moves) >= length(moves))
-            moves = eval_moves
-            dna = modified_dna
+        if(length(eval_moves) >= length(subject_moves))
+            is_new = !haskey(pool_index, eval_moves_hash)
+
+            pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
+
+            if is_new
+                println("$iteration. $eval_score")
+                
+            end
+
+            # moves = eval_moves
+            # dna = modified_dna
         end
     
 
@@ -1215,8 +1234,12 @@ function run()
 
         if iteration % 10000 == 0
             current_time = Dates.now()
-            println("$iteration. $(length(moves)) $(current_time - trip_time)")
+            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))")
             trip_time = Dates.now()
+
+            # for (subject_dna, subject_moves) in collect(values(pool_index))
+            #     println(value)
+            # end
         end
 
     end
