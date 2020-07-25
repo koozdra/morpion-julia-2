@@ -1188,28 +1188,46 @@ function run()
     
     iteration = 0
 
+    focus = 0
+    focus_period = 100000
+    focus_increment = 1 / 100000
+
     trip_time = Dates.now()
-    pool_index = Dict(points_hash(moves) => (dna, moves))
+    pool_index = Dict(points_hash(moves) => (0, dna, moves))
     pool_score = length(moves)
-    back_accept = 5
+    back_accept = 3 
     min_accept_modifier = -back_accept
 
     # dimitri
 
     while(true)
 
-        (subject_moves_hash, (subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+        focus_display = round(focus, digits = 2)
+
+        (subject_moves_hash, (subject_visits, subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
         subject_score = length(subject_moves)
 
-        # 2 for highest, 1 for lowest
 
-        # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
-        iterations_for_subject = 1
 
-        # println(subject_score, " ", pool_score, " ", iterations_for_subject)
+        focus_min_score = (pool_score - back_accept) + floor(focus * (back_accept + 1))
 
-        for k in 1:iterations_for_subject
+        if subject_score >= focus_min_score
+
+            pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
+
+            # focus = .32
+
+            # println(floor(focus * (back_accept + 1)))
+
+            # readline()
+
+            # 2 for highest, 1 for lowest
+
+            # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
+            iterations_for_subject = 1
+
             
+                
             modified_dna = modify_dna(subject_moves, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_moves_hash = points_hash(eval_moves)
@@ -1217,42 +1235,39 @@ function run()
 
             if(length(eval_moves) > pool_score)
                 println("$iteration. **** $eval_score ****")
-                pool_index = Dict(eval_moves_hash => (copy(modified_dna), eval_moves))
+                pool_index = Dict(eval_moves_hash => (0, copy(modified_dna), eval_moves))
                 pool_score = length(eval_moves)
             end
 
             if(length(eval_moves) >= (pool_score + min_accept_modifier))
                 is_new = !haskey(pool_index, eval_moves_hash)
 
-                pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
-
                 if is_new
-                    println("$iteration. $subject_score -> $eval_score")
-                    
+                    println("$iteration. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score)")
+                    pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+                else
+                    (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+                    pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
                 end
-
-                # moves = eval_moves
-                # dna = modified_dna
             end
-        
+            
+        end   
 
-            # println(length(moves))
-            # println(length(eval_moves))
-
-
-            iteration += 1
-
-            if iteration % 10000 == 0
-                current_time = Dates.now()
-                println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))")
-                trip_time = Dates.now()
+        if iteration % 10000 == 0
+            current_time = Dates.now()
+            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($focus_display, $focus_min_score, $pool_score)")
+            trip_time = Dates.now()
 
                 # for (subject_dna, subject_moves) in collect(values(pool_index))
                 #     println(value)
                 # end
-            end
         end
-
+    
+        iteration += 1
+        focus += focus_increment
+        if focus > 1
+            focus = 0
+        end
     end
 
     # gym = new_gym(board_template)
