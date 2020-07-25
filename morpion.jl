@@ -1173,6 +1173,11 @@ function modify_dna(moves, dna)
     dna
 end
 
+# function clean_pool_index(index, min_accept_score){
+#     new_index = 
+
+# }
+
 function build_pool_from_pool_index(pool_index)
     map(function(value) 
         (score, dna) = value
@@ -1187,15 +1192,16 @@ function run()
     moves = eval_dna(copy(board_template), dna)
     
     iteration = 0
+    evaluation_count = 0
 
     focus = 0
-    focus_period = 100000
-    focus_increment = 1 / 100000
+    focus_period = 30000
+    focus_increment = 1 / focus_period
 
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (0, dna, moves))
     pool_score = length(moves)
-    back_accept = 3 
+    back_accept = 6
     min_accept_modifier = -back_accept
 
     # dimitri
@@ -1233,9 +1239,28 @@ function run()
             eval_moves_hash = points_hash(eval_moves)
             eval_score = length(eval_moves)
 
+            evaluation_count += 1
+
+            if evaluation_count % 10000 == 0
+                current_time = Dates.now()
+                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($focus_display, $focus_min_score, $pool_score)")
+                trip_time = Dates.now()
+    
+                    # for (subject_dna, subject_moves) in collect(values(pool_index))
+                    #     println(value)
+                    # end
+            end
+
             if(length(eval_moves) > pool_score)
-                println("$iteration. **** $eval_score ****")
-                pool_index = Dict(eval_moves_hash => (0, copy(modified_dna), eval_moves))
+                println("$evaluation_count. **** $eval_score ****")
+                # pool_index = Dict(eval_moves_hash => (0, copy(modified_dna), eval_moves))
+                # pool_index = clean_pool_index(pool_index, (pool_score + min_accept_modifier))
+                println("cleaning: $(length(pool_index))")
+                filter!(function (p)
+                    (key, (score, dna, moves)) = p
+                    (score >= (pool_score + min_accept_modifier))
+                end, pool_index)
+                println("after: $(length(pool_index))")
                 pool_score = length(eval_moves)
             end
 
@@ -1243,28 +1268,22 @@ function run()
                 is_new = !haskey(pool_index, eval_moves_hash)
 
                 if is_new
-                    println("$iteration. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score)")
+                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score) $(length(pool_index))")
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                 else
                     (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
                     pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
                 end
             end
+
+            focus += focus_increment
             
         end   
 
-        if iteration % 10000 == 0
-            current_time = Dates.now()
-            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($focus_display, $focus_min_score, $pool_score)")
-            trip_time = Dates.now()
-
-                # for (subject_dna, subject_moves) in collect(values(pool_index))
-                #     println(value)
-                # end
-        end
+        
     
         iteration += 1
-        focus += focus_increment
+        
         if focus > 1
             focus = 0
         end
