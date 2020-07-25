@@ -1199,46 +1199,53 @@ function run()
         (subject_moves_hash, (subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
         subject_score = length(subject_moves)
 
-        modified_dna = modify_dna(subject_moves, copy(subject_dna))
-        eval_moves = eval_dna(copy(board_template), modified_dna)
-        eval_moves_hash = points_hash(eval_moves)
-        eval_score = length(eval_moves)
+        iterations_for_subject = 2 - (pool_score - subject_score)
 
-        if(length(eval_moves) > pool_score)
-            println("$iteration. **** $eval_score ****")
-            pool_index = Dict(eval_moves_hash => (copy(modified_dna), eval_moves))
-            pool_score = length(eval_moves)
-        end
+        # println(subject_score, " ", pool_score, " ", iterations_for_subject)
 
-        if(length(eval_moves) >= (pool_score - 1))
-            is_new = !haskey(pool_index, eval_moves_hash)
+        for k in 1:iterations_for_subject
+            
+            modified_dna = modify_dna(subject_moves, copy(subject_dna))
+            eval_moves = eval_dna(copy(board_template), modified_dna)
+            eval_moves_hash = points_hash(eval_moves)
+            eval_score = length(eval_moves)
 
-            pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
-
-            if is_new
-                println("$iteration. $subject_score -> $eval_score")
-                
+            if(length(eval_moves) > pool_score)
+                println("$iteration. **** $eval_score ****")
+                pool_index = Dict(eval_moves_hash => (copy(modified_dna), eval_moves))
+                pool_score = length(eval_moves)
             end
 
-            # moves = eval_moves
-            # dna = modified_dna
-        end
-    
+            if(length(eval_moves) >= (pool_score - 1))
+                is_new = !haskey(pool_index, eval_moves_hash)
 
-        # println(length(moves))
-        # println(length(eval_moves))
+                pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
+
+                if is_new
+                    println("$iteration. $subject_score -> $eval_score")
+                    
+                end
+
+                # moves = eval_moves
+                # dna = modified_dna
+            end
+        
+
+            # println(length(moves))
+            # println(length(eval_moves))
 
 
-        iteration += 1
+            iteration += 1
 
-        if iteration % 10000 == 0
-            current_time = Dates.now()
-            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))")
-            trip_time = Dates.now()
+            if iteration % 10000 == 0
+                current_time = Dates.now()
+                println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))")
+                trip_time = Dates.now()
 
-            # for (subject_dna, subject_moves) in collect(values(pool_index))
-            #     println(value)
-            # end
+                # for (subject_dna, subject_moves) in collect(values(pool_index))
+                #     println(value)
+                # end
+            end
         end
 
     end
