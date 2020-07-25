@@ -1191,6 +1191,8 @@ function run()
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (dna, moves))
     pool_score = length(moves)
+    back_accept = 5
+    min_accept_modifier = -back_accept
 
     # dimitri
 
@@ -1199,7 +1201,10 @@ function run()
         (subject_moves_hash, (subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
         subject_score = length(subject_moves)
 
-        iterations_for_subject = 2 - (pool_score - subject_score)
+        # 2 for highest, 1 for lowest
+
+        # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
+        iterations_for_subject = 1
 
         # println(subject_score, " ", pool_score, " ", iterations_for_subject)
 
@@ -1216,7 +1221,7 @@ function run()
                 pool_score = length(eval_moves)
             end
 
-            if(length(eval_moves) >= (pool_score - 1))
+            if(length(eval_moves) >= (pool_score + min_accept_modifier))
                 is_new = !haskey(pool_index, eval_moves_hash)
 
                 pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
