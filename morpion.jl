@@ -390,6 +390,13 @@ function points_hash(moves::Array{Move})
    	hash(sort(map((move)->(move.x, move.y), moves)))
 end
 
+function lines_hash(moves::Array{Move,1})
+    hash(sort(map(function(move) 
+        (start_x, start_y) = start_point(move::Move)
+        (start_x, start_y, move.direction)
+    end, moves)))
+end
+
 function unit(board_template, curr_moves)
     for i in 1:1000
         curr_moves_points_hash = points_hash(curr_moves)
@@ -637,16 +644,7 @@ function move_position_hash(moves::Array{Move,1})
     hash(sort(map(build_move_position_key, moves)))
 end
 
-function build_move_line_key(move::Move)
-    # (x, y) = start_point(move)
-    # (x, y, move.direction)
-    (move.x,  move.y, move.direction, move.start_offset)
-end
 
-function lines_hash(moves::Array{Move,1})
-    # experimentin' over here, don't sort the lines
-    hash(sort(map(build_move_line_key, moves)))
-end
 
 function get_q_key(state::Array{Move}, action::Move)
     lines_hash([state;[action]])
@@ -1199,7 +1197,8 @@ function run()
     while(true)
 
         (subject_moves_hash, (subject_dna, subject_moves)) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
-        
+        subject_score = length(subject_moves)
+
         modified_dna = modify_dna(subject_moves, copy(subject_dna))
         eval_moves = eval_dna(copy(board_template), modified_dna)
         eval_moves_hash = points_hash(eval_moves)
@@ -1211,13 +1210,13 @@ function run()
             pool_score = length(eval_moves)
         end
 
-        if(length(eval_moves) >= length(subject_moves))
+        if(length(eval_moves) >= (pool_score - 1))
             is_new = !haskey(pool_index, eval_moves_hash)
 
             pool_index[eval_moves_hash] = (copy(modified_dna), eval_moves)
 
             if is_new
-                println("$iteration. $eval_score")
+                println("$iteration. $subject_score -> $eval_score")
                 
             end
 
