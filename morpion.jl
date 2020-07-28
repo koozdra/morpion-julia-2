@@ -1188,6 +1188,7 @@ end
 function run() 
     board_template = generate_initial_board()
 
+    
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
     
@@ -1200,12 +1201,17 @@ function run()
     focus_period = 100000
     focus_increment = 1 / focus_period
 
+    taboo_visits = 100000
+
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (0, dna, moves))
     pool_score = length(moves)
     dump = Dict(points_hash(moves) => (0, dna, moves))
-    back_accept = 4
+    taboo = Dict(points_hash(moves) => (0, dna, moves))
+    back_accept = 2
     min_accept_modifier = -back_accept
+
+    max_score = pool_score
 
     # dimitri
 
@@ -1271,8 +1277,14 @@ function run()
                     # end
             end
 
-            if(length(eval_moves) > pool_score)
+            if eval_score > max_score
                 println("$evaluation_count. **** $eval_score ****")
+
+                max_score = eval_score
+            end
+
+            if eval_score > pool_score
+                
                 # pool_index = Dict(eval_moves_hash => (0, copy(modified_dna), eval_moves))
                 # pool_index = clean_pool_index(pool_index, (pool_score + min_accept_modifier))
                 println("cleaning: $(length(pool_index))")
@@ -1289,13 +1301,15 @@ function run()
             end
 
             if(length(eval_moves) >= (pool_score + min_accept_modifier))
-                is_new = !haskey(pool_index, eval_moves_hash) && !haskey(dump, eval_moves_hash)
+                pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
+                is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
 
                 if is_new
-                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score) index: $(length(pool_index)), dump: $(length(dump))")
+                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score, $max_score) index: $(length(pool_index)), dump: $(length(dump))")
+
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                 else
-                    if haskey(pool_index, eval_moves_hash)
+                    if pool_index_contains_hash
                         (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
                         pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
                     end
@@ -1315,6 +1329,19 @@ function run()
         
         if focus > 1
             focus = 0
+        end
+
+
+        if subject_visits > taboo_visits
+            delete!(pool_index, subject_moves_hash)
+            pool_score = maximum(map(function(value) 
+                (visits, dna, moves) = value
+                length(moves)
+            end, values(pool_index)))
+
+            taboo[subject_moves_hash] = subject
+
+            println("$evaluation_count. -$subject_score  $pool_score")
         end
     end
 
