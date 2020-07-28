@@ -1201,7 +1201,7 @@ function run()
     focus_period = 100000
     focus_increment = 1 / focus_period
 
-    taboo_visits = 100000
+    taboo_visits = 10000
 
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (0, dna, moves))
@@ -1216,6 +1216,11 @@ function run()
     # dimitri
 
     while(true)
+
+        if length(pool_index) == 0
+            focus = 0
+            pool_index = dump
+        end
 
         focus_display = round(focus, digits = 2)
 
@@ -1257,9 +1262,7 @@ function run()
 
             # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
             iterations_for_subject = 1
-
-            
-                
+ 
             modified_dna = modify_dna(subject_moves, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_moves_hash = points_hash(eval_moves)
@@ -1283,31 +1286,34 @@ function run()
                 max_score = eval_score
             end
 
-            if eval_score > pool_score
-                
-                # pool_index = Dict(eval_moves_hash => (0, copy(modified_dna), eval_moves))
-                # pool_index = clean_pool_index(pool_index, (pool_score + min_accept_modifier))
-                println("cleaning: $(length(pool_index))")
-                filter!(function (p)
-                    (key, (score, dna, moves)) = p
-                    (score >= (pool_score + min_accept_modifier))
-                end, pool_index)
-                filter!(function (p)
-                    (key, (score, dna, moves)) = p
-                    (score >= (pool_score + min_accept_modifier))
-                end, dump)
-                println("after: $(length(pool_index))")
-                pool_score = length(eval_moves)
-            end
+            
 
             if(length(eval_moves) >= (pool_score + min_accept_modifier))
                 pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
                 is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
 
                 if is_new
+
+
+                    if eval_score > pool_score
+                        println("cleaning: $(length(pool_index))")
+                        filter!(function (p)
+                            (key, (score, dna, moves)) = p
+                            (score >= (pool_score + min_accept_modifier))
+                        end, pool_index)
+                        filter!(function (p)
+                            (key, (score, dna, moves)) = p
+                            (score >= (pool_score + min_accept_modifier))
+                        end, dump)
+                        println("after: $(length(pool_index))")
+                        pool_score = length(eval_moves)
+                    end
+
                     println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score, $max_score) index: $(length(pool_index)), dump: $(length(dump))")
 
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+                    pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+
                 else
                     if pool_index_contains_hash
                         (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
@@ -1332,7 +1338,7 @@ function run()
         end
 
 
-        if subject_visits > taboo_visits
+        if subject_visits > taboo_visits && length(pool_index) > 1
             delete!(pool_index, subject_moves_hash)
             pool_score = maximum(map(function(value) 
                 (visits, dna, moves) = value
