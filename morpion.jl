@@ -291,7 +291,22 @@ function generate_dna(moves)
         morpion_dna[dna_index(move)] = l - i + 1
         i += 1
     end
+   	morpion_dna
+end
 
+function generate_dna_valid_rands(moves)
+    morpion_dna = rand(40 * 40 * 4)
+    score = length(moves)
+    max_rand = maximum(morpion_dna)
+    move_increment = (1 - max_rand) / (score + 1)
+    i = 0
+    l = length(moves)
+
+    for move in moves
+        morpion_dna[dna_index(move)] = max_rand  + ((i + 1) * move_increment)
+        
+        i += 1
+    end
    	morpion_dna
 end
 
@@ -1216,14 +1231,15 @@ function run()
     pool_score = length(moves)
     dump = Dict(points_hash(moves) => (0, dna, moves))
     taboo = Dict(points_hash(moves) => (0, dna, moves))
+    end_searched = Dict(points_hash(moves) => true)
     back_accept = 2
     min_accept_modifier = -back_accept
 
     max_score = pool_score
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 100
 
-    # dimitri
+    #dimitri
 
     while(true)
 
@@ -1269,6 +1285,32 @@ function run()
             delete!(pool_index, subject_moves_hash)
             println(" - $subject_score ($subject_visits)")
         else
+
+            min_accept_score = pool_score + min_accept_modifier
+            already_end_searched = haskey(end_searched, subject_moves_hash)
+            if !already_end_searched && pool_score >= 100
+                end_searched[subject_moves_hash] = true
+                end_search_start_time = Dates.now()
+                end_search_result = end_search(board_template, min_accept_score, subject_moves)
+                end_search_end_time = Dates.now()
+                # println(end_search_result)
+                generated_count = length(end_search_result)
+                used_count = 0
+                for (endy_key, endy_moves) in collect(pairs(end_search_result))
+                    
+                    endy_score = length(endy_moves)
+                    in_pool = haskey(pool_index, endy_key)
+
+                    if !in_pool
+                        pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
+                        println("$evaluation_count.  $subject_score -> $endy_score")
+                        used_count += 1
+                    end
+                end
+
+                println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)") 
+            end
+
             modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_moves_hash = points_hash(eval_moves)
@@ -1287,7 +1329,11 @@ function run()
                 max_score = eval_score
             end
 
-            if eval_score >= (pool_score + min_accept_modifier)
+            
+
+            if eval_score >= min_accept_score
+                
+                
                 pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
                 is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
 
