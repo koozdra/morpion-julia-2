@@ -1237,7 +1237,7 @@ function run()
 
     max_score = pool_score
 
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 10
 
     #dimitri
 
@@ -1283,7 +1283,8 @@ function run()
         elseif subject_visits > subject_score * taboo_score_multiplier
             taboo[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
-            println(" - $subject_score ($subject_visits)")
+            delete!(dump, subject_moves_hash)
+            println(" - $subject_score ($subject_visits) $(length(pool_index))")
         else
 
             min_accept_score = pool_score + min_accept_modifier
@@ -1342,6 +1343,30 @@ function run()
 
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                     pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+
+                    already_end_searched = haskey(end_searched, eval_moves_hash)
+                    if !already_end_searched && pool_score >= 100
+                        end_searched[eval_moves_hash] = true
+                        end_search_start_time = Dates.now()
+                        end_search_result = end_search(board_template, min_accept_score, subject_moves)
+                        end_search_end_time = Dates.now()
+                        # println(end_search_result)
+                        generated_count = length(end_search_result)
+                        used_count = 0
+                        for (endy_key, endy_moves) in collect(pairs(end_search_result))
+                            
+                            endy_score = length(endy_moves)
+                            in_pool = haskey(pool_index, endy_key)
+
+                            if !in_pool
+                                pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
+                                println("$evaluation_count.  $eval_score -> $endy_score")
+                                used_count += 1
+                            end
+                        end
+
+                        println("$evaluation_count.  ES $eval_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)") 
+                    end
 
                 else
                     if pool_index_contains_hash
