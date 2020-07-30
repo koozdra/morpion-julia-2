@@ -1232,12 +1232,12 @@ function run()
     dump = Dict(points_hash(moves) => (0, dna, moves))
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 2
+    back_accept = 4
     min_accept_modifier = -back_accept
 
     max_score = pool_score
 
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 20
 
     #dimitri
 
