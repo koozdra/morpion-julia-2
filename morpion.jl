@@ -1158,17 +1158,25 @@ function undo_modifications(modifications, dna)
     run_modifications(reverse(modifications), dna)
 end
 
-function modify_dna(moves, dna)
+function modify_dna(moves, visits, dna)
 
-    for i in 1:2
-        move = moves[rand(1:end)]
-        move_index = dna_index(move)
-        eval_index = rand(1:(length(dna)))
+    # for i in 1:2
+    # move = moves[rand(1:end)]
+    # move_index = dna_index(move)
+    # eval_index = rand(1:(length(dna)))
 
-        temp = dna[eval_index]
-        dna[eval_index] = dna[move_index]
-        dna[move_index] = temp
-    end
+    # temp = dna[eval_index]
+    # dna[eval_index] = dna[move_index]
+    # dna[move_index] = temp
+
+    move = moves[(visits % length(moves)) + 1]
+    move_index = dna_index(move)
+    eval_index = rand(1:(length(dna)))
+
+    temp = dna[eval_index]
+    dna[eval_index] = dna[move_index]
+    dna[move_index] = temp
+    # end
 
     dna
 end
@@ -1263,7 +1271,7 @@ function run()
             # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
             iterations_for_subject = 1
  
-            modified_dna = modify_dna(subject_moves, copy(subject_dna))
+            modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_moves_hash = points_hash(eval_moves)
             eval_score = length(eval_moves)
@@ -1309,7 +1317,7 @@ function run()
                         pool_score = length(eval_moves)
                     end
 
-                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score, $max_score) index: $(length(pool_index)), dump: $(length(dump))")
+                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($focus_display, $focus_min_score, $pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
 
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                     pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
