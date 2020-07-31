@@ -1232,12 +1232,12 @@ function run()
     dump = Dict(points_hash(moves) => (0, dna, moves))
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 4
+    back_accept = 2
     min_accept_modifier = -back_accept
 
     max_score = pool_score
 
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 20
 
     #dimitri
 
@@ -1289,7 +1289,7 @@ function run()
 
             min_accept_score = pool_score + min_accept_modifier
             already_end_searched = haskey(end_searched, subject_moves_hash)
-            if !already_end_searched && pool_score >= 100
+            if !already_end_searched && subject_score >= 100
                 end_searched[subject_moves_hash] = true
                 end_search_start_time = Dates.now()
                 end_search_result = end_search(board_template, min_accept_score, subject_moves)
@@ -1301,8 +1301,9 @@ function run()
                     
                     endy_score = length(endy_moves)
                     in_pool = haskey(pool_index, endy_key)
+                    in_taboo = haskey(taboo, endy_key)
 
-                    if !in_pool
+                    if !in_pool && !in_taboo
                         pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
                         println("$evaluation_count.  $subject_score -> $endy_score")
                         used_count += 1
@@ -1357,8 +1358,9 @@ function run()
                             
                             endy_score = length(endy_moves)
                             in_pool = haskey(pool_index, endy_key)
+                            in_taboo = haskey(taboo, endy_key)
 
-                            if !in_pool
+                            if !in_pool && !in_taboo
                                 pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
                                 println("$evaluation_count.  $eval_score -> $endy_score")
                                 used_count += 1
