@@ -1237,7 +1237,7 @@ function run()
 
     max_score = pool_score
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 100
 
     #dimitri
 
