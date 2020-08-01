@@ -1236,6 +1236,7 @@ function run()
     min_accept_modifier = -back_accept
 
     max_score = pool_score
+    max_moves = moves
 
     taboo_score_multiplier = 20
 
@@ -1277,7 +1278,7 @@ function run()
             pool_score = subject_score
         end
 
-        if subject_score < pool_score
+        if subject_score < pool_score - 1
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
         elseif subject_visits > subject_score * taboo_score_multiplier
@@ -1322,13 +1323,19 @@ function run()
 
             if evaluation_count % 10000 == 0
                 current_time = Dates.now()
-                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($pool_score)")
+                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
                 trip_time = Dates.now()
+            end
+
+            if evaluation_count % 100000 == 0
+                println(max_score)
+                println(max_moves)
             end
 
             if eval_score > max_score
                 println("$evaluation_count. **** $eval_score ****")
                 max_score = eval_score
+                max_moves = eval_moves
             end
 
             
