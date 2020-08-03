@@ -1283,7 +1283,7 @@ function run()
             pool_score = subject_score
         end
 
-        if subject_score < pool_score - 1
+        if subject_score < pool_score - back_accept
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
         elseif subject_visits > subject_score * taboo_score_multiplier
