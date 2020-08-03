@@ -1175,22 +1175,24 @@ end
 
 function modify_dna(moves, visits, dna)
 
-    # for i in 1:2
-    # move = moves[rand(1:end)]
+
+    for i in 1:3
+        move = moves[rand(1:end)]
+        move_index = dna_index(move)
+        eval_index = rand(1:(length(dna)))
+
+        temp = dna[eval_index]
+        dna[eval_index] = dna[move_index]
+        dna[move_index] = temp
+    end
+
+    # move = moves[(visits % length(moves)) + 1]
     # move_index = dna_index(move)
     # eval_index = rand(1:(length(dna)))
 
     # temp = dna[eval_index]
     # dna[eval_index] = dna[move_index]
     # dna[move_index] = temp
-
-    move = moves[(visits % length(moves)) + 1]
-    move_index = dna_index(move)
-    eval_index = rand(1:(length(dna)))
-
-    temp = dna[eval_index]
-    dna[eval_index] = dna[move_index]
-    dna[move_index] = temp
     # end
 
     dna
@@ -1238,7 +1240,10 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 100
+
+    different_after_modify = 0
+    same_after_modify = 0
 
     #dimitri
 
@@ -1316,6 +1321,12 @@ function run()
 
             modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
+
+            if eval_moves == subject_moves
+                same_after_modify += 1
+            else
+                different_after_modify += 1
+            end
             eval_moves_hash = points_hash(eval_moves)
             eval_score = length(eval_moves)
 
@@ -1323,7 +1334,7 @@ function run()
 
             if evaluation_count % 10000 == 0
                 current_time = Dates.now()
-                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score) same:$same_after_modify diff:$different_after_modify ($(same_after_modify / different_after_modify))")
                 trip_time = Dates.now()
             end
 
