@@ -1175,12 +1175,21 @@ end
 
 function modify_dna(moves, visits, dna)
 
+    if rand() < 0.5
+        for i in 1:3
+            move = moves[rand(1:end)]
+            move_index = dna_index(move)
+            eval_index = rand(1:(length(dna)))
 
-    for i in 1:3
-        move = moves[rand(1:end)]
+            temp = dna[eval_index]
+            dna[eval_index] = dna[move_index]
+            dna[move_index] = temp
+        end
+    else
+        move = moves[(visits % length(moves)) + 1]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
-
+    
         temp = dna[eval_index]
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
@@ -1234,8 +1243,8 @@ function run()
     dump = Dict(points_hash(moves) => (0, dna, moves))
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 2
-    min_accept_modifier = -back_accept
+    back_accept = 0
+    min_accept_modifier = -3
 
     max_score = pool_score
     max_moves = moves
