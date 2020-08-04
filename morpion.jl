@@ -1243,8 +1243,8 @@ function run()
     dump = Dict(points_hash(moves) => (0, dna, moves))
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 0
-    min_accept_modifier = -3
+    back_accept = 2
+    min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
@@ -1317,8 +1317,9 @@ function run()
                     endy_score = length(endy_moves)
                     in_pool = haskey(pool_index, endy_key)
                     in_taboo = haskey(taboo, endy_key)
+                    in_dump = haskey(dump, endy_key)
 
-                    if !in_pool && !in_taboo
+                    if !in_pool && !in_taboo && !in_dump
                         pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
                         println("$evaluation_count.  $subject_score -> $endy_score")
                         used_count += 1
@@ -1370,31 +1371,8 @@ function run()
                     println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
 
                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
-                    pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
-
-                    already_end_searched = haskey(end_searched, eval_moves_hash)
-                    if !already_end_searched && pool_score >= 100
-                        end_searched[eval_moves_hash] = true
-                        end_search_start_time = Dates.now()
-                        end_search_result = end_search(board_template, min_accept_score, subject_moves)
-                        end_search_end_time = Dates.now()
-                        # println(end_search_result)
-                        generated_count = length(end_search_result)
-                        used_count = 0
-                        for (endy_key, endy_moves) in collect(pairs(end_search_result))
-                            
-                            endy_score = length(endy_moves)
-                            in_pool = haskey(pool_index, endy_key)
-                            in_taboo = haskey(taboo, endy_key)
-
-                            if !in_pool && !in_taboo
-                                pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves),endy_moves)  
-                                println("$evaluation_count.  $eval_score -> $endy_score")
-                                used_count += 1
-                            end
-                        end
-
-                        println("$evaluation_count.  ES $eval_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)") 
+                    if eval_score >= subject_score
+                        pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
                     end
 
                 else
