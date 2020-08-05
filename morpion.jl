@@ -1298,11 +1298,11 @@ function run()
 
         
         is_taboo_selection = length(taboo) > 0 && iteration % 2 == 0
-
+        access_index = convert(Int64, floor(iteration / 2))
         (subject_moves_hash, subject) = if is_taboo_selection
-            collect(pairs(taboo))[(iteration % length(taboo)) + 1]
+            collect(pairs(taboo))[(access_index % length(taboo)) + 1]
         else
-            collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+            collect(pairs(pool_index))[(access_index % length(pool_index)) + 1]
         end
         
         (subject_visits, subject_dna, subject_moves) = subject
@@ -1338,7 +1338,7 @@ function run()
 
                 t
             else
-                1
+                10
             end
 
             for i in 1:times_visit
