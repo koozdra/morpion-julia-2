@@ -13,19 +13,19 @@ function maxby(f, arr)
     reduce((a, b)->f(a) > f(b) ? a : b, arr)
 end
 
-function board_index_at(x::Number, y::Number) 
+function board_index_at(x::Number, y::Number)
     return (x + 15) * 40 + (y + 15)
 end
 
-function is_direction_taken(board::Array{UInt8,1}, x::Number, y::Number, direction::Number) 
+function is_direction_taken(board::Array{UInt8,1}, x::Number, y::Number, direction::Number)
     return board[board_index_at(x, y)] & mask_dir()[direction + 1] != 0
 end
 
-function is_empty_at(board::Array{UInt8,1}, x::Number, y::Number) 
+function is_empty_at(board::Array{UInt8,1}, x::Number, y::Number)
     return board[board_index_at(x, y)] == 0
 end
 
-function is_move_valid(board::Array{UInt8,1}, move::Move) 
+function is_move_valid(board::Array{UInt8,1}, move::Move)
     (delta_x, delta_y) = direction_offsets()[move.direction + 1]
     num_empty_points = 0
     empty_point = ()
@@ -58,7 +58,7 @@ function mask_dir()
     return [0b00010, 0b00100, 0b01000, 0b10000]
 end
 
-function initial_moves() 
+function initial_moves()
     return [
     Move(3, -1, 3, 0),
     Move(6, -1, 3, 0),
@@ -110,7 +110,7 @@ end
 function pentasol_representation(moves)
     pentasol_moves = map(move->pentasol_move(move), moves)
     preamble = ["GameType=5T", "(3,3)"]
-    
+
     return join([preamble; pentasol_moves], '\n')
 end
 
@@ -134,7 +134,7 @@ function generate_initial_board()
 end
 
 function update_board(board::Array{UInt8,1}, move::Move)
-   	(delta_x, delta_y) = direction_offsets()[move.direction + 1]
+    (delta_x, delta_y) = direction_offsets()[move.direction + 1]
 
     for i in 0:4
         combined_offset = i + move.start_offset
@@ -161,14 +161,14 @@ end
 
 function find_loose_moves(moves::Array{Move,1})
     board = fill_board_with_moves(moves)
-    
+
     return filter(moves) do move
         board_value = board[board_index_at(move.x, move.y)]
         return board_value == 2 || board_value == 4 || board_value == 8 || board_value == 16
     end
 end
 
-function eval_line(board::Array{UInt8,1}, start_x::Number, start_y::Number, direction::Number) 
+function eval_line(board::Array{UInt8,1}, start_x::Number, start_y::Number, direction::Number)
     (delta_x, delta_y) = direction_offsets()[direction + 1]
     num_empty_points = 0
     empty_point = 0
@@ -195,12 +195,12 @@ function eval_line(board::Array{UInt8,1}, start_x::Number, start_y::Number, dire
     end
 end
 
-function find_created_moves(board::Array{UInt8,1}, point_x::Number, point_y::Number) 
+function find_created_moves(board::Array{UInt8,1}, point_x::Number, point_y::Number)
     possible_moves = Move[]
 
     for direction in 0:3
         for offset in -4:0
-        
+
             (delta_x, delta_y) = direction_offsets()[direction + 1]
 
             x = point_x + delta_x * offset
@@ -215,7 +215,7 @@ function find_created_moves(board::Array{UInt8,1}, point_x::Number, point_y::Num
     possible_moves
 end
 
-function print_board(board::Array{UInt8,1}) 
+function print_board(board::Array{UInt8,1})
     for y in -14:24
         for x in -14:24
             c = board[board_index_at(x, y)]
@@ -231,7 +231,7 @@ function eval_possible_move_reducer(board, possible_move_reducer)
     taken_moves = Move[]
 
     i = 1
-  
+
     while length(curr_possible_moves) > 0
         move = reduce(possible_move_reducer, curr_possible_moves)
         push!(taken_moves, move)
@@ -264,7 +264,7 @@ end
 
 
 function dna_index(x::Number, y::Number, direction::Number)
-   	(x + 15) * 40 * 4 + (y + 15) * 4 + abs(direction)
+    (x + 15) * 40 * 4 + (y + 15) * 4 + abs(direction)
 end
 
 function start_point(move::Move)
@@ -274,7 +274,7 @@ end
 
 function dna_index(move::Move)
     (move_x, move_y) = start_point(move)
-   	dna_index(move_x, move_y, move.direction)
+    dna_index(move_x, move_y, move.direction)
 end
 
 # dna ideas
@@ -283,15 +283,15 @@ end
 #  Dict{Tuple{Int8,Int8},Int8} (try immutable) (size_hint)
 
 function generate_dna(moves)
-   	morpion_dna = rand(40 * 40 * 4)
+    morpion_dna = rand(40 * 40 * 4)
     i = 0
     l = length(moves)
 
-   	for move in moves
+    for move in moves
         morpion_dna[dna_index(move)] = l - i + 1
         i += 1
     end
-   	morpion_dna
+    morpion_dna
 end
 
 function generate_dna_valid_rands(moves)
@@ -304,10 +304,10 @@ function generate_dna_valid_rands(moves)
 
     for move in moves
         morpion_dna[dna_index(move)] = max_rand  + ((i + 1) * move_increment)
-        
+
         i += 1
     end
-   	morpion_dna
+    morpion_dna
 end
 
 function generate_dna_dict(moves::Array{Move})
@@ -365,10 +365,10 @@ function eval_dna_dict(board, dna)
         else
             b_rank = -rand(1:100)
         end
-        
+
         (a_rank > b_rank) ? a : b
     end
-  
+
     while length(curr_possible_moves) > 0
         move = reduce(move_reducer, curr_possible_moves)
         push!(taken_moves, move)
@@ -382,13 +382,13 @@ function eval_dna_dict(board, dna)
 end
 
 function modification_triple(board, moves::Array{Move})
-   	morpion_dna = generate_dna(moves)
+    morpion_dna = generate_dna(moves)
 
     for i = 1:rand(1:4)
         morpion_dna[dna_index(moves[rand(1:end)])] = -rand()
-   	end
+    end
 
-   	eval_dna(board, morpion_dna)
+    eval_dna(board, morpion_dna)
 end
 
 function modification_triple_dict(board, moves::Array{Move})
@@ -402,11 +402,11 @@ function modification_triple_dict(board, moves::Array{Move})
 end
 
 function points_hash(moves::Array{Move})
-   	hash(sort(map((move)->(move.x, move.y), moves)))
+    hash(sort(map((move)->(move.x, move.y), moves)))
 end
 
 function lines_hash(moves::Array{Move,1})
-    hash(sort(map(function(move) 
+    hash(sort(map(function(move)
         (start_x, start_y) = start_point(move::Move)
         (start_x, start_y, move.direction)
     end, moves)))
@@ -426,7 +426,7 @@ function eval_verbose(board, moves::Array{Move,1})
     taken_moves = Move[]
 
     i = 1
-  
+
     while length(curr_possible_moves) > 0
         println("Making move: $move")
         move = moves[i]
@@ -446,7 +446,7 @@ end
 
 function eval_partial(board, moves::Array{Move,1})
     curr_possible_moves = initial_moves()
-  
+
     for move in moves
         update_board(board, move)
         filter!((move)->is_move_valid(board, move), curr_possible_moves)
@@ -478,7 +478,7 @@ end
 
 function end_search(board_template, min_accept_score, index, moves)
     # dimitri
-    
+
     eval_moves = moves[1:(end - 1)]
     gym = new_gym(board_template)
     step_moves(gym, eval_moves)
@@ -508,7 +508,7 @@ function end_search(board_template, min_accept_score, index, moves)
     if length(eval_moves) > 2 && max_score_found >= min_accept_score
         end_search(board_template, min_accept_score, index, eval_moves)
     end
-    
+
 end
 
 function end_search(board_template,  min_accept_score, moves)
@@ -587,7 +587,7 @@ function visit_subject(subject, board_template)
     min_accept_delta = -10
 
     curr_moves, curr_visits = reduce(explore_reducer, values(pool_index))
-    
+
     curr_score = length(curr_moves)
     curr_moves_points_hash = points_hash(curr_moves)
 
@@ -605,7 +605,7 @@ function visit_subject(subject, board_template)
         for pair in pairs(end_search_index)
             pair_points_hash, pair_moves = pair
             pair_score = length(pair_moves)
-            
+
             if !haskey(pool_index, pair_points_hash)
                 pool_index[pair_points_hash] = (pair_moves, 0, step)
             end
@@ -651,7 +651,7 @@ function visit_subject(subject, board_template)
             end
         end
     end
-    
+
     subject.step += 1
 end
 
@@ -710,7 +710,7 @@ function select_possible_move_by_policy(q_table, state, possible_moves)
     # println()
 
     move
-    
+
 end
 
 function select_possible_move_by_preference(move_preferences, possible_moves)
@@ -762,7 +762,7 @@ function partition_by(f, array)
     a = []
     b = []
     for i in array
-        if f(i) 
+        if f(i)
             push!(a, i)
         else
             push!(b, i)
@@ -857,7 +857,7 @@ end
 function mc_tree_backup_reward(mc_tree, mc_tree_key_path)
 end
 
-function mc_tree_select_possible_move(mc_tree, gym) 
+function mc_tree_select_possible_move(mc_tree, gym)
     max_index = argmax(map(possible_move->mc_tree_rank_possible_move(mc_tree, gym.taken_moves, possible_move), gym.possible_moves))
     gym.possible_moves[max_index]
 end
@@ -902,7 +902,7 @@ function mc_tree_visit(mc_tree, gym, visited_mc_tree_keys)
         for mc_tree_key in visited_mc_tree_keys
             mc_tree_visit_node(mc_tree, mc_tree_key, episode_score)
         end
-        
+
         return (visited_mc_tree_keys, episode_score)
     end
 
@@ -910,7 +910,7 @@ function mc_tree_visit(mc_tree, gym, visited_mc_tree_keys)
     # println("V move: $move")
     step(gym, move)
 
-    mc_tree_visit(mc_tree, gym, visited_mc_tree_keys)      
+    mc_tree_visit(mc_tree, gym, visited_mc_tree_keys)
 
 end
 
@@ -934,7 +934,7 @@ function mc_tree_search_index(mc_tree, board_template, test_moves, iterations, m
         mc_tree_visit(mc_tree, gym)
         episode_score = length(gym.taken_moves)
         episode_hash = points_hash(gym.taken_moves)
-        
+
         if episode_score >= min_accept_score
             index[episode_hash] = (gym.taken_moves, 0)
         end
@@ -959,11 +959,11 @@ function modification_dna_search(moves, visits, iterations, board_template)
                 # current_dna[dna_index(moves[rand(1:end)])] = -rand()
                 current_dna[dna_index(moves[rand(1:end)])] = -200
             end
-            
+
         elseif div(current_visits, score) % 4 == 2
             # current_dna[dna_index(moves[rand(1:end)])] = -rand()
             current_dna[dna_index(moves[rand(1:end)])] = -200
-            
+
         else
             move_index = current_visits % score + 1
             # current_dna[dna_index(moves[move_index])] = -rand()
@@ -999,7 +999,7 @@ function new_end_search(moves, min_accept_score, board_template, iterations, max
         # println(length(gym.taken_moves))
     end
 
-    
+
     new_found_misses = 0
 
     while new_found_misses < iterations && length(index) < max_new_found
@@ -1039,13 +1039,13 @@ function step_all_q_table_and_update(board_template, learning_rate, discount, q_
         # is_explore = length(gym.taken_moves) % iteration_number == 0
 
         state = gym.taken_moves
-        action = if (is_explore) 
+        action = if (is_explore)
             # println("explore $(length(gym.taken_moves)) $(iteration_number)")
             select_random_possible_move(gym)
         else
             select_possible_move_by_policy(q_table, gym.taken_moves, gym.possible_moves)
         end
-        
+
         current_q_key = get_q_key(state, action)
         current_q_value = get_q_value(q_table, current_q_key)
 
@@ -1193,7 +1193,7 @@ function modify_dna(moves, visits, dna)
         move = moves[(visits % length(moves)) + 1]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
-    
+
         temp = dna[eval_index]
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
@@ -1212,18 +1212,18 @@ function modify_dna(moves, visits, dna)
 end
 
 # function clean_pool_index(index, min_accept_score){
-#     new_index = 
+#     new_index =
 
 # }
 
 function build_pool_from_pool_index(pool_index)
-    map(function(value) 
+    map(function(value)
         (score, dna) = value
         dna
     end, collect(values(pool_index)))
 end
 
-function run() 
+function run()
     board_template = generate_initial_board()
 
     # moves1 = Move[Move(9, 7, 3, -4), Move(0, 7, 3, -4), Move(5, 6, 1, 0), Move(4, 6, 1, -3), Move(7, 0, 1, -4), Move(5, 3, 1, 0), Move(4, 3, 1, -3), Move(2, 9, 1, 0), Move(7, 2, 2, -2), Move(3, -1, 3, 0), Move(5, 1, 2, -2), Move(6, -1, 3, 0), Move(4, 1, 0, -2), Move(7, 1, 1, -4), Move(7, 4, 3, -4), Move(5, 2, 2, -2), Move(3, 4, 0, 0), Move(3, 5, 3, -2), Move(7, 7, 0, -2), Move(4, 4, 0, -1), Move(5, 5, 2, -2), Move(6, 4, 0, -3), Move(5, 4, 3, -3), Move(8, 4, 1, -3), Move(4, 5, 0, -1), Move(4, 2, 3, 0), Move(7, -1, 0, -4), Move(2, 0, 2, 0), Move(6, 5, 3, -2), Move(2, 1, 2, 0), Move(2, 5, 1, 0), Move(-1, 8, 0, 0), Move(9, 2, 0, -4), Move(8, 2, 1, -3), Move(5, -1, 2, 0), Move(2, 2, 0, -1), Move(1, 2, 1, 0), Move(4, -1, 1, -1), Move(4, -2, 3, 0), Move(5, -2, 0, -4), Move(5, -3, 3, 0), Move(1, 1, 0, 0), Move(8, 1, 2, -3), Move(8, 5, 3, -4), Move(5, 8, 0, 0), Move(5, 7, 3, -2), Move(7, 9, 2, -4), Move(2, 4, 3, -4), Move(1, 4, 1, 0), Move(1, 5, 3, -4), Move(-1, 7, 0, 0), Move(-1, 3, 2, 0), Move(4, 7, 2, -4), Move(1, 10, 0, 0), Move(2, 7, 1, 0), Move(-1, 4, 2, 0), Move(2, 8, 3, -3), Move(0, 1, 2, 0), Move(-1, 1, 1, 0), Move(0, 2, 2, -1), Move(7, 5, 0, -2), Move(10, 8, 2, -4), Move(10, 5, 1, -4), Move(7, 8, 3, -4), Move(8, 9, 2, -4), Move(8, 7, 0, -2), Move(8, 8, 3, -3), Move(4, 8, 1, -1), Move(4, 10, 3, -4), Move(1, 7, 2, -1), Move(-2, 7, 1, 0), Move(-1, 6, 0, -1), Move(-1, 5, 3, -2), Move(-2, 5, 1, 0), Move(-3, 6, 0, 0), Move(-2, 6, 1, -1), Move(-3, 7, 0, 0), Move(0, 9, 2, -3), Move(1, 8, 2, -3), Move(-1, 10, 0, 0), Move(0, 8, 1, -1), Move(-1, 9, 0, 0), Move(-1, 11, 3, -4), Move(1, 9, 3, -4), Move(2, 10, 2, -4), Move(1, 11, 0, 0), Move(0, 10, 0, -1), Move(3, 10, 1, -3), Move(0, 11, 3, -4), Move(-2, 9, 1, 0), Move(-2, 8, 3, -3), Move(2, 12, 2, -4), Move(10, 7, 1, -4), Move(11, 8, 2, -4), Move(9, 8, 1, -2), Move(10, 9, 2, -4), Move(9, 9, 1, -3), Move(10, 6, 3, -1), Move(11, 7, 2, -4), Move(6, 10, 0, 0), Move(6, 11, 3, -4), Move(7, 10, 0, -1), Move(8, 11, 2, -4), Move(7, 11, 2, -4), Move(8, 10, 0, -1), Move(7, 12, 3, -4), Move(5, 10, 2, -2), Move(9, 10, 1, -4), Move(6, 13, 0, 0), Move(9, 11, 3, -4), Move(5, 11, 1, 0), Move(3, 11, 3, -4), Move(1, 13, 0, 0), Move(1, 12, 3, -3), Move(2, 13, 2, -4), Move(2, 11, 0, -1), Move(4, 11, 1, -4), Move(5, 12, 2, -3), Move(5, 13, 3, -4), Move(3, 12, 0, -1), Move(4, 12, 1, -3), Move(6, 14, 2, -4), Move(2, 14, 3, -4), Move(3, 13, 0, -1), Move(4, 13, 1, -2), Move(5, 14, 2, -4), Move(4, 14, 3, -4), Move(3, 14, 1, -1), Move(2, 15, 0, 0), Move(3, 15, 3, -4), Move(0, 12, 2, -1), Move(6, 12, 0, -3), Move(6, 15, 3, -4)]
@@ -1235,10 +1235,10 @@ function run()
     # result = end_search(board_template, length(moves) - 2, moves)
 
     # println(length(result))
-    
+
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
-    
+
     iteration = 0
     evaluation_count = 0
 
@@ -1263,7 +1263,7 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 40
 
     different_after_modify = 0
     same_after_modify = 0
@@ -1274,7 +1274,7 @@ function run()
 
         if length(pool_index) == 0
             pool_index = copy(dump)
-            pool_score = maximum(map(function(value) 
+            pool_score = maximum(map(function(value)
                 (visits, dna, moves) = value
                 length(moves)
             end, values(pool_index)))
@@ -1283,31 +1283,20 @@ function run()
                 (key, (score, dna, moves)) = p
                 (score >= (pool_score - 10))
             end, dump)
-
-
-            # max_dump_score = 0
-
-            # empty!(pool_index)
-
-            # map(function(pair)
-            #     (key, (visits, dna, moves)) = pair
-            #     max_dump_score = max(max_dump_score, length(moves))
-            #     pool_index[key] = (visits, dna, moves)
-            # end, collect(pairs(dump)))
         end
 
-        
+
         access_index = convert(Int64, floor(iteration / 2))
-        (subject_moves_hash, subject) = 
+        (subject_moves_hash, subject) =
             collect(pairs(pool_index))[(access_index % length(pool_index)) + 1]
-        
-        
+
+
         (subject_visits, subject_dna, subject_moves) = subject
         subject_score = length(subject_moves)
 
-        
-        pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
-        
+
+
+
 
         if subject_score > pool_score
             pool_score = subject_score
@@ -1321,92 +1310,121 @@ function run()
             delete!(pool_index, subject_moves_hash)
             delete!(dump, subject_moves_hash)
             println(" - $subject_score ($subject_visits) $(length(pool_index))")
+
+            if length(pool_index) > 0
+                pool_score = maximum(map(function(value)
+                    (visits, dna, moves) = value
+                    length(moves)
+                end, values(pool_index)))
+
+                # filter!(function (p)
+                #     (key, (score, dna, moves)) = p
+                #     (score >= (pool_score + min_accept_modifier))
+                # end, pool_index)
+
+                filter!(function(p)
+                    (key, (visits, dna, moves)) = p
+                    score = length(moves)
+                    should_consider = (score >= (pool_score - back_accept))
+
+                    if should_consider
+                        println(" + $score")
+                        pool_index[key] =  (visits, dna, moves)
+                    end
+
+                    !should_consider
+                end, dump)
+            end
         else
 
-            
-            min_accept_score = pool_score + min_accept_modifier
-            already_end_searched = haskey(end_searched, subject_moves_hash)
-            if !already_end_searched && subject_score >= 100
-                end_searched[subject_moves_hash] = true
-                end_search_start_time = Dates.now()
-                end_search_result = end_search(board_template, min_accept_score, subject_moves)
-                end_search_end_time = Dates.now()
-                    # println(end_search_result)
-                generated_count = length(end_search_result)
-                used_count = 0
-                for (endy_key, endy_moves) in collect(pairs(end_search_result))
-                        
-                    endy_score = length(endy_moves)
-                    in_pool = haskey(pool_index, endy_key)
-                    in_taboo = haskey(taboo, endy_key)
-                    in_dump = haskey(dump, endy_key)
+            for i in 1:(((back_accept + 1) - (pool_score - subject_score))^2)
+                (subject_visits, subject_dna, subject_moves) = pool_index[subject_moves_hash]
 
-                    if !in_pool && !in_taboo && !in_dump
-                        pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)  
-                        println("$evaluation_count.  $subject_score -> $endy_score")
-                        used_count += 1
+                pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
+
+                min_accept_score = pool_score + min_accept_modifier
+                already_end_searched = haskey(end_searched, subject_moves_hash)
+                if !already_end_searched && subject_score >= 100
+                    end_searched[subject_moves_hash] = true
+                    end_search_start_time = Dates.now()
+                    end_search_result = end_search(board_template, min_accept_score, subject_moves)
+                    end_search_end_time = Dates.now()
+                        # println(end_search_result)
+                    generated_count = length(end_search_result)
+                    used_count = 0
+                    for (endy_key, endy_moves) in collect(pairs(end_search_result))
+
+                        endy_score = length(endy_moves)
+                        in_pool = haskey(pool_index, endy_key)
+                        in_taboo = haskey(taboo, endy_key)
+                        in_dump = haskey(dump, endy_key)
+
+                        if !in_pool && !in_taboo && !in_dump
+                            pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+                            println("$evaluation_count.  $subject_score -> $endy_score")
+                            used_count += 1
+                        end
                     end
+
+                    println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)")
                 end
 
-                println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)") 
-            end
+                modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
+                eval_moves = eval_dna(copy(board_template), modified_dna)
 
-            modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
-            eval_moves = eval_dna(copy(board_template), modified_dna)
-
-            if eval_moves == subject_moves
-                same_after_modify += 1
-            else
-                different_after_modify += 1
-            end
-            eval_moves_hash = points_hash(eval_moves)
-            eval_score = length(eval_moves)
-
-            evaluation_count += 1
-
-            if evaluation_count % 10000 == 0
-                current_time = Dates.now()
-                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score) same:$same_after_modify diff:$different_after_modify ($(same_after_modify / different_after_modify))")
-                trip_time = Dates.now()
-            end
-
-            if evaluation_count % 100000 == 0
-                println(max_score)
-                println(max_moves)
-            end
-
-            if eval_score > max_score
-                println("$evaluation_count. **** $eval_score ****")
-                max_score = eval_score
-                max_moves = eval_moves
-
-                empty!(taboo)
-            end
-
-                
-
-            if eval_score >= min_accept_score
-                    
-                    
-                pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
-                is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
-
-                if is_new
-                    println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
-
-                    pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
-                    if eval_score >= subject_score
-                        pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
-                    end
-
+                if eval_moves == subject_moves
+                    same_after_modify += 1
                 else
-                    if pool_index_contains_hash
-                        (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
-                        pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+                    different_after_modify += 1
+                end
+                eval_moves_hash = points_hash(eval_moves)
+                eval_score = length(eval_moves)
+
+                evaluation_count += 1
+
+                if evaluation_count % 10000 == 0
+                    current_time = Dates.now()
+                    println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score) same:$same_after_modify diff:$different_after_modify ($(same_after_modify / different_after_modify))")
+                    trip_time = Dates.now()
+                end
+
+                if evaluation_count % 100000 == 0
+                    println(max_score)
+                    println(max_moves)
+                end
+
+                if eval_score > max_score
+                    println("$evaluation_count. **** $eval_score ****")
+                    max_score = eval_score
+                    max_moves = eval_moves
+
+                    empty!(taboo)
+                end
+
+
+
+                if eval_score >= min_accept_score
+
+
+                    pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
+                    is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
+
+                    if is_new
+                        println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+
+                        pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+                        if eval_score >= subject_score
+                            pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+                        end
+
+                    else
+                        if pool_index_contains_hash
+                            (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+                            pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+                        end
                     end
                 end
             end
-            
         end
         iteration += 1
     end
@@ -1452,7 +1470,7 @@ function run()
 
         #     # iterations_for_subject = [1,2,10][(back_accept + 1) - (pool_score - subject_score)]
         #     iterations_for_subject = 1
- 
+
         #     modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
         #     eval_moves = eval_dna(copy(board_template), modified_dna)
         #     eval_moves_hash = points_hash(eval_moves)
@@ -1464,7 +1482,7 @@ function run()
         #         current_time = Dates.now()
         #         println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($focus_display, $focus_min_score, $pool_score)")
         #         trip_time = Dates.now()
-    
+
         #             # for (subject_dna, subject_moves) in collect(values(pool_index))
         #             #     println(value)
         #             # end
@@ -1476,7 +1494,7 @@ function run()
         #         max_score = eval_score
         #     end
 
-            
+
 
         #     if(length(eval_moves) >= (pool_score + min_accept_modifier))
         #         pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
@@ -1514,15 +1532,15 @@ function run()
 
         #     focus += focus_increment
         # else
-            
+
         #     dump[subject_moves_hash] = subject
         #     delete!(pool_index, subject_moves_hash)
-        # end   
+        # end
 
-        
-    
+
+
         # iteration += 1
-        
+
         # if focus > 1
         #     focus = 0
         # end
@@ -1530,7 +1548,7 @@ function run()
 
         # if subject_visits > taboo_visits && length(pool_index) > 1
         #     delete!(pool_index, subject_moves_hash)
-        #     pool_score = maximum(map(function(value) 
+        #     pool_score = maximum(map(function(value)
         #         (visits, dna, moves) = value
         #         length(moves)
         #     end, values(pool_index)))
@@ -1543,10 +1561,10 @@ function run()
 
     # gym = new_gym(board_template)
     # step_randomely_to_end(gym)
-    
+
     # for i in 1:100000
 
-        
+
     #     search_gym = possible_move_preference_search(board_template, gym)
 
     #     current_score = length(gym.taken_moves)
@@ -1579,12 +1597,12 @@ function run()
     # # println()
     # # println(q_table)
 
-    
 
-    
+
+
 
     # readline()
-    
+
     # gym = new_gym(board_template)
     # step_randomely_to_end(gym)
 
@@ -1622,7 +1640,7 @@ function run()
     #     # min_accept_offset =  trunc(Int, total_evaluations / 1000000)
 
     #     if inactivity_counter > 100000
-            
+
     #         min_accept_offset += 1
     #         inactivity_counter = 0
     #         improvements = 0
@@ -1649,7 +1667,7 @@ function run()
     #     end
 
     #     min_accept_score = max_score - min_accept_offset
-        
+
     #     current_index = (iteration % length(pool_keys)) + 1
     #     current_pool_key = pool_keys[current_index]
 
@@ -1660,7 +1678,7 @@ function run()
     #         deleteat!(pool_keys, current_index)
     #         delete!(pool_index, current_pool_key)
     #         # println(" - $current_score")
-            
+
     #     else
     #         times = (min_accept_offset - (max_score - current_score)) + 1
     #         # times = times * times
@@ -1693,9 +1711,9 @@ function run()
     #             is_new = !haskey(pool_index, eval_moves_hash)
 
     #             if is_new
-                    
-                    
-                    
+
+
+
     #                 if eval_score >= min_accept_score
     #                     pool_size = length(pool_keys)
     #                     println("$total_evaluations. $current_score ($current_visits) -> $eval_score ($max_score, $pool_size, ($inactivity_counter, $min_accept_offset, $improvements))")
@@ -1710,12 +1728,12 @@ function run()
     #                     # pool_moves, pool_visits = pool_index[current_pool_key]
     #                     # pool_index[current_pool_key] = (current_moves, 0)
 
-                        
+
     #                 end
 
     #                 if eval_score > min_accept_score
     #                     improvements += 1
-                        
+
     #                 end
 
     #                 if eval_score >= min_accept_score
@@ -1752,7 +1770,7 @@ function run()
     #         # if !haskey(end_searched_index, current_pool_key) && current_score >= 100 && iteration % 200 == 0
 
     #         if max_score >= 100 && iteration % end_search_interval == 0
-                
+
     #             pool_key_value_pairs = collect(pool_index)
     #             endy_moves = []
     #             # (endy_key, (endy_moves, endy_visits)) =  pool_key_value_pairs[1]
@@ -1769,7 +1787,7 @@ function run()
 
     #                     if (score == endy_score && visits <= endy_visits) ||
     #                         score > endy_score
-                        
+
     #                         endy_moves = moves
     #                         endy_visits = visits
     #                         endy_score = score
@@ -1780,7 +1798,7 @@ function run()
     #             end
 
     #             if endy_score >= min_accept_score
-                    
+
     #                 result = new_end_search(endy_moves, min_accept_score, board_template, 10, 200)
 
     #                 println(" ES:: $endy_score (found: $(length(result))) ")
@@ -1816,14 +1834,14 @@ function run()
 
     #                         # pool_moves, pool_visits = pool_index[current_pool_key]
     #                         # pool_index[current_pool_key] = (current_moves, 0)
-                            
-                            
+
+
     #                     end
 
     #                     end_searched_index[pair_hash] = true
     #                 end
 
-                    
+
 
     #                 end_searched_index[endy_key] = true
     #             end
@@ -1877,9 +1895,9 @@ function run()
     #         # pool = [(current_score, 0)]
     #         # pool_index = Dict()
     #         # pool_index[eval_moves_hash] = 1
-    
+
     #         max_score = current_score
-    
+
     #         # println("$iteration. $current_score => $eval_score")
     #     end
 
@@ -1888,9 +1906,9 @@ function run()
     #     times = (min_accept_offset - (max_score - current_score)) + 1
     #     times = times * times
 
-        
 
-        
+
+
     #     modification_search_results = modification_dna_search(current_moves, current_visits, times, board_template)
 
     #     for eval_moves in modification_search_results
@@ -1900,8 +1918,8 @@ function run()
     #         is_new = !haskey(pool_index, eval_moves_hash)
 
 
-    #         if is_new 
-    #             if eval_score >= min_accept_score && 
+    #         if is_new
+    #             if eval_score >= min_accept_score &&
     #                 push!(pool, (eval_moves, 0))
     #                 pool_index[eval_moves_hash] = length(pool)
     #             end
@@ -1917,8 +1935,8 @@ function run()
 
     #     #     println("$iteration. $current_score $i")
 
-            
-        
+
+
 
     #     #     current_dna = generate_dna(current_moves)
 
@@ -1932,8 +1950,8 @@ function run()
     #     #     eval_moves = eval_dna(copy(board_template), current_dna)
     #     #     eval_score = length(eval_moves)
     #     #     eval_moves_hash = lines_hash(eval_moves)
-        
-        
+
+
 
     #     #     if eval_score > max_score
 
@@ -1946,7 +1964,7 @@ function run()
     #     #         println("$iteration. $current_score => $eval_score")
     #     #     else
     #     #         pool[current_index] = (current_moves, current_visits + 1)
-           
+
 
     #     #         if eval_score >= min_accept_score
 
@@ -1954,28 +1972,28 @@ function run()
 
     #     #             pool_size = length(pool)
 
-    #     #             if is_new 
-                
-                
+    #     #             if is_new
+
+
     #     #                 push!(pool, (eval_moves, 0))
     #     #                 pool_index[eval_moves_hash] = length(pool)
 
     #     #                 # println("$iteration. $current_score ($current_visits) -> $eval_score $pool_size")
-                    
-    
+
+
     #     #             else
     #     #                 pool_index_position = pool_index[eval_moves_hash]
     #     #                 (pool_moves, pool_visits) = pool[pool_index_position]
     #     #                 pool[pool_index_position] = (eval_moves, pool_visits)
 
     #     #             # println("$iteration. $current_score == $eval_score")
-    
+
     #     #             end
     #     #         end
     #     #     end
     #     # end
 
-    #     # if current_score < min_accept_score 
+    #     # if current_score < min_accept_score
     #     #     deleteat!(pool, current_index)
 
     #     # # todo delete from index also
@@ -2013,38 +2031,38 @@ function run()
     #             println("$possible_move: $(mc_tree[mc_tree_key])")
     #         end
     #     end
-        
+
     #     move = gym.possible_moves[argmax(map(possible_move->mc_tree[mc_tree_state_key(gym.taken_moves, possible_move)], gym.possible_moves))]
 
     #     println("chosen move: $move ($(length(gym.taken_moves)))")
     #     step(gym, move)
 
     # end
-    
 
-    
+
+
 
     # println(mc_tree)
 
-    
-    
+
+
     # iteration = 0
     # while true
-    
+
     #     eval_gym = copy(gym)
     #     step_randomely_to_end(eval_gym)
     #     start_score = length(start_moves)
     #     eval_score = length(eval_gym.taken_moves)
-        
+
 
     #     println("$iteration. $start_score -> $eval_score")
 
     #     iteration += 1
     # end
-    
 
 
-    
+
+
     # current_moves = random_completion(copy(board_template))
     # current_moves = Move[Move(2, 9, 1, 0), Move(6, 10, 3, -4), Move(4, 8, 2, -2), Move(3, 10, 3, -4), Move(5, 8, 0, -2), Move(7, 8, 1, -4), Move(7, 7, 0, -2), Move(5, 6, 1, 0), Move(-1, 6, 1, 0), Move(9, 7, 3, -4), Move(1, 4, 0, -2), Move(2, 7, 2, -2), Move(0, 7, 3, -4), Move(2, 2, 0, -2), Move(10, 3, 1, -4), Move(1, 8, 2, -2), Move(4, 3, 1, -4), Move(6, 4, 3, -4), Move(3, -1, 3, 0), Move(5, 1, 2, -2), Move(2, 0, 1, 0), Move(7, 2, 2, -2)]
     # max_moves = current_moves
@@ -2111,7 +2129,7 @@ function run()
     #     if eval_score > max_score
     #         println("$step. $eval_score")
     #         println(eval_moves)
-    #         pool_index = Dict() 
+    #         pool_index = Dict()
     #     end
 
     #     if eval_score >= max_score && !is_in_index
@@ -2130,10 +2148,10 @@ function run()
     #         trip_time = Dates.now()
     #     end
 
-        
 
 
-        
+
+
 
     #     step += 1
     # end
@@ -2180,7 +2198,7 @@ function run()
 
 
     # q_table = Dict{UInt64,Float64}()
-    
+
     # # mc_tree = Dict{UInt64,(UInt64, Float64)}()
 
     # gym = new_gym(board_template)
@@ -2192,20 +2210,20 @@ function run()
 
     # max_score = 0
 
-    
+
     # explore_location = 0
     # episode_cumulative_reward = 0
 
     # eligibility = Dict{UInt64,Float64}()
-    
+
     # for episode_num in 1:num_episodes
 
     #     gym = new_gym(board_template)
-        
+
     #     explore_performed_in_episode = false
     #     episode_q_keys = []
     #     episode_counter = 1
-        
+
 
     #     while length(gym.possible_moves) > 0
     #         state = gym.taken_moves
@@ -2215,13 +2233,13 @@ function run()
     #             (moves_with_q_values, moves_without_q_values) = partition_by(possible_move->has_q_value(q_table, get_q_key(gym.taken_moves, possible_move)), gym.possible_moves)
 
     #             # println("decision point  $explore_location")
-    #             # for move in moves_with_q_values  
+    #             # for move in moves_with_q_values
     #             #     q_value = get_q_value(q_table, get_q_key(gym.taken_moves, move))
     #             #     println("$move $q_value")
     #             # end
     #             # println(moves_without_q_values)
 
-    #             explore_location += 1 
+    #             explore_location += 1
     #             explore_performed_in_episode = true
 
     #             if length(moves_without_q_values) > 0
@@ -2235,7 +2253,7 @@ function run()
 
     #         # action = select_possible_move_by_policy(q_table, gym.taken_moves, gym.possible_moves)
 
-            
+
 
     #         current_q_key = get_q_key(state, action)
     #         current_q_value = get_q_value(q_table, current_q_key)
@@ -2249,7 +2267,7 @@ function run()
     #         if length(gym.possible_moves) > 0
     #             reward = 0
     #             max_next_q_value = max_q_value_for_state(q_table, gym.taken_moves, gym.possible_moves)
-            
+
     #             q_table[current_q_key] = current_q_value + learning_rate * (reward + discount * max_next_q_value - current_q_value)
     #         else
     #             q_table[current_q_key] = length(gym.taken_moves)
@@ -2266,7 +2284,7 @@ function run()
 
     #         next_q_key = episode_q_keys[length(episode_q_keys) - index + 1]
     #         next_q_value = get_q_value(q_table, next_q_key)
-            
+
     #         new_q_value = current_q_value + learning_rate * (reward + discount * next_q_value - current_q_value)
 
     #         q_table[current_q_key] = new_q_value
@@ -2278,7 +2296,7 @@ function run()
 
     #     max_score = max(max_score, episode_score)
     #     episode_cumulative_reward += episode_score
-        
+
     #     if episode_num % 100 == 0
     #         println("$episode_num. $(episode_score) ($max_score,$episode_cumulative_reward)")
     #         episode_cumulative_reward = 0
@@ -2288,7 +2306,7 @@ function run()
     #         explore_location = 0
     #     end
     #     # println(gym.taken_moves)
-        
+
 
     #     # println()
 
@@ -2333,16 +2351,16 @@ function run()
     #         # reward = length(gym.taken_moves)
 
     #         if length(gym.possible_moves) > 0
-                
+
     #             max_next_q_value = max_q_value_for_state(q_table, gym.taken_moves, gym.possible_moves)
-                
+
     #             q_table[current_q_key] = current_q_value + learning_rate * (reward + discount * max_next_q_value - current_q_value)
     #         else
 
     #             q_table[current_q_key] = length(gym.taken_moves)
     #         end
 
-            
+
 
     #         # reward = length(gym.taken_moves)
 
@@ -2353,7 +2371,7 @@ function run()
     #         #     next_q_key = get_q_key(gym.taken_moves, next_action)
     #         #     next_q_value = get_q_value(q_table, next_q_key)
     #         #     # reward = 1
-                
+
 
     #         #     # if next_q_value > 0 && current_q_value > 0
     #         #     # q_table[current_q_key] = current_q_value + learning_rate * (reward + discount * (next_q_value) - current_q_value)
@@ -2370,8 +2388,8 @@ function run()
 
 
 
-            
-            
+
+
     #         # action = select_possible_move_by_policy_e_greedy(q_table, gym.taken_moves, gym.possible_moves, epsilon)
 
     #         # explore_score = episode % max_score
@@ -2397,8 +2415,8 @@ function run()
     #         # end
 
     #     end
-        
-            
+
+
     #     # println(length(gym.taken_moves))
     #     # should this be reversed?
 
@@ -2415,7 +2433,7 @@ function run()
 
     #     max_score = max(max_score, episode_score)
 
-        
+
 
     #     if (episode % 100 == 0)
     #         eval_gym = new_gym(board_template)
@@ -2455,61 +2473,61 @@ function run()
 
     # num_episodes = 10000
     # max_score = 0
-    
+
 
     # for episode in 1:num_episodes
     #     episode_complete = false
     #     gym = new_gym(board_template)
 
     #     while !episode_complete
-            
+
     #         (moves_with_q_values, moves_without_q_values) = partition_by(possible_move->has_q_value(q_table, get_q_key(gym.taken_moves, possible_move)), gym.possible_moves)
-            
+
     #         is_epsilon_explore = rand() < epsilon
     #         is_explore = is_epsilon_explore || length(moves_with_q_values) == 0
 
     #         # println(moves_with_q_values)
     #         # println(moves_without_q_values)
     #         if is_explore
-        
+
     #             action = select_random_possible_move(gym)
 
     #             # action = if length(moves_without_q_values) > 0
     #             #     moves_without_q_values[rand(1:end)]
-    #             # else 
+    #             # else
     #             #     moves_with_q_values[rand(1:end)]
     #             # end
 
     #             current_q_key = get_q_key(gym.taken_moves, action)
     #             current_q_value = get_q_value(q_table, current_q_key)
-                
+
     #             # this should always be zero and probably can be avoided
     #             max_next_q = max_q_value_for_state(q_table, gym.taken_moves, gym.possible_moves)
 
     #             reward = estimate_value_of_move(q_table, gym, action)
-        
+
     #             q_table[current_q_key] = (1 - learning_rate) * current_q_value + learning_rate * (reward + discount * max_next_q)
 
     #             # println("$episode expand($is_epsilon_explore): $reward $(q_table[current_q_key]) action: $(action)")
-        
+
     #             episode_complete = true
     #         else
-                
+
     #             action = select_possible_move_by_policy(q_table, gym.taken_moves, gym.possible_moves)
-                
+
     #             current_q_key = get_q_key(gym.taken_moves, action)
     #             current_q_value = get_q_value(q_table, current_q_key)
-                
+
     #             step(gym, action)
-                
+
     #             max_next_q = max_q_value_for_state(q_table, gym.taken_moves, gym.possible_moves)
 
     #             reward = -1
-        
+
     #             q_table[current_q_key] = (1 - learning_rate) * current_q_value + learning_rate * (reward + discount * max_next_q)
 
     #             # println("$episode exploit: $(current_q_value) $max_next_q $(q_table[current_q_key]) $action")
-                
+
     #             if length(gym.possible_moves) == 0
     #                 episode_complete = true
     #             end
@@ -2537,19 +2555,19 @@ function run()
 
     # println("greedy: $(length(gym.taken_moves))")
 
-    
+
 
     # println(q_table)
-    
-    
+
+
     # selection
-    
+
 
 
     # discount = 1
     # alpha = 0.5 # step_size
     # epsilon = 0.1
-    
+
     # q_table = Dict{UInt64,Float64}()
 
     # num_episodes = 1000
@@ -2567,9 +2585,9 @@ function run()
     #     state = Move[]
     #     while(!stop_episode)
     #         # action selection
-    #         is_explore = rand() < epsilon 
-    #         move_action = if is_explore 
-    #             select_random_possible_move(gym) 
+    #         is_explore = rand() < epsilon
+    #         move_action = if is_explore
+    #             select_random_possible_move(gym)
     #         else
     #             select_by_policy(q_table, gym, state)
     #         end
@@ -2584,7 +2602,7 @@ function run()
     #             next_q_values = map(possible_move->get_q_value(q_table, q_key(next_state, possible_move)), gym.possible_moves)
     #             max_next_q_value = maximum(next_q_values)
     #             # println(state)
-                
+
     #             # println(map(possible_move->q_key(next_state, possible_move), gym.possible_moves))
     #             # println(next_q_values)
     #             current_q_value = get_q_value(q_table, state_q_key)
@@ -2592,7 +2610,7 @@ function run()
     #             q_table[state_q_key] = t
 
     #             # println(t)
-                
+
     #         end
 
     #         state = next_state
@@ -2618,7 +2636,7 @@ function run()
     # end
 
 
-    
+
 
     # println(gym.taken_moves)
     # println(length(gym.taken_moves))
@@ -2626,15 +2644,15 @@ function run()
     # println()
 
     # for q_key in reverse(episode_q_keys)
-        
+
     #     current_q_value = haskey(q_table, q_key) ? q_table[q_key] : 0
-        
+
 
     # end
 
     # println(length(gym.taken_moves))
     # println(episode_state_action_pairs)
-    
+
 
     # println(gym.taken_moves, length(gym.possible_moves))
 
@@ -2665,12 +2683,12 @@ function run()
 
 
 
-    
+
     # println(moves)
     # println(lines_hash(moves))
     # map((move)->println("$(move) -> $(build_move_line_key(move))"), moves)
 
-    
+
 
 
     # subject = build_subject(board_template)
@@ -2745,5 +2763,4 @@ function run()
     # end
 end
 
-run()
 run()
