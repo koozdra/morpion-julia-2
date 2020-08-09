@@ -1178,8 +1178,8 @@ function undo_modifications(modifications, dna)
 end
 
 function modify_dna(moves, visits, dna)
-
-    if rand() < 0.5
+    r = rand()
+    if r < 0.33
         for i in 1:3
             move = moves[rand(1:end)]
             move_index = dna_index(move)
@@ -1189,7 +1189,7 @@ function modify_dna(moves, visits, dna)
             dna[eval_index] = dna[move_index]
             dna[move_index] = temp
         end
-    else
+    elseif r < 0.66
         move = moves[(visits % length(moves)) + 1]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
@@ -1197,6 +1197,16 @@ function modify_dna(moves, visits, dna)
         temp = dna[eval_index]
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
+    else
+        for i in 1:2
+            move = moves[rand(1:end)]
+            move_index = dna_index(move)
+            eval_index = rand(1:(length(dna)))
+
+            temp = dna[eval_index]
+            dna[eval_index] = dna[move_index]
+            dna[move_index] = temp
+        end
     end
 
     # move = moves[(visits % length(moves)) + 1]
@@ -1263,7 +1273,7 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 40
+    taboo_score_multiplier = 100
 
     different_after_modify = 0
     same_after_modify = 0
