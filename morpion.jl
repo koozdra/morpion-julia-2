@@ -1267,7 +1267,7 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 2
+    back_accept = 3
     min_accept_modifier = -back_accept
 
     max_score = pool_score
@@ -1346,8 +1346,13 @@ function run()
                 end, dump)
             end
         else
-
-            for i in 1:(((back_accept + 1) - (pool_score - subject_score))^2)
+            times = if subject_score == pool_score
+                10
+            else
+                1
+            end
+            
+            for i in 1:times
                 (subject_visits, subject_dna, subject_moves) = pool_index[subject_moves_hash]
 
                 pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
