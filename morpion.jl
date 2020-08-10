@@ -1267,17 +1267,13 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 3
+    back_accept = 2
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 100
-
-    different_after_modify = 0
-    same_after_modify = 0
-
+    taboo_score_multiplier = 20
     # dimitri
 
     while(true)
@@ -1387,11 +1383,6 @@ function run()
                 modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
                 eval_moves = eval_dna(copy(board_template), modified_dna)
 
-                if eval_moves == subject_moves
-                    same_after_modify += 1
-                else
-                    different_after_modify += 1
-                end
                 eval_moves_hash = points_hash(eval_moves)
                 eval_score = length(eval_moves)
 
@@ -1399,7 +1390,7 @@ function run()
 
                 if evaluation_count % 10000 == 0
                     current_time = Dates.now()
-                    println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score) same:$same_after_modify diff:$different_after_modify ($(same_after_modify / different_after_modify))")
+                    println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
                     trip_time = Dates.now()
                 end
 
