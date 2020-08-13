@@ -1273,10 +1273,12 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 1
     # dimitri
 
     while(true)
+
+        
 
         if length(pool_index) == 0
             pool_index = copy(dump)
@@ -1392,11 +1394,35 @@ function run()
                     current_time = Dates.now()
                     println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
                     trip_time = Dates.now()
+
+                    # println("before $(length(pool_index)) $(length(taboo))")
+
+                    # dimitri
+                    
+
+                    # println("after $(length(pool_index)) $(length(taboo))")
+                    # println("pool_score $pool_score")
+
                 end
 
                 if evaluation_count % 100000 == 0
                     println(max_score)
                     println(max_moves)
+
+                    filter!(function(p)
+                        (key, (visits, dna, moves)) = p
+                        score = length(moves)
+                      
+                        pool_index[key] =  (0, dna, moves)
+                        println(" t + $score")
+
+                        false
+                    end, taboo)
+
+                    pool_score = maximum(map(function(value)
+                        (visits, dna, moves) = value
+                        length(moves)
+                    end, values(pool_index)))
                 end
 
                 if eval_score > max_score
