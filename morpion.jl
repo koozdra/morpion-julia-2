@@ -1342,7 +1342,7 @@ function run()
             end
         else
             times = if subject_score == pool_score
-                10
+                20
             else
                 1
             end
