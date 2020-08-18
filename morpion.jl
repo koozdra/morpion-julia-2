@@ -477,7 +477,6 @@ function random_completion_from(board, possible_moves, taken_moves)
 end
 
 function end_search(board_template, min_accept_score, index, moves)
-    # dimitri
 
     eval_moves = moves[1:(end - 1)]
     gym = new_gym(board_template)
@@ -1233,6 +1232,7 @@ function build_pool_from_pool_index(pool_index)
     end, collect(values(pool_index)))
 end
 
+
 function run()
     board_template = generate_initial_board()
 
@@ -1267,178 +1267,485 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 3
+    back_accept = 4
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 4
+    taboo_score_multiplier = 20
     # dimitri
 
-    while(true)
+    while true
+        
         if length(pool_index) == 0
-            pool_index = copy(dump)
-            pool_score = maximum(map(function(value)
+            max_dump_score = maximum(map(function(value)
                 (visits, dna, moves) = value
                 length(moves)
-            end, values(pool_index)))
-
-            filter!(function (p)
-                (key, (score, dna, moves)) = p
-                (score >= (pool_score - 10))
+            end, values(dump)))
+            filter!(function(p)
+                (key, (visits, dna, moves)) = p
+                score = length(moves)
+                is_interesting = score == max_dump_score
+        
+                if is_interesting
+                    pool_index[key] = (visits, dna, moves)
+                end
+        
+                !is_interesting
             end, dump)
+            pool_score = max_dump_score
         end
+        
 
-
-        access_index = convert(Int64, floor(iteration / 2))
-        (subject_moves_hash, subject) =
-            collect(pairs(pool_index))[(access_index % length(pool_index)) + 1]
+        (subject_moves_hash, subject) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
 
 
         (subject_visits, subject_dna, subject_moves) = subject
         subject_score = length(subject_moves)
-
-
-
-
-
-        if subject_score > pool_score
-            pool_score = subject_score
-        end
-
-        if subject_score < (pool_score - back_accept)
-            dump[subject_moves_hash] = subject
-            delete!(pool_index, subject_moves_hash)
-        elseif (subject_visits > subject_score * taboo_score_multiplier)
+        
+        already_end_searched = haskey(end_searched, subject_moves_hash)
+        
+        if subject_score < pool_score
             taboo[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
-            delete!(dump, subject_moves_hash)
-            println(" - $subject_score ($subject_visits) $(length(pool_index))")
-
-            if length(pool_index) > 0
-                pool_score = maximum(map(function(value)
-                    (visits, dna, moves) = value
-                    length(moves)
-                end, values(pool_index)))
-
-                # filter!(function (p)
-                #     (key, (score, dna, moves)) = p
-                #     (score >= (pool_score + min_accept_modifier))
-                # end, pool_index)
-
-                filter!(function(p)
-                    (key, (visits, dna, moves)) = p
-                    score = length(moves)
-                    should_consider = (score > (pool_score - back_accept))
-
-                    if should_consider
-                        println(" + $score")
-                        pool_index[key] =  (visits, dna, moves)
-                    end
-
-                    !should_consider
-                end, dump)
-            end
-        else
-            min_accept_score = pool_score + min_accept_modifier
-            already_end_searched = haskey(end_searched, subject_moves_hash)
-            if !already_end_searched && subject_score >= 100
-                end_searched[subject_moves_hash] = true
-                end_search_start_time = Dates.now()
-                end_search_result = end_search(board_template, min_accept_score, subject_moves)
-                end_search_end_time = Dates.now()
+            println(" --- $subject_score ($subject_visits) $(length(pool_index))")
+        elseif !already_end_searched && subject_score > 100
+            end_searched[subject_moves_hash] = true
+            end_search_start_time = Dates.now()
+            end_search_result = end_search(board_template, subject_score - 4, subject_moves)
+            end_search_end_time = Dates.now()
                         # println(end_search_result)
-                generated_count = length(end_search_result)
-                used_count = 0
-                for (endy_key, endy_moves) in collect(pairs(end_search_result))
+            generated_count = length(end_search_result)
+            used_count = 0
+            for (endy_key, endy_moves) in collect(pairs(end_search_result))
 
-                    endy_score = length(endy_moves)
-                    in_pool = haskey(pool_index, endy_key)
-                    in_taboo = haskey(taboo, endy_key)
-                    in_dump = haskey(dump, endy_key)
+                endy_score = length(endy_moves)
+                in_pool = haskey(pool_index, endy_key)
+                in_taboo = haskey(taboo, endy_key)
+                in_dump = haskey(dump, endy_key)
 
-                    if !in_pool && !in_taboo && !in_dump
-                        pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
-                        println("$evaluation_count.  $subject_score -> $endy_score")
-                        used_count += 1
+                if !in_pool && !in_taboo && !in_dump
+                    # if endy_score == pool_score
+                    #     pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+                    #     println("$evaluation_count.  $subject_score -> $endy_score")
+                    # else
+                    #     dump[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+                    #     println("$evaluation_count.  $subject_score -> D $endy_score")
+                    # end
+
+                    eval_moves = endy_moves
+                    eval_score = endy_score
+                    eval_moves_hash = endy_key
+                    modified_dna = generate_dna_valid_rands(endy_moves)
+
+                    new_value = (0, modified_dna, eval_moves)
+                    if eval_score >= pool_score
+                        pool_score = eval_score
+                        pool_index[eval_moves_hash] = new_value
+                        println("  ES. $subject_score($subject_visits) => $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+                    elseif eval_score > pool_score - 4
+                        dump[eval_moves_hash] = new_value
+                        println("  ES. $subject_score($subject_visits) -> D $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     end
-                end
 
-                println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)")
+
+                    used_count += 1
+                end
             end
-                
-            times = if subject_score == pool_score
-                300
-            else
-                1
-            end
+
+            println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)")
+        else
+
+            modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
+            eval_moves = eval_dna(copy(board_template), modified_dna)
+            evaluation_count += 1
+        
             
-            for i in 1:times
-                (subject_visits, subject_dna, subject_moves) = pool_index[subject_moves_hash]
-
-                pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
-
-                modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
-                eval_moves = eval_dna(copy(board_template), modified_dna)
-
+            eval_score = length(eval_moves)
+            
+            if eval_score > pool_score - 4
                 eval_moves_hash = points_hash(eval_moves)
-                eval_score = length(eval_moves)
-
-                evaluation_count += 1
-
-                if evaluation_count % 10000 == 0
-                    current_time = Dates.now()
-                    println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
-                    trip_time = Dates.now()
-                end
-
-                if evaluation_count % 100000 == 0
-                    println(max_score)
-                    println(max_moves)     
-                end
-
-
-
+                pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
+        
                 if eval_score > max_score
                     println("$evaluation_count. **** $eval_score ****")
                     max_score = eval_score
                     max_moves = eval_moves
-
+                            
                     empty!(taboo)
                 end
-
-                if eval_score > pool_score
-                    pool_score = eval_score
-                end
-
-
-
-                if eval_score >= min_accept_score
-
-
-                    pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
-                    is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
-
-                    if is_new
-                        println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
-
-                        pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
-                        if eval_score >= subject_score
-                            pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
-                        end
-
-                    else
-                        if pool_index_contains_hash
-                            (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
-                            pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
-                        end
+        
+                pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
+                is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
+        
+                if is_new
+                    new_value = (0, modified_dna, eval_moves)
+                    if eval_score >= pool_score
+                        pool_score = eval_score
+                        pool_index[eval_moves_hash] = new_value
+                        println("$evaluation_count. $subject_score($subject_visits) => $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+                    elseif eval_score > pool_score - 4
+                        dump[eval_moves_hash] = new_value
+                        println("$evaluation_count. $subject_score($subject_visits) -> D $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     end
+
+                    if eval_score >= subject_score
+                        pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+                    end
+
+                elseif pool_index_contains_hash
+        
+                    (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+                    pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
                 end
             end
+    
+    
+            if evaluation_count % 10000 == 0
+                current_time = Dates.now()
+                println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+                trip_time = Dates.now()
+            end
+            
+            if evaluation_count % 100000 == 0
+                println(max_score)
+                println(max_moves)     
+            end
+            
+            
+            
+            if eval_score > max_score
+                println("$evaluation_count. **** $eval_score ****")
+                max_score = eval_score
+                max_moves = eval_moves
+            
+                empty!(taboo)
+            end
+    
+    
+            if subject_visits >= subject_score * taboo_score_multiplier
+                taboo[subject_moves_hash] = subject
+                delete!(pool_index, subject_moves_hash)
+                delete!(dump, subject_moves_hash)
+                println(" - $subject_score ($subject_visits) $(length(pool_index))")
+            end
+    
+            iteration += 1
         end
-        iteration += 1
+        
+        
+        
+
     end
+
+    # while(true)
+    #     if length(pool_index) == 0
+    #         max_dump_score = maximum(map(function(value)
+    #             (visits, dna, moves) = value
+    #             length(moves)
+    #         end, values(pool_index)))
+    #         filter!(function(p)
+    #             (key, (visits, dna, moves)) = p
+    #             score = length(moves)
+    #             is_interesting = score == max_dump_score
+
+    #             if is_interesting
+    #                 pool_index[key] = (visits, dna, moves)
+    #             end
+
+    #             !is_interesting
+    #         end, dump)
+    #     end
+
+    #     # selection
+    #     (subject_moves_hash, subject) =
+    #         collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
+
+
+    #     (subject_visits, subject_dna, subject_moves) = subject
+    #     subject_score = length(subject_moves)
+
+    #     # end search if required
+    #     min_accept_score = pool_score + min_accept_modifier
+    #     already_end_searched = haskey(end_searched, subject_moves_hash)
+    #     if !already_end_searched && subject_score >= 100
+    #         end_searched[subject_moves_hash] = true
+    #         end_search_start_time = Dates.now()
+    #         end_search_result = end_search(board_template, min_accept_score, subject_moves)
+    #         end_search_end_time = Dates.now()
+    #                     # println(end_search_result)
+    #         generated_count = length(end_search_result)
+    #         used_count = 0
+    #         for (endy_key, endy_moves) in collect(pairs(end_search_result))
+
+    #             endy_score = length(endy_moves)
+    #             in_pool = haskey(pool_index, endy_key)
+    #             in_taboo = haskey(taboo, endy_key)
+    #             in_dump = haskey(dump, endy_key)
+
+    #             if !in_pool && !in_taboo && !in_dump
+    #                 # if endy_score == pool_score
+    #                 #     pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+    #                 #     println("$evaluation_count.  $subject_score -> $endy_score")
+    #                 # else
+    #                 #     dump[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+    #                 #     println("$evaluation_count.  $subject_score -> D $endy_score")
+    #                 # end
+    #                 (pool_index, dump, taboo, pool_score) = on_new_found(evaluation_count, pool_index, dump, taboo, pool_score, subject_score, subject_visits, max_score, endy_key, endy_score, generate_dna_valid_rands(endy_moves), endy_moves)
+                    
+    #                 used_count += 1
+    #             end
+    #         end
+
+    #         println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)")
+    #     else
+
+    #         # modification
+    #         modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
+    #         eval_moves = eval_dna(copy(board_template), modified_dna)
+
+    #         eval_moves_hash = points_hash(eval_moves)
+    #         eval_score = length(eval_moves)
+
+    #         evaluation_count += 1
+
+    #         if evaluation_count % 10000 == 0
+    #             current_time = Dates.now()
+    #             println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+    #             trip_time = Dates.now()
+    #         end
+            
+    #         if evaluation_count % 100000 == 0
+    #             println(max_score)
+    #             println(max_moves)     
+    #         end
+            
+            
+            
+    #         if eval_score > max_score
+    #             println("$evaluation_count. **** $eval_score ****")
+    #             max_score = eval_score
+    #             max_moves = eval_moves
+            
+    #             empty!(taboo)
+    #         end
+
+    #         if (subject_visits > subject_score * taboo_score_multiplier)
+    #             taboo[subject_moves_hash] = subject
+    #             delete!(pool_index, subject_moves_hash)
+    #             delete!(dump, subject_moves_hash)
+    #             println(" - $subject_score ($subject_visits) $(length(pool_index))")
+            
+    #             empty!(pool_index)
+            
+    #         elseif eval_score < (pool_score + min_accept_modifier)
+    #             pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
+    #             is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
+
+    #             if is_new
+
+    #                 # if eval_score == pool_score
+    #                 #     println("$evaluation_count. $subject_score($subject_visits) => $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+
+    #                 #     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+    #                 #     if eval_score >= subject_score
+    #                 #         pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+    #                 #     end
+    #                 # elseif eval_score > pool_score
+    #                 #     # empty!(pool_index)
+    #                 #     pool_score = eval_score
+
+    #                 # else
+
+    #                 #     println("$evaluation_count. $subject_score($subject_visits) -> $eval_score D ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+    #                 #     dump[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+    #                 # end
+
+    #                 (pool_index, dump, taboo, pool_score) = on_new_found(evaluation_count, pool_index, dump, taboo, pool_score, max_score, subject_score, subject_visits, eval_moves_hash, eval_score, eval_dna, eval_moves)
+
+    #             else
+    #                 if pool_index_contains_hash
+    #                     (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+    #                     pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+    #                 end
+    #             end
+
+    #         end
+    #     end
+        
+    #     # if eval_score > pool_score
+    #     #     empty!(pool_index)
+    #     # end
+    #     iteration += 1
+
+    # end
+
+    # while(true)
+    #     if length(pool_index) == 0
+    #         pool_index = copy(dump)
+    #         pool_score = maximum(map(function(value)
+    #             (visits, dna, moves) = value
+    #             length(moves)
+    #         end, values(pool_index)))
+
+    #         filter!(function (p)
+    #             (key, (score, dna, moves)) = p
+    #             (score >= (pool_score - 10))
+    #         end, dump)
+    #     end
+
+
+    #     access_index = convert(Int64, floor(iteration / 2))
+    #     (subject_moves_hash, subject) =
+    #         collect(pairs(pool_index))[(access_index % length(pool_index)) + 1]
+
+
+    #     (subject_visits, subject_dna, subject_moves) = subject
+    #     subject_score = length(subject_moves)
+
+
+
+
+
+    #     if subject_score > pool_score
+    #         pool_score = subject_score
+    #     end
+
+    #     if subject_score < (pool_score - back_accept)
+    #         dump[subject_moves_hash] = subject
+    #         delete!(pool_index, subject_moves_hash)
+    #     elseif (subject_visits > subject_score * taboo_score_multiplier)
+    #         taboo[subject_moves_hash] = subject
+    #         delete!(pool_index, subject_moves_hash)
+    #         delete!(dump, subject_moves_hash)
+    #         println(" - $subject_score ($subject_visits) $(length(pool_index))")
+
+    #         if length(pool_index) > 0
+    #             pool_score = maximum(map(function(value)
+    #                 (visits, dna, moves) = value
+    #                 length(moves)
+    #             end, values(pool_index)))
+
+    #             # filter!(function (p)
+    #             #     (key, (score, dna, moves)) = p
+    #             #     (score >= (pool_score + min_accept_modifier))
+    #             # end, pool_index)
+
+    #             filter!(function(p)
+    #                 (key, (visits, dna, moves)) = p
+    #                 score = length(moves)
+    #                 should_consider = (score > (pool_score - back_accept))
+
+    #                 if should_consider
+    #                     println(" + $score")
+    #                     pool_index[key] =  (visits, dna, moves)
+    #                 end
+
+    #                 !should_consider
+    #             end, dump)
+    #         end
+    #     else
+    #         min_accept_score = pool_score + min_accept_modifier
+    #         already_end_searched = haskey(end_searched, subject_moves_hash)
+    #         if !already_end_searched && subject_score >= 100
+    #             end_searched[subject_moves_hash] = true
+    #             end_search_start_time = Dates.now()
+    #             end_search_result = end_search(board_template, min_accept_score, subject_moves)
+    #             end_search_end_time = Dates.now()
+    #                     # println(end_search_result)
+    #             generated_count = length(end_search_result)
+    #             used_count = 0
+    #             for (endy_key, endy_moves) in collect(pairs(end_search_result))
+
+    #                 endy_score = length(endy_moves)
+    #                 in_pool = haskey(pool_index, endy_key)
+    #                 in_taboo = haskey(taboo, endy_key)
+    #                 in_dump = haskey(dump, endy_key)
+
+    #                 if !in_pool && !in_taboo && !in_dump
+    #                     pool_index[endy_key] = (0, generate_dna_valid_rands(endy_moves), endy_moves)
+    #                     println("$evaluation_count.  $subject_score -> $endy_score")
+    #                     used_count += 1
+    #                     # end_searched[endy_key] = true
+    #                 end
+    #             end
+
+    #             println("$evaluation_count.  ES $subject_score g: $generated_count u: $used_count t: $(end_search_end_time - end_search_start_time)")
+    #         end
+                
+
+    #         (subject_visits, subject_dna, subject_moves) = pool_index[subject_moves_hash]
+
+    #         pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
+
+    #         modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
+    #         eval_moves = eval_dna(copy(board_template), modified_dna)
+
+    #         eval_moves_hash = points_hash(eval_moves)
+    #         eval_score = length(eval_moves)
+
+    #         evaluation_count += 1
+
+    #         if evaluation_count % 10000 == 0
+    #             current_time = Dates.now()
+    #             println("$evaluation_count. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+    #             trip_time = Dates.now()
+    #         end
+
+    #         if evaluation_count % 100000 == 0
+    #             println(max_score)
+    #             println(max_moves)     
+    #         end
+
+
+
+    #         if eval_score > max_score
+    #             println("$evaluation_count. **** $eval_score ****")
+    #             max_score = eval_score
+    #             max_moves = eval_moves
+
+    #             empty!(taboo)
+    #         end
+
+    #         if eval_score > pool_score
+    #             pool_score = eval_score
+    #         end
+
+
+
+    #         if eval_score >= min_accept_score - 4
+
+
+    #             pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
+    #             is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
+
+    #             if is_new
+                        
+    #                 if eval_score >= min_accept_score
+    #                     println("$evaluation_count. $subject_score($subject_visits) -> $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+
+    #                     pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+    #                     if eval_score >= subject_score
+    #                         pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+    #                     end
+    #                 else
+
+    #                     println("$evaluation_count. $subject_score($subject_visits) -> $eval_score d ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
+    #                     dump[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+    #                 end
+
+    #             else
+    #                 if pool_index_contains_hash
+    #                     (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
+    #                     pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+    #                 end
+    #             end
+    #         end
+            
+    #     end
+    #     iteration += 1
+    # end
 
 
         # focus_display = round(focus, digits = 2)
