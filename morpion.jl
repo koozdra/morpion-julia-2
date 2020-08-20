@@ -1372,6 +1372,12 @@ function run()
                     max_moves = eval_moves
                             
                     empty!(taboo)
+
+                    filter!(function (p)
+                        (key, (visits, dna, moves)) = p
+                        score = length(moves)
+                        (score >= (max_score - 4))
+                    end, dump)
                 end
         
                 pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
@@ -1419,6 +1425,12 @@ function run()
                 max_moves = eval_moves
             
                 empty!(taboo)
+
+                filter!(function (p)
+                    (key, (visits, dna, moves)) = p
+                    score = length(moves)
+                    (score >= (max_score - 4))
+                end, dump)
             end
     
     
