@@ -1376,8 +1376,9 @@ function run()
                     filter!(function (p)
                         (key, (visits, dna, moves)) = p
                         score = length(moves)
-                        (score < (max_score - 4))
+                        (score >= (max_score - 4))
                     end, dump)
+
                 end
         
                 pool_index_contains_hash = haskey(pool_index, eval_moves_hash)
@@ -1417,22 +1418,6 @@ function run()
                 println(max_moves)     
             end
             
-            
-            
-            if eval_score > max_score
-                println("$evaluation_count. **** $eval_score ****")
-                max_score = eval_score
-                max_moves = eval_moves
-            
-                empty!(taboo)
-
-                filter!(function (p)
-                    (key, (visits, dna, moves)) = p
-                    score = length(moves)
-                    (score < (max_score - 4))
-                end, dump)
-            end
-    
     
             if subject_visits >= subject_score * taboo_score_multiplier
                 taboo[subject_moves_hash] = subject
