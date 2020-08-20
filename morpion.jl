@@ -1376,7 +1376,7 @@ function run()
                     filter!(function (p)
                         (key, (visits, dna, moves)) = p
                         score = length(moves)
-                        (score >= (max_score - 4))
+                        (score < (max_score - 4))
                     end, dump)
                 end
         
@@ -1429,7 +1429,7 @@ function run()
                 filter!(function (p)
                     (key, (visits, dna, moves)) = p
                     score = length(moves)
-                    (score >= (max_score - 4))
+                    (score < (max_score - 4))
                 end, dump)
             end
     
