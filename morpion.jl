@@ -1258,8 +1258,6 @@ function run()
     focus_period = 100000
     focus_increment = 1 / focus_period
 
-    taboo_visits = 2000
-
     trip_time = Dates.now()
     pool_index = Dict(points_hash(moves) => (0, dna, moves))
     pool_score = length(moves)
@@ -1273,7 +1271,7 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 6
     # dimitri
 
     while true
@@ -1307,7 +1305,7 @@ function run()
         already_end_searched = haskey(end_searched, subject_moves_hash)
         
         if subject_score < pool_score
-            taboo[subject_moves_hash] = subject
+            dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
             println(" --- $subject_score ($subject_visits) $(length(pool_index))")
         elseif !already_end_searched && subject_score > 100
