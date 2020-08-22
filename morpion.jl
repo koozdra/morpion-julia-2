@@ -1177,18 +1177,10 @@ function undo_modifications(modifications, dna)
 end
 
 function modify_dna(moves, visits, dna)
-    r = rand()
-    if r < 0.33
-        for i in 1:3
-            move = moves[rand(1:end)]
-            move_index = dna_index(move)
-            eval_index = rand(1:(length(dna)))
+    
+    score = length(moves)
 
-            temp = dna[eval_index]
-            dna[eval_index] = dna[move_index]
-            dna[move_index] = temp
-        end
-    elseif r < 0.66
+    if visits < (score * 2)
         move = moves[(visits % length(moves)) + 1]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
@@ -1196,15 +1188,30 @@ function modify_dna(moves, visits, dna)
         temp = dna[eval_index]
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
-    else
-        for i in 1:2
-            move = moves[rand(1:end)]
-            move_index = dna_index(move)
-            eval_index = rand(1:(length(dna)))
 
-            temp = dna[eval_index]
-            dna[eval_index] = dna[move_index]
-            dna[move_index] = temp
+    else
+        r = rand()
+
+        if r < 0.5
+            for i in 1:2
+                move = moves[rand(1:end)]
+                move_index = dna_index(move)
+                eval_index = rand(1:(length(dna)))
+    
+                temp = dna[eval_index]
+                dna[eval_index] = dna[move_index]
+                dna[move_index] = temp
+            end
+        else
+            for i in 1:3
+                move = moves[rand(1:end)]
+                move_index = dna_index(move)
+                eval_index = rand(1:(length(dna)))
+    
+                temp = dna[eval_index]
+                dna[eval_index] = dna[move_index]
+                dna[move_index] = temp
+            end
         end
     end
 
@@ -1395,9 +1402,9 @@ function run()
                         println("$evaluation_count. $subject_score($subject_visits) -> D $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     end
 
-                    if eval_score >= subject_score
-                        pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
-                    end
+                    # if eval_score >= subject_score
+                    pool_index[subject_moves_hash] = (0, subject_dna, subject_moves)
+                    # end
 
                 elseif pool_index_contains_hash
         
