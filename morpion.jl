@@ -1356,7 +1356,6 @@ function run()
                         println("  ES. $subject_score($subject_visits) -> D $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     end
 
-
                     used_count += 1
                 end
             end
@@ -1436,6 +1435,12 @@ function run()
                 delete!(dump, subject_moves_hash)
                 println(" - $subject_score ($subject_visits) $(length(pool_index))")
 
+                if length(pool_score) > 0
+                    pool_score = maximum(map(function(value)
+                        (visits, dna, moves) = value
+                        length(moves)
+                    end, values(pool_index)))
+                end
 
                 filter!(function(p)
                     (key, (visits, dna, moves)) = p
