@@ -504,7 +504,7 @@ function end_search(board_template, min_accept_score, index, moves)
 
     # println("$(length(eval_moves)) $min_score_found $max_score_found ($(length(index)))")
 
-    if length(eval_moves) > 2 && max_score_found >= min_accept_score
+    if length(eval_moves) > 2 && max_score_found >= (min_accept_score - 4)
         end_search(board_template, min_accept_score, index, eval_moves)
     end
 
@@ -1278,7 +1278,7 @@ function run()
     max_score = pool_score
     max_moves = moves
 
-    taboo_score_multiplier = 6
+    taboo_score_multiplier = 10
     # dimitri
 
     while true
@@ -1311,7 +1311,7 @@ function run()
         
         already_end_searched = haskey(end_searched, subject_moves_hash)
         
-        if subject_score < pool_score
+        if subject_score < pool_score - 1
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
             println(" --- $subject_score ($subject_visits) $(length(pool_index))")
@@ -1347,6 +1347,8 @@ function run()
                     new_value = (0, modified_dna, eval_moves)
                     if eval_score >= pool_score
                         pool_score = eval_score
+                    end
+                    if eval_score >= pool_score - 1
                         pool_index[eval_moves_hash] = new_value
                         println("  ES. $subject_score($subject_visits) => $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     elseif eval_score > pool_score - 4
@@ -1395,6 +1397,8 @@ function run()
                     new_value = (0, modified_dna, eval_moves)
                     if eval_score >= pool_score
                         pool_score = eval_score
+                    end
+                    if eval_score >= pool_score - 1
                         pool_index[eval_moves_hash] = new_value
                         println("$evaluation_count. $subject_score($subject_visits) => $eval_score ($pool_score, $max_score) i:$(length(pool_index)), d:$(length(dump)), t:$(length(taboo))")
                     elseif eval_score > pool_score - 4
@@ -1431,14 +1435,23 @@ function run()
                 delete!(pool_index, subject_moves_hash)
                 delete!(dump, subject_moves_hash)
                 println(" - $subject_score ($subject_visits) $(length(pool_index))")
+
+
+                filter!(function(p)
+                    (key, (visits, dna, moves)) = p
+                    score = length(moves)
+                    is_interesting = score == pool_score - 1
+        
+                    if is_interesting
+                        pool_index[key] = (visits, dna, moves)
+                    end
+        
+                    !is_interesting
+                end, dump)
             end
     
             iteration += 1
         end
-        
-        
-        
-
     end
 
     # while(true)
