@@ -1264,7 +1264,7 @@ function run()
     current_min_accept_score = 0
     
 
-    focus_period = 100000
+    focus_period = 200000
     focus_increment = 1 / focus_period
 
     trip_time = Dates.now()
@@ -1274,16 +1274,16 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 3
+    back_accept = 6
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 20
 
-    end_search_interval = 1000
+    end_search_interval = 200
 
     focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
 
@@ -1321,8 +1321,6 @@ function run()
             else
                 dump[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
                 
-                
-
                 println("$iteration. $marker$subject_score ($subject_visits) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
             end
             
@@ -1384,17 +1382,17 @@ function run()
             
         end
 
-        if subject_score < (focus_min_accept_score - 1)
+        if subject_score < floor(focus_min_accept_score)
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
-            println(" --- $subject_score ($subject_visits) $(length(pool_index)) $focus_min_accept_score")
+            # println(" --- $subject_score ($subject_visits) $(length(pool_index)) $focus_min_accept_score")
         else
             modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_score = length(eval_moves)
 
             if eval_score > subject_score - 4
-                on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, focus_min_accept_score, modified_dna, "")
+                on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
                 pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
         
             end
@@ -1427,7 +1425,7 @@ function run()
 
                 for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                     fendy_score = length(fendy_moves)
-                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, focus_min_accept_score, generate_dna_valid_rands(fendy_moves), "ES ")
+                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "ES ")
                 end
 
                 println("$iteration.  ES $subject_score g:$generated_count t:$(end_search_end_time - end_search_start_time)")
@@ -1448,6 +1446,17 @@ function run()
             end
 
             fill_index()
+        end
+
+        if iteration % 10000 == 0
+            current_time = Dates.now()
+            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+            trip_time = Dates.now()
+        end
+        
+        if iteration % 100000 == 0
+            println(max_score)
+            println(max_moves)     
         end
         
 
