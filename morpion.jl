@@ -504,7 +504,7 @@ function end_search(board_template, min_accept_score, index, moves)
 
     # println("$(length(eval_moves)) $min_score_found $max_score_found ($(length(index)))")
 
-    if length(eval_moves) > 2 && max_score_found >= (min_accept_score - 4)
+    if length(eval_moves) > 2 && max_score_found >= min_accept_score
         end_search(board_template, min_accept_score, index, eval_moves)
     end
 
@@ -1264,7 +1264,7 @@ function run()
     current_min_accept_score = 0
     
 
-    focus_period = 200000
+    focus_period = 100000
     focus_increment = 1 / focus_period
 
     trip_time = Dates.now()
@@ -1274,16 +1274,31 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 6
+    back_accept = 10
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 100
 
-    end_search_interval = 200
+    end_search_interval = 1000
+
+    for i in 1:1000
+        dna = rand(40 * 40 * 4)
+        moves = eval_dna(copy(board_template), dna)
+        score = length(moves)
+
+        pool_index[points_hash(moves)] = (0, dna, moves)
+        if score > max_score
+            max_score = score
+            max_moves = moves
+            pool_score = score
+
+            println(pool_score)
+        end
+    end
 
     focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
 
@@ -1302,7 +1317,7 @@ function run()
             filter!(function (p)
                 (key, (visits, dna, moves)) = p
                 score = length(moves)
-                (score >= (max_score - 8))
+                (score >= (max_score - back_accept))
             end, dump)
         end
                 
@@ -1338,7 +1353,6 @@ function run()
 
             if is_interesting && !haskey(pool_index, key)
                 pool_index[key] = (visits, dna, moves)
-                println(" +++ $score")
             end
 
             true
@@ -1377,8 +1391,10 @@ function run()
         if floor(focus_min_accept_score) != current_min_accept_score
             current_min_accept_score = floor(focus_min_accept_score)
 
-            println("$iteration. $current_min_accept_score i:$(length(pool_index))")
+            
             fill_index()
+
+            println("$iteration. $current_min_accept_score i:$(length(pool_index))")
             
         end
 
@@ -1387,14 +1403,27 @@ function run()
             delete!(pool_index, subject_moves_hash)
             # println(" --- $subject_score ($subject_visits) $(length(pool_index)) $focus_min_accept_score")
         else
+
+            iteration += 1
+
+            if iteration % 10000 == 0
+                current_time = Dates.now()
+                println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
+                trip_time = Dates.now()
+            end
+            
+            if iteration % 100000 == 0
+                println(max_score)
+                println(max_moves)     
+            end
+
             modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_score = length(eval_moves)
 
-            if eval_score > subject_score - 4
+            if eval_score > pool_score - back_accept
                 on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
                 pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
-        
             end
         end
 
@@ -1417,7 +1446,7 @@ function run()
 
                 end_searched[endy_hash] = true
                 end_search_start_time = Dates.now()
-                end_search_result = end_search(board_template, endy_score - 4, endy_moves)
+                end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
                 end_search_end_time = Dates.now()
 
                 generated_count = length(end_search_result)
@@ -1448,19 +1477,10 @@ function run()
             fill_index()
         end
 
-        if iteration % 10000 == 0
-            current_time = Dates.now()
-            println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
-            trip_time = Dates.now()
-        end
         
-        if iteration % 100000 == 0
-            println(max_score)
-            println(max_moves)     
-        end
         
 
-        iteration += 1
+        
         focus += focus_increment
 
         if focus >= 1
