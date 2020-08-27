@@ -1180,7 +1180,32 @@ function modify_dna(moves, visits, dna)
     
     score = length(moves)
 
-    if visits > (score * 2) && visits < (score * 3)
+    search_type = floor((visits % (score * 3)) / score)
+
+    if search_type == 0
+        for i in 1:3
+            move = moves[rand(1:end)]
+            move_index = dna_index(move)
+            eval_index = rand(1:(length(dna)))
+
+            temp = dna[eval_index]
+            dna[eval_index] = dna[move_index]
+            dna[move_index] = temp
+        end
+        
+
+    elseif search_type == 1
+        
+        for i in 1:2
+            move = moves[rand(1:end)]
+            move_index = dna_index(move)
+            eval_index = rand(1:(length(dna)))
+
+            temp = dna[eval_index]
+            dna[eval_index] = dna[move_index]
+            dna[move_index] = temp
+        end
+    else
         move = moves[(visits % length(moves)) + 1]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
@@ -1188,31 +1213,6 @@ function modify_dna(moves, visits, dna)
         temp = dna[eval_index]
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
-
-    else
-        r = rand()
-
-        if r < 0.5
-            for i in 1:2
-                move = moves[rand(1:end)]
-                move_index = dna_index(move)
-                eval_index = rand(1:(length(dna)))
-    
-                temp = dna[eval_index]
-                dna[eval_index] = dna[move_index]
-                dna[move_index] = temp
-            end
-        else
-            for i in 1:3
-                move = moves[rand(1:end)]
-                move_index = dna_index(move)
-                eval_index = rand(1:(length(dna)))
-    
-                temp = dna[eval_index]
-                dna[eval_index] = dna[move_index]
-                dna[move_index] = temp
-            end
-        end
     end
 
     # move = moves[(visits % length(moves)) + 1]
@@ -1274,29 +1274,31 @@ function run()
     taboo = Dict(points_hash(moves) => (0, dna, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 10
+    back_accept = 4
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 3
 
     end_search_interval = 1000
 
-    for i in 1:1000
+    for i in 1:10000
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
 
-        pool_index[points_hash(moves)] = (0, dna, moves)
-        if score > max_score
+        
+        if score >= max_score
             max_score = score
             max_moves = moves
             pool_score = score
 
-            println(pool_score)
+            pool_index[points_hash(moves)] = (0, dna, moves)
+
+            println("$i. $pool_score")
         end
     end
 
@@ -1317,7 +1319,7 @@ function run()
             filter!(function (p)
                 (key, (visits, dna, moves)) = p
                 score = length(moves)
-                (score >= (max_score - back_accept))
+                (score >= (max_score - 12))
             end, dump)
         end
                 
@@ -1394,6 +1396,7 @@ function run()
             
             fill_index()
 
+            println()
             println("$iteration. $current_min_accept_score i:$(length(pool_index))")
             
         end
@@ -1401,21 +1404,9 @@ function run()
         if subject_score < floor(focus_min_accept_score)
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
-            # println(" --- $subject_score ($subject_visits) $(length(pool_index)) $focus_min_accept_score")
+            
         else
 
-            iteration += 1
-
-            if iteration % 10000 == 0
-                current_time = Dates.now()
-                println("$iteration. $pool_score $(current_time - trip_time) $(length(pool_index))  ($max_score)")
-                trip_time = Dates.now()
-            end
-            
-            if iteration % 100000 == 0
-                println(max_score)
-                println(max_moves)     
-            end
 
             modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
             eval_moves = eval_dna(copy(board_template), modified_dna)
@@ -1454,7 +1445,7 @@ function run()
 
                 for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                     fendy_score = length(fendy_moves)
-                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "ES ")
+                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
                 end
 
                 println("$iteration.  ES $subject_score g:$generated_count t:$(end_search_end_time - end_search_start_time)")
@@ -1477,9 +1468,18 @@ function run()
             fill_index()
         end
 
+        if iteration % 10000 == 0
+            current_time = Dates.now()
+            println("$iteration. $current_min_accept_score/$pool_score $(current_time - trip_time) i:$(length(pool_index)) d:$(length(dump))  ($max_score)")
+            trip_time = Dates.now()
+        end
         
+        if iteration % 100000 == 0
+            println(max_score)
+            println(max_moves)     
+        end
         
-
+        iteration += 1
         
         focus += focus_increment
 
