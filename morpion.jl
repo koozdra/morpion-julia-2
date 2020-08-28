@@ -1215,22 +1215,38 @@ function modify_dna(moves, visits, dna)
         dna[move_index] = temp
     end
 
-    # move = moves[(visits % length(moves)) + 1]
-    # move_index = dna_index(move)
-    # eval_index = rand(1:(length(dna)))
-
-    # temp = dna[eval_index]
-    # dna[eval_index] = dna[move_index]
-    # dna[move_index] = temp
-    # end
-
     dna
 end
 
-# function clean_pool_index(index, min_accept_score){
-#     new_index =
+# function modify_dna(moves, visits, dna)
+    
+#     score = length(moves)
 
-# }
+#     search_type = floor((visits % (score * 3)) / score)
+
+#     if search_type == 0
+#         for i in 1:3
+#             move = moves[rand(1:end)]
+#             move_index = dna_index(move)
+#             dna[move_index] = 0
+#         end
+        
+
+#     elseif search_type == 1
+        
+#         for i in 1:2
+#             move = moves[rand(1:end)]
+#             move_index = dna_index(move)
+#             dna[move_index] = 0
+#         end
+#     else
+#         move = moves[(visits % length(moves)) + 1]
+#         move_index = dna_index(move)
+#         dna[move_index] = 0
+#     end
+
+#     dna
+# end
 
 function build_pool_from_pool_index(pool_index)
     map(function(value)
@@ -1268,20 +1284,20 @@ function run()
     focus_increment = 1 / focus_period
 
     trip_time = Dates.now()
-    pool_index = Dict(points_hash(moves) => (0, dna, moves))
+    pool_index = Dict(points_hash(moves) => (0, moves))
     pool_score = length(moves)
-    dump = Dict(points_hash(moves) => (0, dna, moves))
-    taboo = Dict(points_hash(moves) => (0, dna, moves))
+    dump = Dict(points_hash(moves) => (0, moves))
+    taboo = Dict(points_hash(moves) => (0, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 2
+    back_accept = 3
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 9
+    taboo_score_multiplier = 3
 
     end_search_interval = 1000
 
@@ -1296,7 +1312,7 @@ function run()
             max_moves = moves
             pool_score = score
 
-            pool_index[points_hash(moves)] = (0, dna, moves)
+            pool_index[points_hash(moves)] = (0, moves)
 
             println("$i. $pool_score")
         end
@@ -1317,7 +1333,7 @@ function run()
             empty!(taboo)
         
             filter!(function (p)
-                (key, (visits, dna, moves)) = p
+                (key, (visits, moves)) = p
                 score = length(moves)
                 (score >= (max_score - 12))
             end, dump)
@@ -1328,33 +1344,33 @@ function run()
 
         if is_new
 
-            (d_visits, d_dna, d_moves) = pool_index[subject_hash]
-            pool_index[subject_hash] = (0, d_dna, d_moves)
+            (d_visits, d_moves) = pool_index[subject_hash]
+            pool_index[subject_hash] = (0, d_moves)
 
             if eval_score >= floor(focus_min_accept_score)
-                pool_index[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+                pool_index[eval_moves_hash] = (0, eval_moves)
 
                 println("$iteration. $marker$subject_score ($subject_visits) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
             else
-                dump[eval_moves_hash] = (0, copy(modified_dna), eval_moves)
+                dump[eval_moves_hash] = (0, eval_moves)
                 
                 println("$iteration. $marker$subject_score ($subject_visits) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
             end
             
         elseif pool_index_contains_hash
-            (d_visits, d_dna, d_moves) = pool_index[eval_moves_hash]
-            pool_index[eval_moves_hash] = (d_visits, copy(modified_dna), eval_moves)
+            (d_visits, d_moves) = pool_index[eval_moves_hash]
+            pool_index[eval_moves_hash] = (d_visits, eval_moves)
         end
     end
 
     function fill_index()
         filter!(function(p)
-            (key, (visits, dna, moves)) = p
+            (key, (visits, moves)) = p
             score = length(moves)
             is_interesting = score >= floor(focus_min_accept_score)
 
             if is_interesting && !haskey(pool_index, key)
-                pool_index[key] = (visits, dna, moves)
+                pool_index[key] = (visits, moves)
             end
 
             true
@@ -1366,7 +1382,7 @@ function run()
 
         if length(pool_index) == 0
             max_dump_score = maximum(map(function(value)
-                (visits, dna, moves) = value
+                (visits, moves) = value
                 length(moves)
             end, values(dump)))
 
@@ -1383,7 +1399,7 @@ function run()
         end
 
         (subject_moves_hash, subject) = collect(pairs(pool_index))[(iteration % length(pool_index)) + 1]
-        (subject_visits, subject_dna, subject_moves) = subject
+        (subject_visits, subject_moves) = subject
         subject_score = length(subject_moves)
 
         pool_score = max(pool_score, subject_score)
@@ -1407,20 +1423,20 @@ function run()
             
         else
 
-
-            modified_dna = modify_dna(subject_moves, subject_visits, copy(subject_dna))
+            subject_dna = generate_dna_valid_rands(subject_moves)
+            modified_dna = modify_dna(subject_moves, subject_visits, subject_dna)
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_score = length(eval_moves)
 
             if eval_score > pool_score - back_accept
                 on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
-                pool_index[subject_moves_hash] = (subject_visits + 1, subject_dna, subject_moves)
+                pool_index[subject_moves_hash] = (subject_visits + 1, subject_moves)
             end
         end
 
         if iteration % end_search_interval == 0 && max_score >= 100
             (endy_hash, endy) = maxby(function(pair)
-                (key, (visits, dna, moves)) = pair
+                (key, (visits, moves)) = pair
                 score = length(moves)
                 already_end_searched = haskey(end_searched, key)
                 
@@ -1432,7 +1448,7 @@ function run()
             end, collect(pairs(pool_index)))
 
             if !haskey(end_searched, endy_hash)
-                (endy_visits, endy_dna, endy_moves) = endy
+                (endy_visits, endy_moves) = endy
                 endy_score = length(endy_moves)
 
                 end_searched[endy_hash] = true
@@ -1460,7 +1476,7 @@ function run()
 
             if length(pool_index) > 0
                 pool_score = maximum(map(function(value)
-                    (visits, dna, moves) = value
+                    (visits, moves) = value
                     length(moves)
                 end, values(pool_index)))
             end
