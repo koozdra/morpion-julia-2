@@ -1290,14 +1290,14 @@ function run()
     taboo = Dict(points_hash(moves) => (0, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 3
+    back_accept = 6
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 21
 
     end_search_interval = 1000
 
