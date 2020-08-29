@@ -1290,7 +1290,7 @@ function run()
     taboo = Dict(points_hash(moves) => (0, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 6
+    back_accept = 1
     min_accept_modifier = -back_accept
 
     max_score = pool_score
@@ -1335,7 +1335,7 @@ function run()
             filter!(function (p)
                 (key, (visits, moves)) = p
                 score = length(moves)
-                (score >= (max_score - 12))
+                (score >= (max_score - 20))
             end, dump)
         end
                 
@@ -1428,7 +1428,7 @@ function run()
             eval_moves = eval_dna(copy(board_template), modified_dna)
             eval_score = length(eval_moves)
 
-            if eval_score > pool_score - back_accept
+            if eval_score >= pool_score - back_accept
                 on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
                 pool_index[subject_moves_hash] = (subject_visits + 1, subject_moves)
             end
