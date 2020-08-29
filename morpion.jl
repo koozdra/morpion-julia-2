@@ -1274,6 +1274,8 @@ function run()
 
     iteration = 0
     # evaluation_count = 0
+
+    max_visit_score_multiplier = 0
     
 
     focus = 0
@@ -1290,14 +1292,14 @@ function run()
     taboo = Dict(points_hash(moves) => (0, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 1
+    back_accept = 3
     min_accept_modifier = -back_accept
 
     max_score = pool_score
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 21
+    taboo_score_multiplier = 100
 
     end_search_interval = 1000
 
@@ -1347,14 +1349,18 @@ function run()
             (d_visits, d_moves) = pool_index[subject_hash]
             pool_index[subject_hash] = (0, d_moves)
 
+            visit_score_multiplier = floor(subject_visits / subject_score)
+
+            max_visit_score_multiplier = max(visit_score_multiplier, max_visit_score_multiplier)
+
             if eval_score >= floor(focus_min_accept_score)
                 pool_index[eval_moves_hash] = (0, eval_moves)
 
-                println("$iteration. $marker$subject_score ($subject_visits) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
             else
                 dump[eval_moves_hash] = (0, eval_moves)
                 
-                println("$iteration. $marker$subject_score ($subject_visits) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
             end
             
         elseif pool_index_contains_hash
@@ -1429,8 +1435,9 @@ function run()
             eval_score = length(eval_moves)
 
             if eval_score >= pool_score - back_accept
-                on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
                 pool_index[subject_moves_hash] = (subject_visits + 1, subject_moves)
+                on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")
+                
             end
         end
 
@@ -3330,3 +3337,6 @@ function run()
 end
 
 run()
+
+# 170
+# Move[Move(2, 9, 1, 0), Move(9, 7, 3, -4), Move(0, 2, 3, 0), Move(3, -1, 3, 0), Move(5, 1, 2, -2), Move(6, -1, 3, 0), Move(4, 1, 0, -2), Move(2, 0, 1, 0), Move(5, 6, 1, 0), Move(4, 6, 1, -3), Move(-1, 3, 1, 0), Move(1, 1, 0, -2), Move(2, 1, 1, -1), Move(1, 5, 2, -2), Move(2, 2, 0, -2), Move(2, 4, 3, -4), Move(4, 2, 0, -2), Move(1, 2, 1, -1), Move(4, -1, 0, -4), Move(7, 2, 2, -3), Move(4, 3, 3, -4), Move(5, 3, 1, -2), Move(6, 4, 2, -4), Move(6, 5, 3, -2), Move(5, 4, 2, -3), Move(4, 5, 0, -1), Move(3, 4, 2, -2), Move(3, 5, 3, -2), Move(5, 7, 2, -4), Move(5, 5, 3, -2), Move(4, 4, 2, -2), Move(4, 7, 3, -4), Move(1, 10, 0, 0), Move(7, 4, 1, -4), Move(5, 2, 2, -2), Move(5, -1, 3, 0), Move(7, -1, 1, -4), Move(8, 2, 1, -4), Move(9, 1, 0, -4), Move(7, 0, 0, -4), Move(7, 1, 3, -2), Move(8, 1, 1, -3), Move(8, 0, 0, -4), Move(8, 4, 3, -4), Move(9, 2, 0, -4), Move(7, 5, 1, -4), Move(10, 8, 2, -4), Move(10, 2, 0, -4), Move(11, 3, 2, -4), Move(10, 3, 1, -3), Move(11, 4, 2, -4), Move(10, 4, 1, -3), Move(12, 2, 0, -4), Move(11, 2, 1, -3), Move(8, 5, 0, -1), Move(11, 5, 2, -4), Move(10, 5, 1, -3), Move(10, 6, 3, -4), Move(11, 7, 2, -4), Move(11, 6, 3, -3), Move(12, 7, 2, -4), Move(7, 7, 3, -4), Move(8, 7, 1, -4), Move(10, 7, 1, -2), Move(11, 8, 2, -4), Move(8, 8, 3, -4), Move(7, 9, 0, 0), Move(7, 8, 0, 0), Move(9, 8, 1, -3), Move(10, 9, 2, -4), Move(10, 10, 3, -4), Move(9, 9, 2, -3), Move(8, 9, 1, -2), Move(9, 10, 2, -4), Move(8, 11, 0, 0), Move(9, 11, 3, -4), Move(8, 10, 2, -3), Move(8, 12, 3, -4), Move(7, 11, 0, 0), Move(7, 10, 0, 0), Move(5, 8, 2, -1), Move(3, 10, 0, 0), Move(3, 11, 3, -4), Move(6, 10, 1, 0), Move(4, 8, 2, -1), Move(2, 10, 0, 0), Move(4, 10, 0, 0), Move(5, 10, 1, -3), Move(5, 11, 3, -4), Move(6, 11, 1, -1), Move(7, 12, 2, -4), Move(7, 13, 3, -4), Move(6, 14, 0, 0), Move(6, 12, 2, -3), Move(4, 11, 3, -4), Move(3, 12, 0, 0), Move(1, 4, 3, -3), Move(2, 5, 2, -2), Move(-1, 4, 1, 0), Move(2, 7, 2, -3), Move(2, 8, 3, -2), Move(1, 9, 0, 0), Move(1, 8, 1, 0), Move(1, 7, 3, -2), Move(0, 8, 0, 0), Move(0, 7, 1, 0), Move(-1, 8, 0, 0), Move(-1, 5, 2, 0), Move(-2, 5, 1, 0), Move(-1, 6, 2, -1), Move(-1, 7, 3, -4), Move(-2, 6, 2, 0), Move(-3, 6, 1, 0), Move(-4, 7, 0, 0), Move(-2, 8, 0, 0), Move(-3, 8, 1, 0), Move(-2, 7, 0, 0), Move(-3, 7, 1, -1), Move(-4, 8, 0, 0), Move(0, 9, 2, -3), Move(0, 10, 3, -4), Move(6, 13, 3, -3), Move(5, 12, 2, -3), Move(4, 12, 1, 0), Move(3, 13, 0, 0), Move(5, 13, 2, -3), Move(4, 13, 1, -1), Move(3, 14, 0, 0), Move(3, 15, 3, -4), Move(4, 14, 0, -1), Move(4, 15, 3, -4), Move(5, 14, 0, -1), Move(2, 11, 2, -1), Move(1, 11, 1, 0), Move(-1, 9, 2, -2), Move(-2, 9, 1, 0), Move(-2, 10, 3, -4), Move(-1, 10, 1, -1), Move(-2, 11, 0, 0), Move(-1, 11, 3, -4), Move(0, 11, 2, -4), Move(-3, 11, 1, 0), Move(-4, 12, 0, 0), Move(2, 14, 1, 0), Move(5, 15, 3, -4), Move(2, 12, 2, -1), Move(2, 13, 3, -3), Move(1, 12, 2, -1), Move(0, 12, 1, 0), Move(1, 13, 2, -2), Move(0, 14, 0, 0), Move(0, 13, 3, -3), Move(-1, 14, 0, 0), Move(-1, 13, 1, 0), Move(-2, 14, 0, 0), Move(1, 14, 1, -3), Move(1, 15, 3, -4), Move(-2, 12, 2, -1), Move(-2, 13, 3, -3), Move(-3, 13, 0, 0), Move(2, 15, 1, -1), Move(-1, 12, 2, -1), Move(-3, 14, 0, 0), Move(-3, 12, 1, -1), Move(-3, 10, 3, 0), Move(-3, 9, 3, -3), Move(-5, 7, 2, 0), Move(-1, 15, 3, -4), Move(0, 16, 2, -4), Move(-1, 17, 0, 0)]
