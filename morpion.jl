@@ -1292,7 +1292,7 @@ function run()
     taboo = Dict(points_hash(moves) => (0, moves))
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
-    back_accept = 2
+    back_accept = 6
     min_accept_modifier = -back_accept
 
     max_score = pool_score
@@ -1303,7 +1303,7 @@ function run()
 
     end_search_interval = 1000
 
-    for i in 1:10000
+    for i in 1:100000
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
