@@ -504,7 +504,7 @@ function end_search(board_template, min_accept_score, index, moves)
 
     # println("$(length(eval_moves)) $min_score_found $max_score_found ($(length(index)))")
 
-    if length(eval_moves) > 2 && max_score_found >= min_accept_score
+    if length(eval_moves) > 2 && max_score_found >= min_accept_score && length(index) < 300
         end_search(board_template, min_accept_score, index, eval_moves)
     end
 
@@ -1293,7 +1293,7 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 6
+    back_accept = 8
     min_accept_modifier = -back_accept
 
     max_score = pool_score
