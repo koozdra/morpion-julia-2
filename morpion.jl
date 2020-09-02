@@ -1468,7 +1468,7 @@ function run()
                 (endy_visits, endy_moves) = endy
                 endy_score = length(endy_moves)
 
-                if endy_score >= floor(focus_min_accept_score)
+                if endy_score >= pool_score - back_accept
                     end_searched[endy_hash] = true
                     end_search_start_time = Dates.now()
                     end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
