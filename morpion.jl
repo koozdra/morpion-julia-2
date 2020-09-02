@@ -1468,25 +1468,25 @@ function run()
                 (endy_visits, endy_moves) = endy
                 endy_score = length(endy_moves)
 
-                end_searched[endy_hash] = true
-                end_search_start_time = Dates.now()
-                end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
-                end_search_end_time = Dates.now()
+                if endy_score >= floor(focus_min_accept_score)
+                    end_searched[endy_hash] = true
+                    end_search_start_time = Dates.now()
+                    end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
+                    end_search_end_time = Dates.now()
 
-                generated_count = length(end_search_result)
-                used_count = 0
-                is_end_search_derived = haskey(end_search_derived, endy_hash)
-                println()
-                println("$iteration. ES $subject_score end_search_derived: $is_end_search_derived")
+                    generated_count = length(end_search_result)
+                    used_count = 0
+                    is_end_search_derived = haskey(end_search_derived, endy_hash)
+                    println("$iteration. ES $endy_score end_search_derived: $is_end_search_derived")
 
-                for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
-                    fendy_score = length(fendy_moves)
-                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
-                    end_search_derived[fendy_key] = true
+                    for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
+                        fendy_score = length(fendy_moves)
+                        on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
+                        end_search_derived[fendy_key] = true
+                    end
+
+                    println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
                 end
-
-                println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
-                println()
             end
         end
 
