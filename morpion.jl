@@ -1293,7 +1293,7 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 8
+    back_accept = 3
     min_accept_modifier = -back_accept
 
     max_score = pool_score
