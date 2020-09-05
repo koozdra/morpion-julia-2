@@ -1301,7 +1301,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 3
 
     end_search_interval = 100
 
