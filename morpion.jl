@@ -1178,35 +1178,13 @@ end
 
 function modify_dna(moves, visits, dna)
     
-    score = length(moves)
+    # score = length(moves)
 
-    search_type = floor((visits % (score * 3)) / score)
+    # search_type = floor((visits % (score * 3)) / score)
 
-    if search_type == 0
-        for i in 1:3
-            move = moves[rand(1:end)]
-            move_index = dna_index(move)
-            eval_index = rand(1:(length(dna)))
-
-            temp = dna[eval_index]
-            dna[eval_index] = dna[move_index]
-            dna[move_index] = temp
-        end
-        
-
-    elseif search_type == 1
-        
-        for i in 1:2
-            move = moves[rand(1:end)]
-            move_index = dna_index(move)
-            eval_index = rand(1:(length(dna)))
-
-            temp = dna[eval_index]
-            dna[eval_index] = dna[move_index]
-            dna[move_index] = temp
-        end
-    else
-        move = moves[(visits % length(moves)) + 1]
+    # if search_type == 0
+    for i in 1:3
+        move = moves[rand(1:end)]
         move_index = dna_index(move)
         eval_index = rand(1:(length(dna)))
 
@@ -1214,6 +1192,28 @@ function modify_dna(moves, visits, dna)
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
     end
+        
+
+    # elseif search_type == 1
+        
+    #     for i in 1:2
+    #         move = moves[rand(1:end)]
+    #         move_index = dna_index(move)
+    #         eval_index = rand(1:(length(dna)))
+
+    #         temp = dna[eval_index]
+    #         dna[eval_index] = dna[move_index]
+    #         dna[move_index] = temp
+    #     end
+    # else
+    #     move = moves[(visits % length(moves)) + 1]
+    #     move_index = dna_index(move)
+    #     eval_index = rand(1:(length(dna)))
+
+    #     temp = dna[eval_index]
+    #     dna[eval_index] = dna[move_index]
+    #     dna[move_index] = temp
+    # end
 
     dna
 end
@@ -1301,7 +1301,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 10
 
     end_search_interval = 100
 
@@ -1325,7 +1325,6 @@ function run()
     end
 
     focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
-
 
     function on_new_found(subject_score, subject_visits, subject_hash, eval_moves, focus_min_accept_score, modified_dna, marker)
         eval_moves_hash = points_hash(eval_moves)
