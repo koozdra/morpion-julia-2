@@ -504,7 +504,7 @@ function end_search(board_template, min_accept_score, index, moves)
 
     # println("$(length(eval_moves)) $min_score_found $max_score_found ($(length(index)))")
 
-    if length(eval_moves) > 2 && max_score_found >= min_accept_score && length(index) < 300
+    if length(eval_moves) > 2 && max_score_found >= min_accept_score && length(index) < 500
         end_search(board_template, min_accept_score, index, eval_moves)
     end
 
@@ -1255,6 +1255,24 @@ function build_pool_from_pool_index(pool_index)
     end, collect(values(pool_index)))
 end
 
+function get_min_accept_score(pool_score, back_accept, focus) 
+    # floor(pool_score - back_accept + (focus * (back_accept + 1)))
+    
+    if focus < 0.1
+        pool_score - 4
+    elseif focus < 0.2
+        pool_score - 3
+    elseif focus < 0.3
+        pool_score - 2
+    elseif focus < 0.4
+        pool_score - 1
+    else
+        pool_score
+    end
+
+    # pool_score
+end
+
 
 function run()
     board_template = generate_initial_board()
@@ -1301,7 +1319,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 2
 
     end_search_interval = 100
 
@@ -1324,7 +1342,7 @@ function run()
         end
     end
 
-    focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
+    focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
 
     function on_new_found(subject_score, subject_visits, subject_hash, eval_moves, focus_min_accept_score, modified_dna, marker)
         eval_moves_hash = points_hash(eval_moves)
@@ -1363,11 +1381,18 @@ function run()
             if eval_score >= floor(focus_min_accept_score)
                 pool_index[eval_moves_hash] = (0, eval_moves)
 
-                println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                if length(marker) > 0
+                    println("$iteration. $marker$subject_score => $eval_score")
+                else
+                    println("$iteration. $subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                end
             else
                 
-                
-                println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                if length(marker) > 0
+                    println("$iteration. $marker$subject_score -> D $eval_score")
+                else
+                    println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                end
             end
             
         elseif pool_index_contains_hash
@@ -1401,7 +1426,7 @@ function run()
 
             # println("max dump score $max_dump_score")
             pool_score = max_dump_score
-            focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
+            focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
 
             # println("focus_min_accept_score $focus_min_accept_score")
 
@@ -1417,7 +1442,7 @@ function run()
 
         pool_score = max(pool_score, subject_score)
 
-        focus_min_accept_score = pool_score - back_accept + (focus * (back_accept + 1))
+        focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
 
         if floor(focus_min_accept_score) != current_min_accept_score
             current_min_accept_score = floor(focus_min_accept_score)
