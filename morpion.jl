@@ -1257,17 +1257,17 @@ end
 
 function get_min_accept_score(pool_score, back_accept, focus) 
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
-    if focus < 0.05
+    if focus < 0.1
         pool_score - 6
-    elseif focus < 0.1
-        pool_score - 5
     elseif focus < 0.2
-        pool_score - 4
+        pool_score - 5
     elseif focus < 0.3
-        pool_score - 3
+        pool_score - 4
     elseif focus < 0.4
-        pool_score - 2
+        pool_score - 3
     elseif focus < 0.5
+        pool_score - 2
+    elseif focus < 0.6
         pool_score - 1
     else
         pool_score
