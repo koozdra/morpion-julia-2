@@ -1183,6 +1183,7 @@ function modify_dna(moves, visits, dna)
     # search_type = floor((visits % (score * 3)) / score)
 
     # if search_type == 0
+    # if visits % 2 == 1
     for i in 1:3
         move = moves[rand(1:end)]
         move_index = dna_index(move)
@@ -1192,6 +1193,15 @@ function modify_dna(moves, visits, dna)
         dna[eval_index] = dna[move_index]
         dna[move_index] = temp
     end
+    # else
+    #     move = moves[rand(1:end)]
+    #     move_index = dna_index(move)
+    #     eval_index = rand(1:(length(dna)))
+
+    #     temp = dna[eval_index]
+    #     dna[eval_index] = dna[move_index]
+    #     dna[move_index] = temp
+    # end
         
 
     # elseif search_type == 1
@@ -1257,17 +1267,17 @@ end
 
 function get_min_accept_score(pool_score, back_accept, focus) 
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
-    if focus < 0.1
+    if focus < 0.03
         pool_score - 6
-    elseif focus < 0.2
+    elseif focus < 0.06
         pool_score - 5
-    elseif focus < 0.3
+    elseif focus < 0.1
         pool_score - 4
-    elseif focus < 0.4
+    elseif focus < 0.2
         pool_score - 3
-    elseif focus < 0.5
+    elseif focus < 0.4
         pool_score - 2
-    elseif focus < 0.6
+    elseif focus < 0.7
         pool_score - 1
     else
         pool_score
@@ -1322,7 +1332,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 4
 
     end_search_interval = 100
 
