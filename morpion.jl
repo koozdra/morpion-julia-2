@@ -1521,7 +1521,7 @@ function run()
                         fendy_score = length(fendy_moves)
                         on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
                         # end_search_derived[fendy_key] = true
-                        end_searched[fendy_key] = true
+                        # end_searched[fendy_key] = true
                     end
 
                     println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
