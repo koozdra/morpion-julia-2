@@ -1334,7 +1334,7 @@ function run()
     current_min_accept_score = 0
     taboo_score_multiplier = 4
 
-    end_search_interval = 100
+    end_search_interval = 1000
 
     for i in 1:100000
         dna = rand(40 * 40 * 4)
