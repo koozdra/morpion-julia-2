@@ -1266,7 +1266,7 @@ function build_pool_from_pool_index(pool_index)
 end
 
 function get_min_accept_score(pool_score, back_accept, focus) 
-    step_back = 2
+    step_back = 6
     floor(pool_score - step_back + (focus * (step_back + 1)))
     
     # if focus < 0.2
@@ -1323,7 +1323,7 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 4
+    back_accept = 6
     min_accept_modifier = -back_accept
 
     max_score = pool_score
