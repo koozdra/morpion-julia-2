@@ -482,7 +482,7 @@ function end_search(board_template, min_accept_score, index, moves)
     gym = new_gym(board_template)
     step_moves(gym, eval_moves)
     search_counter = 0
-    search_timeout = 20
+    search_timeout = 10
     num_new_found = 0
     max_score_found = 0
     min_score_found = 100000
@@ -1266,20 +1266,24 @@ function build_pool_from_pool_index(pool_index)
 end
 
 function get_min_accept_score(pool_score, back_accept, focus) 
-    step_back = 6
-    floor(pool_score - step_back + (focus * (step_back + 1)))
     
-    # if focus < 0.2
-    #     pool_score - 4
-    # elseif focus < 0.4
-    #     pool_score - 3
-    # elseif focus < 0.6
-    #     pool_score - 2
-    # elseif focus < 0.8
-    #     pool_score - 1
-    # else
-    #     pool_score
-    # end
+    # floor(pool_score - back_accept + (focus * (back_accept + 1)))
+    
+    if focus < 0.05
+        pool_score - 6
+    elseif focus < 0.1
+        pool_score - 5
+    elseif focus < 0.15
+        pool_score - 4
+    elseif focus < 0.2
+        pool_score - 3
+    elseif focus < 0.3
+        pool_score - 2
+    elseif focus < 0.4
+        pool_score - 1
+    else
+        pool_score
+    end
 
     # pool_score
 end
@@ -1330,9 +1334,9 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 4
+    taboo_score_multiplier = 3
 
-    end_search_interval = 1000
+    end_search_interval = 200
 
     for i in 1:100000
         dna = rand(40 * 40 * 4)
