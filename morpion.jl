@@ -1269,17 +1269,17 @@ function get_min_accept_score(pool_score, back_accept, focus)
     
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
     
-    if focus < 0.05
+    if focus < 0.1
         pool_score - 6
-    elseif focus < 0.1
-        pool_score - 5
-    elseif focus < 0.15
-        pool_score - 4
     elseif focus < 0.2
-        pool_score - 3
+        pool_score - 5
     elseif focus < 0.3
-        pool_score - 2
+        pool_score - 4
     elseif focus < 0.4
+        pool_score - 3
+    elseif focus < 0.5
+        pool_score - 2
+    elseif focus < 0.6
         pool_score - 1
     else
         pool_score
@@ -1334,7 +1334,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 4
+    taboo_score_multiplier = 20
 
     end_search_interval = 500
 
@@ -1393,20 +1393,24 @@ function run()
 
             dump[eval_moves_hash] = (0, eval_moves)
 
+            post_amble = "$eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump)) t.$(length(taboo))"
+
             if eval_score >= floor(focus_min_accept_score)
                 pool_index[eval_moves_hash] = (0, eval_moves)
+
+                
 
                 if length(marker) > 0
                     println("$iteration. $marker$subject_score => $eval_score")
                 else
-                    println("$iteration. $subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                    println("$iteration. $subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $post_amble")
                 end
             else
                 
                 if length(marker) > 0
                     println("$iteration. $marker$subject_score -> D $eval_score")
                 else
-                    println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $eval_score ($(floor(focus_min_accept_score)), $pool_score, $max_score) i.$(length(pool_index)) d.$(length(dump))")
+                    println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $post_amble")
                 end
             end
             
@@ -1492,7 +1496,7 @@ function run()
             (endy_visits, endy_moves) = endy
             endy_score = length(endy_moves)
 
-            if !haskey(end_searched, endy_hash) && endy_score > 100
+            if !haskey(end_searched, endy_hash) && endy_score > 100 && endy_score >= pool_score - 2
 
                 end_search_start_time = Dates.now()
                 
