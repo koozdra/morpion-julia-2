@@ -263,6 +263,31 @@ function eval_dna(board, dna::Array{Float64,1})
 end
 
 
+
+function eval_dna_zeros(board, dna::Array{Float64,1})
+    function dna_move_reducer(a, b)
+        a_index = dna_index(a)
+        b_index = dna_index(b)
+        a_val = dna[a_index]
+        b_val = dna[b_index]
+
+        if (a_val == 0) 
+            a_val = rand() * 0.9
+            dna[a_index] = a_val
+        end
+
+        if (b_val == 0) 
+            b_val = rand() * 0.9
+            dna[b_index] = b_val
+        end
+
+        (a_val > b_val) ? a : b
+    end
+
+    eval_possible_move_reducer(board, dna_move_reducer)
+end
+
+
 function dna_index(x::Number, y::Number, direction::Number)
     (x + 15) * 40 * 4 + (y + 15) * 4 + abs(direction)
 end
@@ -307,6 +332,23 @@ function generate_dna_valid_rands(moves)
 
         i += 1
     end
+    morpion_dna
+end
+
+function generate_dna_zeros(moves)
+    morpion_dna = zeros(40 * 40 * 4)
+    score = length(moves)
+    # max_rand = maximum(morpion_dna)
+    move_increment = (0.1) / (score + 1)
+    i = 0
+    l = length(moves)
+
+    for move in moves
+        morpion_dna[dna_index(move)] = 0.9 + ((i + 1) * move_increment)
+
+        i += 1
+    end
+
     morpion_dna
 end
 
@@ -1236,6 +1278,16 @@ function modify_dna(moves, visits, dna)
     dna
 end
 
+function modify_dna_zeros(moves, visits, dna)
+    for i in 1:3
+        move = moves[rand(1:end)]
+        move_index = dna_index(move)
+        dna[move_index] = rand() * 0.9
+    end
+
+    dna
+end
+
 # function modify_dna(moves, visits, dna)
     
 #     score = length(moves)
@@ -1275,9 +1327,15 @@ end
 
 function get_min_accept_score(pool_score, back_accept, focus) 
     
-    floor(pool_score - back_accept + (focus * (back_accept + 1)))
+    # floor(pool_score - back_accept + (focus * (back_accept + 1)))
 
-    # n = 0.9
+    n = 0.7
+
+    if focus < n 
+        floor(pool_score - back_accept + ((focus / n ) *  back_accept))
+    else
+        pool_score
+    end
     # if focus < n / 8
     #     pool_score - 10
     # elseif focus < n / 7
@@ -1350,7 +1408,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 6
+    taboo_score_multiplier = 10
 
     taboo_reset_interval = 20000000
 
@@ -1501,9 +1559,9 @@ function run()
             
         else
 
-            subject_dna = generate_dna_valid_rands(subject_moves)
-            modified_dna = modify_dna(subject_moves, subject_visits, subject_dna)
-            eval_moves = eval_dna(copy(board_template), modified_dna)
+            subject_dna = generate_dna_zeros(subject_moves)
+            modified_dna = modify_dna_zeros(subject_moves, subject_visits, subject_dna)
+            eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
             eval_score = length(eval_moves)
 
             if eval_score >= pool_score - back_accept
