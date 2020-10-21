@@ -1329,13 +1329,13 @@ function get_min_accept_score(pool_score, back_accept, focus)
     
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
 
-    n = 0.7
+    # n = 0.8
 
-    if focus < n 
-        floor(pool_score - back_accept + ((focus / n ) *  back_accept))
-    else
-        pool_score
-    end
+    # if focus < n 
+    #     floor(pool_score - back_accept + ((focus / n ) *  back_accept))
+    # else
+    #     pool_score
+    # end
     # if focus < n / 8
     #     pool_score - 10
     # elseif focus < n / 7
@@ -1356,7 +1356,7 @@ function get_min_accept_score(pool_score, back_accept, focus)
     #     pool_score
     # end
 
-    # pool_score
+    pool_score
 end
 
 
@@ -1398,8 +1398,8 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 4
-    back_end_search = 2
+    back_accept = 2
+    back_end_search = 0
     min_accept_modifier = -back_accept
 
     min_end_search_step = 100000
@@ -1408,7 +1408,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 1
 
     taboo_reset_interval = 20000000
 
