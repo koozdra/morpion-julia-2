@@ -1408,7 +1408,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 1
+    taboo_score_multiplier = 2
 
     taboo_reset_interval = 20000000
 
@@ -1505,7 +1505,7 @@ function run()
             score = length(moves)
             is_interesting = score >= floor(focus_min_accept_score)
 
-            if is_interesting && !haskey(pool_index, key)
+            if is_interesting && !haskey(pool_index, key)&& !haskey(taboo, key)
                 pool_index[key] = (visits, moves)
             end
 
@@ -1553,7 +1553,7 @@ function run()
             
         end
 
-        if subject_score < floor(focus_min_accept_score)
+        if subject_score < floor(focus_min_accept_score) || haskey(taboo, subject_moves_hash)
             dump[subject_moves_hash] = subject
             delete!(pool_index, subject_moves_hash)
             
