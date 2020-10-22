@@ -1348,15 +1348,15 @@ function get_min_accept_score(pool_score, back_accept, focus)
     #     pool_score - 4
     # elseif focus < 2/5
     #     pool_score - 3
-    # elseif focus < 3/5
-    #     pool_score - 2
-    # elseif focus < 4/5
-    #     pool_score - 1
-    # else
-    #     pool_score
-    # end
+    if focus < 1 / 4
+        pool_score - 2
+    elseif focus < 1 / 2
+        pool_score - 1
+    else
+        pool_score
+    end
 
-    pool_score
+    # pool_score
 end
 
 
@@ -1408,7 +1408,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 2
+    taboo_score_multiplier = 10
 
     taboo_reset_interval = 20000000
 
@@ -1505,7 +1505,7 @@ function run()
             score = length(moves)
             is_interesting = score >= floor(focus_min_accept_score)
 
-            if is_interesting && !haskey(pool_index, key)&& !haskey(taboo, key)
+            if is_interesting && !haskey(pool_index, key) && !haskey(taboo, key)
                 pool_index[key] = (visits, moves)
             end
 
