@@ -1348,15 +1348,15 @@ function get_min_accept_score(pool_score, back_accept, focus)
     #     pool_score - 4
     # elseif focus < 2/5
     #     pool_score - 3
-    if focus < 1 / 4
-        pool_score - 2
-    elseif focus < 1 / 2
-        pool_score - 1
-    else
-        pool_score
-    end
+    # if focus < 1 / 4
+    #     pool_score - 2
+    # elseif focus < 1 / 2
+    #     pool_score - 1
+    # else
+    #     pool_score
+    # end
 
-    # pool_score
+    pool_score
 end
 
 
