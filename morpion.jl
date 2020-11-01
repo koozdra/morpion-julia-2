@@ -1357,13 +1357,13 @@ function get_min_accept_score(pool_score, back_accept, focus)
     # if focus < 0.3
     #     pool_score - 2
     # else
-    # if focus < 0.1
-    #     pool_score - 1
-    # else
-    #     pool_score
-    # end
+    if focus < 0.1
+        pool_score - 1
+    else
+        pool_score
+    end
 
-    pool_score
+    # pool_score
 end
 
 
@@ -1407,7 +1407,7 @@ function run()
     # end_search_derived = Dict(points_hash(moves) => true)
     back_accept = 4
     back_end_search = 4
-    back_visit_reset = back_accept
+    back_visit_reset = 0
     min_accept_modifier = -back_accept
 
     min_end_search_step = 0
@@ -1416,13 +1416,13 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 4
+    taboo_score_multiplier = 40
 
     end_search_interval = 500
 
     pool_index_select_counter = 0
 
-    for i in 1:1000
+    for i in 1:100000
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
@@ -1465,15 +1465,18 @@ function run()
         is_new = !pool_index_contains_hash && !haskey(dump, eval_moves_hash) && !haskey(taboo, eval_moves_hash)
 
         if is_new
-
-            if haskey(dump, subject_hash) # && eval_score >= subject_score - back_visit_reset
+            visit_score_multiplier = floor(subject_visits / subject_score)
+            if haskey(dump, subject_hash) && eval_score >= pool_score - back_visit_reset
                 (d_visits, d_moves) = pool_index[subject_hash]
                 pool_index[subject_hash] = (0, d_moves)
+
+                
+                max_visit_score_multiplier = max(visit_score_multiplier, max_visit_score_multiplier)
             end
 
-            visit_score_multiplier = floor(subject_visits / subject_score)
+            
 
-            max_visit_score_multiplier = max(visit_score_multiplier, max_visit_score_multiplier)
+            
 
             dump[eval_moves_hash] = (0, eval_moves)
 
@@ -1523,7 +1526,7 @@ function run()
     subject_score = 0
     (subject_moves_hash, subject) = collect(pairs(pool_index))[1]
     missed_selection_count = 0
-    max_missed_selections = 5
+    max_missed_selections = 3
     # dimitri
     while true
 
