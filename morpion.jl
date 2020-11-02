@@ -1328,7 +1328,7 @@ function get_min_accept_score(pool_score, back_accept, focus)
     
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
 
-    n = 0.6
+    n = 0.2
 
     if focus < n 
         floor(pool_score - back_accept + ((focus / n ) *  back_accept))
@@ -1417,7 +1417,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 100
 
     end_search_interval = 500
 
@@ -1527,7 +1527,7 @@ function run()
     subject_score = 0
     (subject_moves_hash, subject) = collect(pairs(pool_index))[1]
     missed_selection_count = 0
-    max_missed_selections = 3
+    max_missed_selections = 2
     # dimitri
     while true
 
