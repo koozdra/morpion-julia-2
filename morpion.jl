@@ -1324,17 +1324,22 @@ function build_pool_from_pool_index(pool_index)
     end, collect(values(pool_index)))
 end
 
-function get_min_accept_score(pool_score, back_accept, focus) 
+function get_min_accept_score(pool_score, back_accept, focus, iteration) 
     
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
 
-    n = 0.2
-
-    if focus < n 
-        floor(pool_score - back_accept + ((focus / n ) *  back_accept))
-    else
+    if iteration < 50000
         pool_score
+    else
+        n = 0.5
+
+        if focus < n 
+            floor(pool_score - back_accept + ((focus / n ) *  back_accept))
+        else
+            pool_score
+        end
     end
+    
     # if focus < n / 8
     #     pool_score - 10
     # elseif focus < n / 7
@@ -1406,8 +1411,8 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 4
-    back_end_search = 4
+    back_accept = 6
+    back_end_search = 2
     back_visit_reset = 4
     min_accept_modifier = -back_accept
 
@@ -1442,7 +1447,7 @@ function run()
         end
     end
 
-    focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
+    focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus, iteration) 
 
     function on_new_found(subject_score, subject_visits, subject_hash, eval_moves, focus_min_accept_score, modified_dna, marker)
         eval_moves_hash = points_hash(eval_moves)
@@ -1538,20 +1543,24 @@ function run()
             end, values(dump)))
 
             pool_score = max_dump_score
-            focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
+            focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus, iteration) 
 
             fill_index()
         end
 
         # selection
 
-        if subject_visits > subject_score || missed_selection_count >= max_missed_selections
-            missed_selection_count = 0
-            pool_index_select_counter += 1
-            (subject_moves_hash, subject) = collect(pairs(pool_index))[(pool_index_select_counter % length(pool_index)) + 1]
-        else
-            missed_selection_count += 1
-        end
+        # if subject_visits > subject_score || missed_selection_count >= max_missed_selections
+        #     missed_selection_count = 0
+        #     pool_index_select_counter += 1
+        #     (subject_moves_hash, subject) = collect(pairs(pool_index))[(pool_index_select_counter % length(pool_index)) + 1]
+        # else
+        #     missed_selection_count += 1
+        # end
+
+        pool_index_select_counter += 1
+        (subject_moves_hash, subject) = collect(pairs(pool_index))[(pool_index_select_counter % length(pool_index)) + 1]
+        
 
 
         (subject_visits, subject_moves) = subject
@@ -1559,7 +1568,7 @@ function run()
 
         pool_score = max(pool_score, subject_score)
 
-        focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus) 
+        focus_min_accept_score = get_min_accept_score(pool_score, back_accept, focus, iteration) 
 
         if floor(focus_min_accept_score) != current_min_accept_score
             current_min_accept_score = floor(focus_min_accept_score)
