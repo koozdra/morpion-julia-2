@@ -1331,7 +1331,7 @@ function get_min_accept_score(pool_score, back_accept, focus, iteration)
     if iteration < 50000
         pool_score
     else
-        n = 0.5
+        n = 0.6
 
         if focus < n 
             floor(pool_score - back_accept + ((focus / n ) *  back_accept))
@@ -1411,9 +1411,9 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 6
+    back_accept = 8
     back_end_search = 2
-    back_visit_reset = 4
+    back_visit_reset = back_accept
     min_accept_modifier = -back_accept
 
     min_end_search_step = 0
@@ -1422,7 +1422,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 60
 
     end_search_interval = 500
 
@@ -1532,7 +1532,7 @@ function run()
     subject_score = 0
     (subject_moves_hash, subject) = collect(pairs(pool_index))[1]
     missed_selection_count = 0
-    max_missed_selections = 2
+    max_missed_selections = 3
     # dimitri
     while true
 
