@@ -1328,17 +1328,22 @@ function get_min_accept_score(pool_score, back_accept, focus, iteration)
     
     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
 
-    if iteration < 50000
-        pool_score
-    else
-        n = 0.6
+    # look_back = 2
+    # floor(pool_score - look_back + (focus * (look_back + 1)))
 
-        if focus < n 
-            floor(pool_score - back_accept + ((focus / n ) *  back_accept))
-        else
-            pool_score
-        end
-    end
+    # if iteration < 50000
+    #     pool_score
+    # else
+    #     # n = 0.6
+
+    #     if focus < n 
+    #         look_back = 2
+    #         floor(pool_score - look_back + ((focus / n ) *  look_back))
+    #     else
+    #         pool_score
+    #     end
+    #     # floor(pool_score - back_accept + (focus * (back_accept + 1)))
+    # end
     
     # if focus < n / 8
     #     pool_score - 10
@@ -1363,11 +1368,13 @@ function get_min_accept_score(pool_score, back_accept, focus, iteration)
     #     pool_score - 2
     # if focus < 0.1
     #     pool_score - 1
-    # if focus < 0.1
-    #     pool_score - 1
-    # else
-    #     pool_score
-    # end
+    if focus < 0.1
+        pool_score - 2
+    elseif focus < 0.3
+        pool_score - 1
+    else
+        pool_score
+    end
 
     # pool_score
 end
@@ -1411,8 +1418,8 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 8
-    back_end_search = 2
+    back_accept = 2
+    back_end_search = back_accept
     back_visit_reset = back_accept
     min_accept_modifier = -back_accept
 
@@ -1472,7 +1479,7 @@ function run()
 
         if is_new
             visit_score_multiplier = floor(subject_visits / subject_score)
-            if haskey(dump, subject_hash) && eval_score >= pool_score - back_visit_reset
+            if haskey(pool_index, subject_hash) && eval_score >= pool_score - back_visit_reset
                 (d_visits, d_moves) = pool_index[subject_hash]
                 pool_index[subject_hash] = (0, d_moves)
 
@@ -1498,6 +1505,8 @@ function run()
                 else
                     println("$iteration. $subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) => $post_amble")
                 end
+
+                
             else
                 
                 if length(marker) > 0
@@ -1505,12 +1514,18 @@ function run()
                 else
                     println("$iteration. $marker$subject_score ($subject_visits, $visit_score_multiplier[$max_visit_score_multiplier]) -> D $post_amble")
                 end
+
+                
             end
+
+            return (true, eval_moves_hash)
             
         elseif pool_index_contains_hash
             (d_visits, d_moves) = pool_index[eval_moves_hash]
             pool_index[eval_moves_hash] = (d_visits, eval_moves)
         end
+
+        (false, "")
     end
 
     function fill_index()
@@ -1525,6 +1540,42 @@ function run()
 
             true
         end, dump)
+    end
+
+    function attempt_end_search(endy, endy_hash)
+        # endy_hash = subject_moves_hash
+        # endy = subject
+        
+        (endy_visits, endy_moves) = endy
+        endy_score = length(endy_moves)
+
+        if !haskey(end_searched, endy_hash) && endy_score > 100 && endy_score >= pool_score - back_end_search
+
+            end_search_start_time = Dates.now()
+            
+            endy_score = length(endy_moves)
+
+            
+            end_searched[endy_hash] = true
+                
+            end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
+            end_search_end_time = Dates.now()
+
+            generated_count = length(end_search_result)
+            used_count = 0
+                # is_end_search_derived = haskey(end_search_derived, endy_hash)
+            println("$iteration. ES $endy_score")
+
+            for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
+                fendy_score = length(fendy_moves)
+                on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
+                    # end_search_derived[fendy_key] = true
+                    # end_searched[fendy_key] = true
+            end
+
+            println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
+            
+        end
     end
 
 
@@ -1595,41 +1646,47 @@ function run()
             pool_index[subject_moves_hash] = (subject_visits + 1, subject_moves)
 
             if eval_score >= pool_score - back_accept
-                on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")              
-            end
+                (was_used, eval_moves_hash) = on_new_found(subject_score, subject_visits, subject_moves_hash, eval_moves, floor(focus_min_accept_score), modified_dna, "")              
 
-            endy_hash = subject_moves_hash
-            endy = subject
-            (endy_visits, endy_moves) = endy
-            endy_score = length(endy_moves)
-
-            if !haskey(end_searched, endy_hash) && endy_score > 100 && endy_score >= pool_score - back_end_search
-
-                end_search_start_time = Dates.now()
-                
-                endy_score = length(endy_moves)
-
-                
-                end_searched[endy_hash] = true
-                    
-                end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
-                end_search_end_time = Dates.now()
-
-                generated_count = length(end_search_result)
-                used_count = 0
-                    # is_end_search_derived = haskey(end_search_derived, endy_hash)
-                println("$iteration. ES $endy_score")
-
-                for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
-                    fendy_score = length(fendy_moves)
-                    on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
-                        # end_search_derived[fendy_key] = true
-                        # end_searched[fendy_key] = true
+                if (was_used)
+                    attempt_end_search((0, eval_moves), eval_moves_hash)
                 end
-
-                println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
-                
             end
+
+            attempt_end_search(subject, subject_moves_hash)
+
+            # endy_hash = subject_moves_hash
+            # endy = subject
+            # (endy_visits, endy_moves) = endy
+            # endy_score = length(endy_moves)
+
+            # if !haskey(end_searched, endy_hash) && endy_score > 100 && endy_score >= pool_score - back_end_search
+
+            #     end_search_start_time = Dates.now()
+                
+            #     endy_score = length(endy_moves)
+
+                
+            #     end_searched[endy_hash] = true
+                    
+            #     end_search_result = end_search(board_template, pool_score - back_accept, endy_moves)
+            #     end_search_end_time = Dates.now()
+
+            #     generated_count = length(end_search_result)
+            #     used_count = 0
+            #         # is_end_search_derived = haskey(end_search_derived, endy_hash)
+            #     println("$iteration. ES $endy_score")
+
+            #     for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
+            #         fendy_score = length(fendy_moves)
+            #         on_new_found(endy_score, endy_visits, endy_hash, fendy_moves, floor(focus_min_accept_score), generate_dna_valid_rands(fendy_moves), "+ES ")
+            #             # end_search_derived[fendy_key] = true
+            #             # end_searched[fendy_key] = true
+            #     end
+
+            #     println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
+                
+            # end
         end
         
 
