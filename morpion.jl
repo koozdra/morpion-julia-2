@@ -1366,13 +1366,13 @@ function get_min_accept_score(pool_score, back_accept, focus, iteration)
     #     pool_score - 3
     # if focus < 0.05
     #     pool_score - 2
-    if focus < 0.05
-        pool_score - 4
-    elseif focus < 0.1
-        pool_score - 3
-    elseif focus < 0.15
+    # if focus < 0.05
+    #     pool_score - 4
+    # if focus < 0.1
+    #     pool_score - 3
+    if focus < 0.1
         pool_score - 2
-    elseif focus < 0.3
+    elseif focus < 0.2
         pool_score - 1
     else
         pool_score
@@ -1420,8 +1420,8 @@ function run()
     empty!(taboo)
     end_searched = Dict(points_hash(moves) => true)
     # end_search_derived = Dict(points_hash(moves) => true)
-    back_accept = 4
-    back_end_search = back_accept
+    back_accept = 2
+    back_end_search = 3
     back_visit_reset = back_accept
     min_accept_modifier = -back_accept
 
@@ -1431,7 +1431,7 @@ function run()
     max_moves = moves
 
     current_min_accept_score = 0
-    taboo_score_multiplier = 60
+    taboo_score_multiplier = 10
 
     end_search_interval = 500
 
@@ -1689,6 +1689,19 @@ function run()
             #     println(" g:$generated_count t:$(end_search_end_time - end_search_start_time)")
                 
             # end
+
+            if iteration % 10000 == 0
+                current_time = Dates.now()
+                println("$iteration. $current_min_accept_score/$pool_score $(current_time - trip_time) i:$(length(pool_index)) d:$(length(dump))  ($max_score)")
+                trip_time = Dates.now()
+            end
+            
+            if iteration % 100000 == 0
+                println(max_score)
+                println(max_moves)     
+            end
+            
+            iteration += 1
         end
         
 
@@ -1708,19 +1721,6 @@ function run()
             fill_index()
         end
 
-        if iteration % 10000 == 0
-            current_time = Dates.now()
-            println("$iteration. $current_min_accept_score/$pool_score $(current_time - trip_time) i:$(length(pool_index)) d:$(length(dump))  ($max_score)")
-            trip_time = Dates.now()
-        end
-        
-        if iteration % 100000 == 0
-            println(max_score)
-            println(max_moves)     
-        end
-        
-        iteration += 1
-        
         focus += focus_increment
 
         if focus >= 1
