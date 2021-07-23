@@ -1454,7 +1454,7 @@ function run()
 
     # hyperparameters
     state_sample_size = 10
-    score_visits_decay = 8
+    score_visits_decay = 16
     inactive_cycle_reset = 10
     back_accept_min = 3
     improvement_inactivity_reset = 10
@@ -1572,7 +1572,7 @@ function run()
             index_pairs = collect(pairs(index))
 
             # println(" - $test_score")
-        elseif (!haskey(end_searched_index, test_hash_key)) && test_move_visits > min_test_move_visits_end_search
+        elseif (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
             end_searched_index[test_hash_key] = true
 
             end_search_result = end_search(board_template, max_score - back_accept, test_moves)
