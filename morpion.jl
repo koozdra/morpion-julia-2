@@ -1458,7 +1458,7 @@ function run()
     inactive_cycle_reset = 10
     back_accept_min = 3
     improvement_inactivity_reset = 10
-    min_test_move_visits_end_search = 2
+    min_test_move_visits_end_search = 1
     back_accept = back_accept_min
 
     iteration = 0
