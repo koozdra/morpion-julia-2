@@ -1512,6 +1512,9 @@ function run()
             index[eval_hash] = eval_moves
             index_pairs = collect(pairs(index))
 
+            # experimental
+            states[test_hash_key] = Dict(test_move_position => 1)
+
             if (eval_score > max_score)
                 max_score = eval_score
                 max_moves = eval_moves
