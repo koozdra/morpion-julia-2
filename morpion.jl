@@ -516,13 +516,12 @@ function random_completion_from(board, possible_moves, taken_moves)
     taken_moves
 end
 
-function end_search(board_template, min_accept_score, index, moves)
+function end_search(board_template, min_accept_score, index, search_timeout, moves)
 
     eval_moves = moves[1:(end - 1)]
     gym = new_gym(board_template)
     step_moves(gym, eval_moves)
     search_counter = 0
-    search_timeout = 20
     num_new_found = 0
     max_score_found = 0
     min_score_found = 100000
@@ -545,14 +544,14 @@ function end_search(board_template, min_accept_score, index, moves)
     # println("$(length(eval_moves)) $min_score_found $max_score_found ($(length(index)))")
 
     if length(eval_moves) > 2 && max_score_found >= min_accept_score && length(index) < 500
-        end_search(board_template, min_accept_score, index, eval_moves)
+        end_search(board_template, min_accept_score, index, search_timeout, eval_moves)
     end
-
+    
 end
 
-function end_search(board_template,  min_accept_score, moves)
+function end_search(board_template, min_accept_score, search_timeout, moves)
     index = Dict()
-    end_search(board_template,  min_accept_score, index, moves)
+    end_search(board_template,  min_accept_score, index, search_timeout, moves)
     index
 end
 
@@ -1454,7 +1453,7 @@ function run()
 
     # hyperparameters
     state_sample_size = 10
-    score_visits_decay = 16
+    score_visits_decay = 128
     inactive_cycle_reset = 10
     back_accept_min = 3
     improvement_inactivity_reset = 10
@@ -1572,12 +1571,25 @@ function run()
             index_pairs = collect(pairs(index))
 
             # println(" - $test_score")
-        elseif (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
+        elseif max_score >= 100 && (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
             end_searched_index[test_hash_key] = true
 
-            end_search_result = end_search(board_template, max_score - back_accept, test_moves)
+            end_search_trip_time = Dates.now()
+            end_search_result = end_search(board_template, max_score - back_accept, 60, test_moves)
+            current_time = Dates.now()
+
+            # println("10 $(length(end_search(board_template, max_score - back_accept, 10, test_moves)))")
+            # println("20 $(length(end_search(board_template, max_score - back_accept, 20, test_moves)))")
+            # println("30 $(length(end_search(board_template, max_score - back_accept, 30, test_moves)))")
+            # println("40 $(length(end_search(board_template, max_score - back_accept, 40, test_moves)))")
+            # println("50 $(length(end_search(board_template, max_score - back_accept, 50, test_moves)))")
+            # println("60 $(length(end_search(board_template, max_score - back_accept, 60, test_moves)))")
+            # println("70 $(length(end_search(board_template, max_score - back_accept, 70, test_moves)))")
+            # println("80 $(length(end_search(board_template, max_score - back_accept, 80, test_moves)))")
+            # println("80 $(length(end_search(board_template, max_score - back_accept, 90, test_moves)))")
+            # println("100 $(length(end_search(board_template, max_score - back_accept, 100, test_moves)))")
             
-            println("$iteration. ES $test_score ($(length(end_search_result)))")
+            println("$iteration. ES $test_score ($(length(end_search_result))) $(current_time - end_search_trip_time)")
 
             for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                 fendy_score = length(fendy_moves)
