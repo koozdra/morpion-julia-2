@@ -1475,6 +1475,16 @@ function run()
     index_pairs = collect(pairs(index))
     end_searched_index = Dict(points_hash(moves) => true)
 
+    # for i in 1:1000
+    #     dna = rand(40 * 40 * 4)
+    #     moves = eval_dna(copy(board_template), dna)
+    #     score = length(moves)
+
+    #     states[points_hash(moves)] = Dict(1 => 1)
+    #     index[points_hash(moves)] = moves
+    #     index_pairs = collect(pairs(index))
+    # end
+
     while true
         # selection
         sample_states = map(n -> gran_random_state(index_pairs, states), 1:state_sample_size)
@@ -1578,7 +1588,7 @@ function run()
             end_searched_index[test_hash_key] = true
 
             end_search_trip_time = Dates.now()
-            end_search_result = end_search(board_template, max_score - back_accept, 60, test_moves)
+            end_search_result = end_search(board_template, max_score - back_accept, 40, test_moves)
             current_time = Dates.now()
 
             # println("10 $(length(end_search(board_template, max_score - back_accept, 10, test_moves)))")
