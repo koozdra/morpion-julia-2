@@ -1454,10 +1454,11 @@ function run()
     # hyperparameters
     state_sample_size = 10
     score_visits_decay = 128
-    inactive_cycle_reset = 10
+    inactive_cycle_reset = 3
     back_accept_min = 3
-    improvement_inactivity_reset = 10
-    min_test_move_visits_end_search = 0
+    min_move_visits = 2
+    improvement_inactivity_reset = 5
+    min_test_move_visits_end_search = 2
     back_accept = back_accept_min
 
     iteration = 0
@@ -1491,7 +1492,12 @@ function run()
         selected_state = sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves)
-                    [score - (visits / score_visits_decay), -visits, rand]
+                    r = rand
+                    if visits < min_move_visits
+                        [score * 10, -visits, r]
+                    else
+                        [score - (visits / score_visits_decay), -visits, r]
+                    end
                 end, sample_states))]
         
         (test_hash_key, test_move_position, test_move_visits, test_moves) = selected_state
