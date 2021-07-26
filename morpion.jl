@@ -1454,11 +1454,12 @@ function run()
     # hyperparameters
     state_sample_size = 10
     score_visits_decay = 128
+    score_visits_explore_decay = 2
     inactive_cycle_reset = 3
     back_accept_min = 3
-    min_move_visits = 2
-    improvement_inactivity_reset = 5
-    min_test_move_visits_end_search = 2
+    min_move_visits = 1
+    improvement_inactivity_reset = 10
+    min_test_move_visits_end_search = 1
     back_accept = back_accept_min
 
     iteration = 0
@@ -1489,16 +1490,21 @@ function run()
     while true
         # selection
         sample_states = map(n -> gran_random_state(index_pairs, states), 1:state_sample_size)
-        selected_state = sample_states[argmax(map(function (state)
+        exploit = iteration % 2 == 0
+
+        selected_state = if exploit 
+            sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves)
-                    r = rand
-                    if visits < min_move_visits
-                        [score * 10, -visits, r]
-                    else
-                        [score - (visits / score_visits_decay), -visits, r]
-                    end
+                    [score - (visits / score_visits_decay), -visits, rand]
                 end, sample_states))]
+            else
+                sample_states[argmax(map(function (state)
+                    (hash_key, move_position, visits, moves) = state
+                    score = length(moves) 
+                    [score - (visits / score_visits_explore_decay), -visits, rand]
+                end, sample_states))]
+            end
         
         (test_hash_key, test_move_position, test_move_visits, test_moves) = selected_state
         test_score = length(test_moves)
