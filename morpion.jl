@@ -1454,9 +1454,9 @@ function run()
     # hyperparameters
     state_sample_size = 10
     score_visits_decay = 512
-    score_visits_explore_decay = 2
+    score_visits_explore_decay = 1
     inactive_cycle_reset = 3
-    back_accept_min = 4
+    back_accept_min = 3
     min_move_visits = 1
     improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 1
