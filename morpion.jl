@@ -1453,10 +1453,10 @@ function run()
 
     # hyperparameters
     state_sample_size = 10
-    score_visits_decay = 128
+    score_visits_decay = 512
     score_visits_explore_decay = 2
     inactive_cycle_reset = 3
-    back_accept_min = 3
+    back_accept_min = 4
     min_move_visits = 1
     improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 1
@@ -1600,7 +1600,7 @@ function run()
             end_searched_index[test_hash_key] = true
 
             end_search_trip_time = Dates.now()
-            end_search_result = end_search(board_template, max_score - back_accept, 40, test_moves)
+            end_search_result = end_search(board_template, max_score - back_accept, 20, test_moves)
             current_time = Dates.now()
 
             # println("10 $(length(end_search(board_template, max_score - back_accept, 10, test_moves)))")
