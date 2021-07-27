@@ -1453,7 +1453,7 @@ function run()
 
     # hyperparameters
     state_sample_size = 10
-    score_visits_decay = 512
+    score_visits_decay = 128
     score_visits_explore_decay = 1
     inactive_cycle_reset = 3
     back_accept_min = 3
@@ -1477,15 +1477,15 @@ function run()
     index_pairs = collect(pairs(index))
     end_searched_index = Dict(points_hash(moves) => true)
 
-    # for i in 1:1000
-    #     dna = rand(40 * 40 * 4)
-    #     moves = eval_dna(copy(board_template), dna)
-    #     score = length(moves)
+    for i in 1:1000
+        dna = rand(40 * 40 * 4)
+        moves = eval_dna(copy(board_template), dna)
+        score = length(moves)
 
-    #     states[points_hash(moves)] = Dict(1 => 1)
-    #     index[points_hash(moves)] = moves
-    #     index_pairs = collect(pairs(index))
-    # end
+        states[points_hash(moves)] = Dict(1 => 1)
+        index[points_hash(moves)] = moves
+        index_pairs = collect(pairs(index))
+    end
 
     while true
         # selection
