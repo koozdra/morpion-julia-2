@@ -1454,8 +1454,9 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
+    upper_band_improvement_reset = 10
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 1
+    inactive_cycle_reset = 2
     back_accept_min = 0
     min_move_visits = 1
     improvement_inactivity_reset = 5
@@ -1602,7 +1603,7 @@ function run()
                 index_pairs = collect(pairs(index))
             end
 
-            if upper_band_improvement_counter > 50 && back_accept > back_accept_min
+            if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
                 back_accept -= 1
                 upper_band_improvement_counter = 0
             end
