@@ -1533,7 +1533,7 @@ function run()
         test_dna = generate_dna_zeros(test_moves)
         modified_dna = modify_dna_zeros_move(test_moves[test_move_position], test_dna)
         for i in 1:2
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
         end
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
         
