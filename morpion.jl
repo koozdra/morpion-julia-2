@@ -1492,14 +1492,21 @@ function run()
     while true
         # selection
         sample_states = map(n -> gran_random_state(index_pairs, states), 1:state_sample_size)
-        exploit = iteration % 2 == 0
+        mode = iteration % 3
 
-        selected_state = if exploit 
+        selected_state = if mode == 0 
             sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves)
                     # [score - (visits / score_visits_decay), -visits, rand]
                     [score - (visits / score_visits_decay)]
+                end, sample_states))]
+            elseif mode == 1
+                sample_states[argmax(map(function (state)
+                    (hash_key, move_position, visits, moves) = state
+                    score = length(moves)
+                    # [score - (visits / score_visits_decay), -visits, rand]
+                    [score - (visits / 2)]
                 end, sample_states))]
             else
                 sample_states[argmax(map(function (state)
@@ -1524,6 +1531,9 @@ function run()
         # eval_moves = eval_dna(copy(board_template), modified_dna)
         test_dna = generate_dna_zeros(test_moves)
         modified_dna = modify_dna_zeros_move(test_moves[test_move_position], test_dna)
+        for i in 1:2
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        end
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
         
         # evaluation
