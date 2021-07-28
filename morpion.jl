@@ -1453,10 +1453,10 @@ function run()
 
     # hyperparameters
     state_sample_size = 30
-    score_visits_decay = 128
+    score_visits_decay = 256
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 3
-    back_accept_min = 3
+    inactive_cycle_reset = 1
+    back_accept_min = 0
     min_move_visits = 1
     improvement_inactivity_reset = 5
     min_test_move_visits_end_search = 0
@@ -1474,6 +1474,8 @@ function run()
     # dimitri
     states = Dict(points_hash(moves) => Dict(0 => 1))
     index = Dict(points_hash(moves) => moves)
+    backlog = Dict(points_hash(moves) => moves)
+
     index_pairs = collect(pairs(index))
     end_searched_index = Dict(points_hash(moves) => true)
 
@@ -1496,15 +1498,16 @@ function run()
             sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves)
-                    [score - (visits / score_visits_decay), -visits, rand]
-                    # []
+                    # [score - (visits / score_visits_decay), -visits, rand]
+                    [score - (visits / score_visits_decay)]
                 end, sample_states))]
             else
                 sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves) 
                     # [score - (visits / score_visits_explore_decay), -visits, rand]
-                    [-visits, score, rand]
+                    # [-visits, score, rand]
+                    [-visits, score]
                 end, sample_states))]
             end
         
@@ -1578,6 +1581,15 @@ function run()
                 back_accept += 1
                 upper_band_improvement_counter = 0
                 inactive_cycles = 0
+
+                for (b_key, b_moves) in collect(pairs(backlog))
+                    b_score = length(b_moves)
+                    if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
+                        index[b_key] = b_moves
+                        println("$iteration. b $b_score")
+                    end
+                end
+                index_pairs = collect(pairs(index))
             end
 
             if upper_band_improvement_counter > 50 && back_accept > back_accept_min
@@ -1593,12 +1605,13 @@ function run()
         end
 
         if (test_score < (max_score - back_accept))
+            backlog[test_hash_key] = test_moves
             delete!(index, test_hash_key)
             delete!(states, test_hash_key)
             index_pairs = collect(pairs(index))
 
             # println(" - $test_score")
-        elseif max_score >= 100 && (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
+        elseif test_score >= 100 && (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
             end_searched_index[test_hash_key] = true
 
             end_search_trip_time = Dates.now()
