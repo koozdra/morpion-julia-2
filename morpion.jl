@@ -1507,7 +1507,7 @@ function run()
                     score = length(moves) 
                     # [score - (visits / score_visits_explore_decay), -visits, rand]
                     # [-visits, score, rand]
-                    [-visits, score]
+                    [-visits]
                 end, sample_states))]
             end
         
