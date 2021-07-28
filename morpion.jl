@@ -1453,7 +1453,7 @@ function run()
 
     # hyperparameters
     state_sample_size = 30
-    score_visits_decay = 128
+    score_visits_decay = 64
     score_visits_explore_decay = 1
     inactive_cycle_reset = 3
     back_accept_min = 3
@@ -1497,12 +1497,14 @@ function run()
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves)
                     [score - (visits / score_visits_decay), -visits, rand]
+                    # []
                 end, sample_states))]
             else
                 sample_states[argmax(map(function (state)
                     (hash_key, move_position, visits, moves) = state
                     score = length(moves) 
-                    [score - (visits / score_visits_explore_decay), -visits, rand]
+                    # [score - (visits / score_visits_explore_decay), -visits, rand]
+                    [-visits, score, rand]
                 end, sample_states))]
             end
         
