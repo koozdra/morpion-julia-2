@@ -1454,10 +1454,10 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 100
+    upper_band_improvement_reset = 10
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
-    back_accept_min = 1
+    back_accept_min = 0
     min_move_visits = 1
     improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
@@ -1586,7 +1586,7 @@ function run()
                 end
     
                 current_time = Dates.now()
-                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
+                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
                 
                 trip_time = Dates.now()
                 improvements_counter = 0
