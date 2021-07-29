@@ -1454,12 +1454,12 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 10
+    upper_band_improvement_reset = 100
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
     back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 5
+    improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
