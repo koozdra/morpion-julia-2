@@ -1473,7 +1473,7 @@ function run()
 
     println(length(moves))
     # dimitri
-    states = Dict(points_hash(moves) => Dict(0 => 1))
+    # states = Dict(points_hash(moves) => Dict(0 => 1))
     index = Dict(points_hash(moves) => moves)
     backlog = Dict(points_hash(moves) => moves)
 
@@ -1485,53 +1485,58 @@ function run()
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
 
-        states[points_hash(moves)] = Dict(1 => 1)
+        # states[points_hash(moves)] = Dict(1 => 1)
         index[points_hash(moves)] = moves
         index_pairs = collect(pairs(index))
     end
 
     while true
         # selection
-        sample_states = map(n -> gran_random_state(index_pairs, states), 1:state_sample_size)
-        mode = iteration % 3
+        # sample_states = map(n -> gran_random_state(index_pairs, states), 1:state_sample_size)
+        # mode = iteration % 3
 
-        selected_state = if mode == 0 
-            sample_states[argmax(map(function (state)
-                    (hash_key, move_position, visits, moves) = state
-                    score = length(moves)
-                    # [score - (visits / score_visits_decay), -visits, rand]
-                    [score - (visits / score_visits_decay)]
-                end, sample_states))]
-            elseif mode == 1
-                sample_states[argmax(map(function (state)
-                    (hash_key, move_position, visits, moves) = state
-                    score = length(moves)
-                    # [score - (visits / score_visits_decay), -visits, rand]
-                    [score - (visits / 2)]
-                end, sample_states))]
-            else
-                sample_states[argmax(map(function (state)
-                    (hash_key, move_position, visits, moves) = state
-                    score = length(moves) 
-                    # [score - (visits / score_visits_explore_decay), -visits, rand]
-                    # [-visits, score, rand]
-                    [-visits]
-                end, sample_states))]
-            end
+        # selected_state = if mode == 0 
+        #     sample_states[argmax(map(function (state)
+        #             (hash_key, move_position, visits, moves) = state
+        #             score = length(moves)
+        #             # [score - (visits / score_visits_decay), -visits, rand]
+        #             [score - (visits / score_visits_decay)]
+        #         end, sample_states))]
+        #     elseif mode == 1
+        #         sample_states[argmax(map(function (state)
+        #             (hash_key, move_position, visits, moves) = state
+        #             score = length(moves)
+        #             # [score - (visits / score_visits_decay), -visits, rand]
+        #             [score - (visits / 2)]
+        #         end, sample_states))]
+        #     else
+        #         sample_states[argmax(map(function (state)
+        #             (hash_key, move_position, visits, moves) = state
+        #             score = length(moves) 
+        #             # [score - (visits / score_visits_explore_decay), -visits, rand]
+        #             # [-visits, score, rand]
+        #             [-visits]
+        #         end, sample_states))]
+        #     end
+        (test_hash_key, test_moves) = index_pairs[iteration % length(index_pairs) + 1]
+        # test_hash = 
+        # selected_state = ()
         
-        (test_hash_key, test_move_position, test_move_visits, test_moves) = selected_state
+        # (test_hash_key, test_move_position, test_moves) = selected_state
         test_score = length(test_moves)
 
-        gran_visit_state(states, test_hash_key, test_move_position)
+        # gran_visit_state(states, test_hash_key, test_move_position)
 
         # modification
+
+        
         
 
         # test_dna = generate_dna(test_moves)
         # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
         # eval_moves = eval_dna(copy(board_template), modified_dna)
         test_dna = generate_dna_zeros(test_moves)
-        modified_dna = modify_dna_zeros_move(test_moves[test_move_position], test_dna)
+        modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         for i in 1:2
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
         end
@@ -1541,17 +1546,22 @@ function run()
         eval_score = length(eval_moves)
         eval_hash = points_hash(eval_moves)
 
-        in_states = haskey(states, eval_hash)
+        
 
-        if (in_states)
+        in_index = haskey(index, eval_hash)
+
+        # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
+
+        if (in_index)
             index[eval_hash] = eval_moves
-        elseif (!in_states && eval_score >= (max_score - back_accept))
-            states[eval_hash] = Dict(test_move_position => 1)
+        elseif (!in_index && eval_score >= (max_score - back_accept))
+            # states[eval_hash] = Dict()
             index[eval_hash] = eval_moves
             index_pairs = collect(pairs(index))
+            
 
             # experimental
-            states[test_hash_key] = Dict(test_move_position => 1)
+            # states[test_hash_key] = Dict()
 
             if (eval_score > max_score)
                 max_score = eval_score
@@ -1564,7 +1574,7 @@ function run()
             improvements_counter += 1
 
             # if (eval_score >= test_score)
-                println("$iteration. $test_score($test_move_position, $test_move_visits) => $eval_score $max_score ($(length(index)), $back_accept)")
+                println("$iteration. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
             # end
 
             if eval_score >= (max_score - back_accept + 1)
@@ -1609,7 +1619,7 @@ function run()
             end
 
             current_time = Dates.now()
-            println("$iteration. $(current_time - trip_time) ($max_score) impr: $improvements_counter up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
+            println("$iteration. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
             
             trip_time = Dates.now()
             improvements_counter = 0
@@ -1618,11 +1628,11 @@ function run()
         if (test_score < (max_score - back_accept))
             backlog[test_hash_key] = test_moves
             delete!(index, test_hash_key)
-            delete!(states, test_hash_key)
+            # delete!(states, test_hash_key)
             index_pairs = collect(pairs(index))
 
             # println(" - $test_score")
-        elseif test_score >= 100 && (!haskey(end_searched_index, test_hash_key)) && test_move_visits >= min_test_move_visits_end_search
+        elseif test_score >= 100 && (!haskey(end_searched_index, test_hash_key))
             end_searched_index[test_hash_key] = true
 
             end_search_trip_time = Dates.now()
@@ -1644,8 +1654,8 @@ function run()
 
             for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                 fendy_score = length(fendy_moves)
-                if (!haskey(states, fendy_key))
-                    states[fendy_key] = Dict(test_move_position => 1)
+                if (!haskey(index, fendy_key))
+                    # states[fendy_key] = Dict(test_move_position => 1)
                     index[fendy_key] = fendy_moves
                     index_pairs = collect(pairs(index))
 
