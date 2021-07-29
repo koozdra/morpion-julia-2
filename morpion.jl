@@ -1551,6 +1551,46 @@ function run()
             end
             eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
             total_evaluations += 1
+
+            if total_evaluations % 100000 == 0
+                println(max_score)
+                println(max_moves)
+            end
+    
+            if total_evaluations % 10000 == 0
+    
+                if (improvements_counter < improvement_inactivity_reset) 
+                    inactive_cycles += 1
+                else
+                    inactive_cycles = 0
+                    end
+    
+                if inactive_cycles >= inactive_cycle_reset
+                    back_accept += 1
+                    upper_band_improvement_counter = 0
+                    inactive_cycles = 0
+    
+                    for (b_key, b_moves) in collect(pairs(backlog))
+                        b_score = length(b_moves)
+                        if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
+                        index[b_key] = b_moves
+                            println("$iteration. b $b_score")
+                        end
+                    end
+                    index_pairs = collect(pairs(index))
+                end
+    
+                if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
+                    back_accept -= 1
+                    upper_band_improvement_counter = 0
+                end
+    
+                current_time = Dates.now()
+                println("$iteration. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
+                
+                trip_time = Dates.now()
+                improvements_counter = 0
+            end
             
             # evaluation
             eval_score = length(eval_moves)
@@ -1596,45 +1636,7 @@ function run()
         end
         iteration += 1
 
-        if iteration % 100000 == 0
-            println(max_score)
-            println(max_moves)
-        end
-
-        if iteration % 10000 == 0
-
-            if (improvements_counter < improvement_inactivity_reset) 
-                inactive_cycles += 1
-            else
-                inactive_cycles = 0
-                end
-
-            if inactive_cycles >= inactive_cycle_reset
-                back_accept += 1
-                upper_band_improvement_counter = 0
-                inactive_cycles = 0
-
-                for (b_key, b_moves) in collect(pairs(backlog))
-                    b_score = length(b_moves)
-                    if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
-                        index[b_key] = b_moves
-                        println("$iteration. b $b_score")
-                    end
-                end
-                index_pairs = collect(pairs(index))
-            end
-
-            if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
-                back_accept -= 1
-                upper_band_improvement_counter = 0
-            end
-
-            current_time = Dates.now()
-            println("$iteration. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
-            
-            trip_time = Dates.now()
-            improvements_counter = 0
-        end
+        
 
         if (test_score < (max_score - back_accept))
             backlog[test_hash_key] = test_moves
