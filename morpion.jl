@@ -1457,7 +1457,7 @@ function run()
     upper_band_improvement_reset = 100
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
-    back_accept_min = 0
+    back_accept_min = 1
     min_move_visits = 1
     improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
@@ -1534,7 +1534,7 @@ function run()
         # modification
 
         num_evaluations = if test_score > test_score >= (max_score - back_accept)
-             2 
+             2
         else
              1
         end
@@ -1574,7 +1574,7 @@ function run()
                         b_score = length(b_moves)
                         if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
                         index[b_key] = b_moves
-                            println("$iteration. b $b_score")
+                            println("$total_evaluations. b $b_score")
                         end
                     end
                     index_pairs = collect(pairs(index))
@@ -1586,7 +1586,7 @@ function run()
                 end
     
                 current_time = Dates.now()
-                println("$iteration. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
+                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter in_cyc: $inactive_cycles/$inactive_cycle_reset")
                 
                 trip_time = Dates.now()
                 improvements_counter = 0
