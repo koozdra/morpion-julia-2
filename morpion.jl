@@ -1454,7 +1454,7 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 10
+    upper_band_improvement_reset = 100
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
     back_accept_min = 0
@@ -1482,7 +1482,7 @@ function run()
     index_pair_counter = 0
     end_searched_index = Dict(points_hash(moves) => true)
 
-    for i in 1:1000
+        for i in 1:2000
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
@@ -1533,107 +1533,101 @@ function run()
 
         # modification
 
-        num_evaluations = if test_score > test_score >= (max_score - back_accept)
-             2
-        else
-             1
+
+        # test_dna = generate_dna(test_moves)
+        # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
+        # eval_moves = eval_dna(copy(board_template), modified_dna)
+        test_dna = generate_dna_zeros(test_moves)
+        modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        for i in 1:2
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        end
+
+        eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
+        total_evaluations += 1
+
+        if total_evaluations % 100000 == 0
+            println(max_score)
+            println(max_moves)
+        end
+
+        if total_evaluations % 10000 == 0
+
+            if (improvements_counter < improvement_inactivity_reset) 
+                inactive_cycles += 1
+            else
+                inactive_cycles = 0
+                end
+
+            if inactive_cycles >= inactive_cycle_reset
+                back_accept += 1
+                upper_band_improvement_counter = 0
+                inactive_cycles = 0
+
+                for (b_key, b_moves) in collect(pairs(backlog))
+                    b_score = length(b_moves)
+                    if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
+                    index[b_key] = b_moves
+                        println("$total_evaluations. b $b_score")
+                    end
+                end
+                index_pairs = collect(pairs(index))
+            end
+
+            if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
+                back_accept -= 1
+                upper_band_improvement_counter = 0
+            end
+
+            current_time = Dates.now()
+            println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
+            
+            trip_time = Dates.now()
+            improvements_counter = 0
         end
         
+        # evaluation
+        eval_score = length(eval_moves)
+        eval_hash = points_hash(eval_moves)
 
-        for i in 1:num_evaluations
-            # test_dna = generate_dna(test_moves)
-            # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
-            # eval_moves = eval_dna(copy(board_template), modified_dna)
-            test_dna = generate_dna_zeros(test_moves)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-            for i in 1:2
-                modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
-            end
-            eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
-            total_evaluations += 1
+        
 
-            if total_evaluations % 100000 == 0
-                println(max_score)
-                println(max_moves)
-            end
-    
-            if total_evaluations % 10000 == 0
-    
-                if (improvements_counter < improvement_inactivity_reset) 
-                    inactive_cycles += 1
-                else
-                    inactive_cycles = 0
-                    end
-    
-                if inactive_cycles >= inactive_cycle_reset
-                    back_accept += 1
-                    upper_band_improvement_counter = 0
-                    inactive_cycles = 0
-    
-                    for (b_key, b_moves) in collect(pairs(backlog))
-                        b_score = length(b_moves)
-                        if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
-                        index[b_key] = b_moves
-                            println("$total_evaluations. b $b_score")
-                        end
-                    end
-                    index_pairs = collect(pairs(index))
-                end
-    
-                if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
-                    back_accept -= 1
-                    upper_band_improvement_counter = 0
-                end
-    
-                current_time = Dates.now()
-                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
-                
-                trip_time = Dates.now()
-                improvements_counter = 0
-            end
-            
-            # evaluation
-            eval_score = length(eval_moves)
-            eval_hash = points_hash(eval_moves)
+        in_index = haskey(index, eval_hash)
 
+        # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
+
+        if (in_index)
+            index[eval_hash] = eval_moves
+        elseif (!in_index && eval_score >= (max_score - back_accept))
+            # states[eval_hash] = Dict()
+            index[eval_hash] = eval_moves
+            index_pairs = collect(pairs(index))
             
 
-            in_index = haskey(index, eval_hash)
+            # experimental
+            # states[test_hash_key] = Dict()
+            index_pair_counter -= 1
 
-            # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
+            if (eval_score > max_score)
+                max_score = eval_score
+                max_moves = eval_moves
 
-            if (in_index)
-                index[eval_hash] = eval_moves
-            elseif (!in_index && eval_score >= (max_score - back_accept))
-                # states[eval_hash] = Dict()
-                index[eval_hash] = eval_moves
-                index_pairs = collect(pairs(index))
-                
-
-                # experimental
-                # states[test_hash_key] = Dict()
-                index_pair_counter -= 1
-
-                if (eval_score > max_score)
-                    max_score = eval_score
-                    max_moves = eval_moves
-
-                    back_accept = back_accept_min
-                    upper_band_improvement_counter = 0
-                end
-
-                improvements_counter += 1
-
-                # if (eval_score >= test_score)
-                    println("$total_evaluations. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
-                # end
-
-                if eval_score >= (max_score - back_accept + 1)
-        upper_band_improvement_counter += 1
-                end
-                
+                back_accept = back_accept_min
+                upper_band_improvement_counter = 0
             end
+
+            improvements_counter += 1
+
+            # if (eval_score >= test_score)
+                println("$total_evaluations. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
+            # end
+
+            if eval_score >= (max_score - back_accept + 1)
+    upper_band_improvement_counter += 1
+            end
+            
         end
+
         iteration += 1
 
         
