@@ -1470,6 +1470,7 @@ function run()
     improvements_counter = 0
     inactive_cycles = 0
     upper_band_improvement_counter = 0
+    total_evaluations = 0
 
     println(length(moves))
     # dimitri
@@ -1478,6 +1479,7 @@ function run()
     backlog = Dict(points_hash(moves) => moves)
 
     index_pairs = collect(pairs(index))
+    index_pair_counter = 0
     end_searched_index = Dict(points_hash(moves) => true)
 
     for i in 1:1000
@@ -1518,7 +1520,9 @@ function run()
         #             [-visits]
         #         end, sample_states))]
         #     end
-        (test_hash_key, test_moves) = index_pairs[iteration % length(index_pairs) + 1]
+        (test_hash_key, test_moves) = index_pairs[index_pair_counter % length(index_pairs) + 1]
+        index_pair_counter += 1
+
         # test_hash = 
         # selected_state = ()
         
@@ -1529,60 +1533,67 @@ function run()
 
         # modification
 
-        
-        
-
-        # test_dna = generate_dna(test_moves)
-        # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
-        # eval_moves = eval_dna(copy(board_template), modified_dna)
-        test_dna = generate_dna_zeros(test_moves)
-        modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-        for i in 1:2
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        num_evaluations = if test_score > test_score >= (max_score - back_accept)
+             2 
+        else
+             1
         end
-        eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
-        
-        # evaluation
-        eval_score = length(eval_moves)
-        eval_hash = points_hash(eval_moves)
-
         
 
-        in_index = haskey(index, eval_hash)
+        for i in 1:num_evaluations
+            # test_dna = generate_dna(test_moves)
+            # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
+            # eval_moves = eval_dna(copy(board_template), modified_dna)
+            test_dna = generate_dna_zeros(test_moves)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            for i in 1:2
+                modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+            end
+            eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
+            total_evaluations += 1
+            
+            # evaluation
+            eval_score = length(eval_moves)
+            eval_hash = points_hash(eval_moves)
 
-        # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
-
-        if (in_index)
-            index[eval_hash] = eval_moves
-        elseif (!in_index && eval_score >= (max_score - back_accept))
-            # states[eval_hash] = Dict()
-            index[eval_hash] = eval_moves
-            index_pairs = collect(pairs(index))
             
 
-            # experimental
-            # states[test_hash_key] = Dict()
+            in_index = haskey(index, eval_hash)
 
-            if (eval_score > max_score)
-                max_score = eval_score
-                max_moves = eval_moves
+            # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
 
-                back_accept = back_accept_min
-                upper_band_improvement_counter = 0
+            if (in_index)
+                index[eval_hash] = eval_moves
+            elseif (!in_index && eval_score >= (max_score - back_accept))
+                # states[eval_hash] = Dict()
+                index[eval_hash] = eval_moves
+                index_pairs = collect(pairs(index))
+                
+
+                # experimental
+                # states[test_hash_key] = Dict()
+                index_pair_counter -= 1
+
+                if (eval_score > max_score)
+                    max_score = eval_score
+                    max_moves = eval_moves
+
+                    back_accept = back_accept_min
+                    upper_band_improvement_counter = 0
+                end
+
+                improvements_counter += 1
+
+                # if (eval_score >= test_score)
+                    println("$total_evaluations. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
+                # end
+
+                if eval_score >= (max_score - back_accept + 1)
+        upper_band_improvement_counter += 1
+                end
+                
             end
-
-            improvements_counter += 1
-
-            # if (eval_score >= test_score)
-                println("$iteration. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
-            # end
-
-            if eval_score >= (max_score - back_accept + 1)
-                upper_band_improvement_counter += 1
-            end
-            
         end
-
         iteration += 1
 
         if iteration % 100000 == 0
