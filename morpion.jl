@@ -1454,7 +1454,7 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 10
+    upper_band_improvement_reset = 1
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
     back_accept_min = 0
@@ -1572,11 +1572,11 @@ function run()
                     end
                 end
                 index_pairs = collect(pairs(index))
-            end
+            
 
-            if upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
-                back_accept -= 1
-                upper_band_improvement_counter = 0
+            # elseif upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
+            #     back_accept -= 1
+            #     upper_band_improvement_counter = 0
             end
 
             current_time = Dates.now()
@@ -1623,8 +1623,10 @@ function run()
             # end
 
             if eval_score >= (max_score - back_accept + 1)
-    upper_band_improvement_counter += 1
+    # upper_band_improvement_counter += 1
+                back_accept = min(back_accept, max_score - eval_score)
             end
+            
             
         end
 
@@ -1675,7 +1677,13 @@ function run()
         
                     back_accept = back_accept_min
                         upper_band_improvement_counter = 0
+                    elseif fendy_score >= (max_score - back_accept + 1)
+
+                        back_accept = min(back_accept, max_score - fendy_score)
+                                
                     end
+
+                    
                 end
                 
             end
