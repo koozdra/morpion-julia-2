@@ -1454,10 +1454,10 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 1
+    upper_band_improvement_reset = 30
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 2
-    back_accept_min = 0
+    inactive_cycle_reset = 1
+    back_accept_min = 2
     min_move_visits = 1
     improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
@@ -1475,20 +1475,20 @@ function run()
     println(length(moves))
     # dimitri
     # states = Dict(points_hash(moves) => Dict(0 => 1))
-    index = Dict(points_hash(moves) => moves)
+    index = Dict(points_hash(moves) => (moves, 0))
     backlog = Dict(points_hash(moves) => moves)
 
     index_pairs = collect(pairs(index))
     index_pair_counter = 0
     end_searched_index = Dict(points_hash(moves) => true)
 
-        for i in 1:2000
+        for i in 1:10
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
 
         # states[points_hash(moves)] = Dict(1 => 1)
-        index[points_hash(moves)] = moves
+        index[points_hash(moves)] = (moves, 0)
         index_pairs = collect(pairs(index))
     end
 
@@ -1520,7 +1520,7 @@ function run()
         #             [-visits]
         #         end, sample_states))]
         #     end
-        (test_hash_key, test_moves) = index_pairs[index_pair_counter % length(index_pairs) + 1]
+        (test_hash_key, (test_moves, test_visits)) = index_pairs[index_pair_counter % length(index_pairs) + 1]
         index_pair_counter += 1
 
         # test_hash = 
@@ -1532,104 +1532,116 @@ function run()
         # gran_visit_state(states, test_hash_key, test_move_position)
 
         # modification
-
-
-        # test_dna = generate_dna(test_moves)
-        # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
-        # eval_moves = eval_dna(copy(board_template), modified_dna)
-        test_dna = generate_dna_zeros(test_moves)
-        modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-        for i in 1:2
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        num_visits = if (test_score < (max_score - back_accept) || test_visits > 1000)
+            1
+        else
+            back_accept - (max_score - test_score) + 1
         end
+        
 
-        eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
-        total_evaluations += 1
+        for i in 1:num_visits 
 
-        if total_evaluations % 100000 == 0
-            println(max_score)
-            println(max_moves)
-        end
+                if (haskey(index, test_hash_key))
+                (m_moves, m_visits) = index[test_hash_key]
+                index[test_hash_key] = (m_moves, m_visits + 1)
+                test_visits = m_visits + 1
+            end
+            # test_dna = generate_dna(test_moves)
+            # modified_dna = modify_dna_move(test_moves[test_move_position], test_dna)
+            # eval_moves = eval_dna(copy(board_template), modified_dna)
+            test_dna = generate_dna_zeros(test_moves)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            for i in 1:2
+                modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+            end
+            eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
+            total_evaluations += 1
 
-        if total_evaluations % 10000 == 0
+            if total_evaluations % 100000 == 0
+                println(max_score)
+                println(max_moves)
+            end
 
-            if (improvements_counter < improvement_inactivity_reset) 
-                inactive_cycles += 1
-            else
-                inactive_cycles = 0
-                end
+            if total_evaluations % 10000 == 0
 
-            if inactive_cycles >= inactive_cycle_reset
-                back_accept += 1
-                upper_band_improvement_counter = 0
-                inactive_cycles = 0
-
-                for (b_key, b_moves) in collect(pairs(backlog))
-                    b_score = length(b_moves)
-                    if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
-                    index[b_key] = b_moves
-                        println("$total_evaluations. b $b_score")
+                if (improvements_counter < improvement_inactivity_reset) 
+                    inactive_cycles += 1
+                else
+                    inactive_cycles = 0
                     end
+
+                if inactive_cycles >= inactive_cycle_reset
+                    back_accept += 1
+                    upper_band_improvement_counter = 0
+                    inactive_cycles = 0
+
+                    for (b_key, b_moves) in collect(pairs(backlog))
+                        b_score = length(b_moves)
+                        if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
+                            index[b_key] = (b_moves, 0)
+                            # println("$total_evaluations. b $b_score")
+                        end
+                    end
+                    index_pairs = collect(pairs(index))
+                
+
+                elseif upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
+                back_accept -= 1
+                    upper_band_improvement_counter = 0
                 end
+
+                current_time = Dates.now()
+                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
+                
+                trip_time = Dates.now()
+                improvements_counter = 0
+            end
+            
+            # evaluation
+            eval_score = length(eval_moves)
+            eval_hash = points_hash(eval_moves)
+
+            # println("$total_evaluations. $test_score ($test_visits) $eval_score")
+
+
+            in_index = haskey(index, eval_hash)
+
+            # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
+
+            if (in_index)
+                index[eval_hash] = (eval_moves, test_visits)
+            elseif (!in_index && eval_score >= (max_score - back_accept))
+                # states[eval_hash] = Dict()
+                index[eval_hash] = (eval_moves, 0)
                 index_pairs = collect(pairs(index))
-            
+                
 
-            # elseif upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
-            #     back_accept -= 1
-            #     upper_band_improvement_counter = 0
+                # experimental
+                # states[test_hash_key] = Dict()
+                # index_pair_counter -= 1
+
+                if (eval_score > max_score)
+                    max_score = eval_score
+                    max_moves = eval_moves
+
+                    back_accept = back_accept_min
+                    upper_band_improvement_counter = 0
+                end
+
+                improvements_counter += 1
+
+                # if (eval_score >= test_score)
+                    println("$total_evaluations. $test_score ($test_visits) => $eval_score   $max_score ($(length(index)), $back_accept)")
+                # end
+
+                if eval_score >= (max_score - back_accept + 1)
+        upper_band_improvement_counter += 1
+                    back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
+                end
+                
+                
             end
-
-            current_time = Dates.now()
-            println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
-            
-            trip_time = Dates.now()
-            improvements_counter = 0
         end
-        
-        # evaluation
-        eval_score = length(eval_moves)
-        eval_hash = points_hash(eval_moves)
-
-        
-
-        in_index = haskey(index, eval_hash)
-
-        # println("$iteration. $test_score() => $eval_score  $max_score  $(length(index)) $in_index")
-
-        if (in_index)
-            index[eval_hash] = eval_moves
-        elseif (!in_index && eval_score >= (max_score - back_accept))
-            # states[eval_hash] = Dict()
-            index[eval_hash] = eval_moves
-            index_pairs = collect(pairs(index))
-            
-
-            # experimental
-            # states[test_hash_key] = Dict()
-            # index_pair_counter -= 1
-
-            if (eval_score > max_score)
-                max_score = eval_score
-                max_moves = eval_moves
-
-                back_accept = back_accept_min
-                upper_band_improvement_counter = 0
-            end
-
-            improvements_counter += 1
-
-            # if (eval_score >= test_score)
-                println("$total_evaluations. $test_score => $eval_score $max_score ($(length(index)), $back_accept)")
-            # end
-
-            if eval_score >= (max_score - back_accept + 1)
-    # upper_band_improvement_counter += 1
-                back_accept = min(back_accept, max_score - eval_score)
-            end
-            
-            
-        end
-
         iteration += 1
 
         
@@ -1659,13 +1671,13 @@ function run()
             # println("80 $(length(end_search(board_template, max_score - back_accept, 90, test_moves)))")
             # println("100 $(length(end_search(board_template, max_score - back_accept, 100, test_moves)))")
             
-            println("$iteration. ES $test_score ($(length(end_search_result))) $(current_time - end_search_trip_time)")
+            println("$iteration. ES $test_score (fnd $(length(end_search_result))) $(current_time - end_search_trip_time)")
 
             for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                 fendy_score = length(fendy_moves)
                 if (!haskey(index, fendy_key))
                     # states[fendy_key] = Dict(test_move_position => 1)
-                    index[fendy_key] = fendy_moves
+                    index[fendy_key] = (fendy_moves, 0)
                     index_pairs = collect(pairs(index))
 
                     println("$iteration. $test_score -> $fendy_score")
@@ -1679,7 +1691,7 @@ function run()
                         upper_band_improvement_counter = 0
                     elseif fendy_score >= (max_score - back_accept + 1)
 
-                        back_accept = min(back_accept, max_score - fendy_score)
+                        back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
                                 
                     end
 
