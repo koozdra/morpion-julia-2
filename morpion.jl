@@ -1454,7 +1454,7 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 100
+    upper_band_improvement_reset = 10
     score_visits_explore_decay = 1
     inactive_cycle_reset = 2
     back_accept_min = 0
@@ -1606,7 +1606,7 @@ function run()
 
             # experimental
             # states[test_hash_key] = Dict()
-            index_pair_counter -= 1
+            # index_pair_counter -= 1
 
             if (eval_score > max_score)
                 max_score = eval_score
