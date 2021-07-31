@@ -1454,12 +1454,12 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 30
+    upper_band_improvement_reset = 10
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 1
+    inactive_cycle_reset = 10
     back_accept_min = 2
     min_move_visits = 1
-    improvement_inactivity_reset = 10
+    improvement_inactivity_reset = 50
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1482,7 +1482,7 @@ function run()
     index_pair_counter = 0
     end_searched_index = Dict(points_hash(moves) => true)
 
-        for i in 1:10
+    for i in 1:1000
         dna = rand(40 * 40 * 4)
         moves = eval_dna(copy(board_template), dna)
         score = length(moves)
@@ -1530,12 +1530,16 @@ function run()
         test_score = length(test_moves)
 
         # gran_visit_state(states, test_hash_key, test_move_position)
-
+        t = back_accept - (max_score - test_score) + 1
         # modification
-        num_visits = if (test_score < (max_score - back_accept) || test_visits > 1000)
+        num_visits = if (test_score < (max_score - back_accept))
+            0
+        elseif (test_visits > 10000)
             1
+        elseif (test_visits < (200 * t))
+            100
         else
-            back_accept - (max_score - test_score) + 1
+            t
         end
         
 
@@ -1615,6 +1619,8 @@ function run()
                 index[eval_hash] = (eval_moves, 0)
                 index_pairs = collect(pairs(index))
                 
+                (m_moves, m_visits) = index[test_hash_key]
+                index[test_hash_key] = (m_moves, 0)
 
                 # experimental
                 # states[test_hash_key] = Dict()
@@ -1635,8 +1641,8 @@ function run()
                 # end
 
                 if eval_score >= (max_score - back_accept + 1)
-        upper_band_improvement_counter += 1
-                    back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
+                    upper_band_improvement_counter += 1
+                    # back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
                 end
                 
                 
@@ -1671,7 +1677,7 @@ function run()
             # println("80 $(length(end_search(board_template, max_score - back_accept, 90, test_moves)))")
             # println("100 $(length(end_search(board_template, max_score - back_accept, 100, test_moves)))")
             
-            println("$iteration. ES $test_score (fnd $(length(end_search_result))) $(current_time - end_search_trip_time)")
+            println("$total_evaluations. ES $test_score (fnd $(length(end_search_result))) $(current_time - end_search_trip_time)")
 
             for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
                 fendy_score = length(fendy_moves)
@@ -1680,18 +1686,18 @@ function run()
                     index[fendy_key] = (fendy_moves, 0)
                     index_pairs = collect(pairs(index))
 
-                    println("$iteration. $test_score -> $fendy_score")
+                    println("$total_evaluations. $test_score -> $fendy_score")
                     improvements_counter += 1
         
                     if (fendy_score > max_score)
                         max_score = fendy_score
                         max_moves = fendy_moves
         
-                    back_accept = back_accept_min
+                        back_accept = back_accept_min
                         upper_band_improvement_counter = 0
                     elseif fendy_score >= (max_score - back_accept + 1)
-
-                        back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
+                        upper_band_improvement_counter += 1
+                        # back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
                                 
                     end
 
