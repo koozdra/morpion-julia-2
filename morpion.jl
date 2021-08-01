@@ -1534,10 +1534,10 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        elseif (test_visits > 2000)
+        elseif (test_visits > 10000)
             1
-        elseif (test_visits < (200 * t))
-            100
+        elseif (test_visits < (100 * t))
+            t * 100
         else
             t * 2
         end
