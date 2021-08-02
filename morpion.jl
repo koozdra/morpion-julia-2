@@ -1459,7 +1459,7 @@ function run()
     inactive_cycle_reset = 3
     back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 50
+    improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1534,12 +1534,10 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        elseif (test_visits > 10000)
-            1
-        elseif (test_visits < (100 * t))
+        elseif (test_visits < (300 * t))
             t * 100
         else
-            t * 2
+            1
         end
         
 
