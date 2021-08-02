@@ -1456,10 +1456,10 @@ function run()
     score_visits_decay = 256
     upper_band_improvement_reset = 10
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 3
+    inactive_cycle_reset = 10
     back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 10
+    improvement_inactivity_reset = 5
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1534,10 +1534,12 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        elseif (test_visits < (300 * t))
-            t * 100
-        else
+        elseif test_visits < (t * 1000)
+            min(1000 * t, 3000)
+        elseif test_visits > 10000
             1
+        else
+            t
         end
         
 
