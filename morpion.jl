@@ -1454,12 +1454,12 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 10
+    upper_band_improvement_reset = 100
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 3
-    back_accept_min = 0
+    inactive_cycle_reset = 5
+    back_accept_min = 4
     min_move_visits = 1
-    improvement_inactivity_reset = 5
+    improvement_inactivity_reset = 50
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1520,7 +1520,17 @@ function run()
         #             [-visits]
         #         end, sample_states))]
         #     end
-        (test_hash_key, (test_moves, test_visits)) = index_pairs[index_pair_counter % length(index_pairs) + 1]
+        index_pair_index = index_pair_counter % length(index_pairs) + 1
+
+        # if index_pair_index == 1
+        #     # println("-----------------------")
+        #     # experimental
+        #     shuffle!(index_pairs)
+        # end
+
+        # println("$index_pair_index")
+        # index_pair_index = rand(1:length(index_pairs))
+        (test_hash_key, (test_moves, test_visits)) = index_pairs[index_pair_index]
         index_pair_counter += 1
 
         # test_hash = 
@@ -1534,16 +1544,17 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        # elseif test_visits < (t * 1000)
-        #     min(100 * t, 1000)
-        elseif test_visits > 100000
-            1
-        else
-            min(100 * t, 1000)
+        # elseif test_visits > 10000
+        #     1
+        elseif total_evaluations < 10000
+        t * 50
+            else
+            min(30 * (2^(t - 1)), 4000)
         end
         
-
-        for i in 1:num_visits 
+            visit_counter = 0
+        while visit_counter < num_visits
+        # for i in 1:num_visits 
 
                 if (haskey(index, test_hash_key))
                 (m_moves, m_visits) = index[test_hash_key]
@@ -1618,6 +1629,8 @@ function run()
                 # states[eval_hash] = Dict()
                 index[eval_hash] = (eval_moves, 0)
                 index_pairs = collect(pairs(index))
+
+                visiti_counter = 0
                 
                 (m_moves, m_visits) = index[test_hash_key]
                 index[test_hash_key] = (m_moves, 0)
@@ -1637,7 +1650,7 @@ function run()
                 improvements_counter += 1
 
                 # if (eval_score >= test_score)
-                    println("$total_evaluations. $test_score ($test_visits) => $eval_score   $max_score ($(length(index)), $back_accept)")
+                    println("$total_evaluations. $test_score ($test_visits) => $eval_score   $max_score ($index_pair_index/$(length(index)), $back_accept)")
                 # end
 
                 if eval_score >= (max_score - back_accept + 1)
@@ -1647,6 +1660,8 @@ function run()
                 
                 
             end
+
+            visit_counter += 1
         end
         iteration += 1
 
