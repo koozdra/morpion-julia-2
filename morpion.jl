@@ -1454,12 +1454,12 @@ function run()
     # hyperparameters
     state_sample_size = 30
     score_visits_decay = 256
-    upper_band_improvement_reset = 100
+    upper_band_improvement_reset = 1
     score_visits_explore_decay = 1
-    inactive_cycle_reset = 5
-    back_accept_min = 4
+    inactive_cycle_reset = 1
+    back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 50
+    improvement_inactivity_reset = 3
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1544,12 +1544,12 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        # elseif test_visits > 10000
-        #     1
+        elseif test_visits > 10000
+            1
         elseif total_evaluations < 10000
         t * 50
             else
-            min(30 * (2^(t - 1)), 4000)
+            min(100 * (2^(t - 1)), 4000)
         end
         
             visit_counter = 0
@@ -1647,6 +1647,8 @@ function run()
                     upper_band_improvement_counter = 0
                 end
 
+                
+
                 improvements_counter += 1
 
                 # if (eval_score >= test_score)
@@ -1655,7 +1657,7 @@ function run()
 
                 if eval_score >= (max_score - back_accept + 1)
                     upper_band_improvement_counter += 1
-                    # back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
+                    back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
                 end
                 
                 
@@ -1712,10 +1714,11 @@ function run()
                         upper_band_improvement_counter = 0
                     elseif fendy_score >= (max_score - back_accept + 1)
                         upper_band_improvement_counter += 1
-                        # back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
-                                
+                        back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
+                        
                     end
 
+                
                     
                 end
                 
