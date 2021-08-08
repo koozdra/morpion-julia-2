@@ -1,3 +1,5 @@
+# 171
+# Move[Move(2, 7, 2, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(5, 3, 1, 0), Move(7, 7, 0, -2), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(5, 6, 1, 0), Move(4, 6, 1, -3), Move(7, 9, 1, -4), Move(5, 7, 2, -2), Move(9, 7, 3, -4), Move(8, 7, 1, -3), Move(7, 5, 2, -2), Move(7, 8, 3, -3), Move(4, 5, 2, -1), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(8, 5, 1, -2), Move(5, 8, 0, 0), Move(5, 5, 3, 0), Move(2, 5, 1, 0), Move(4, 7, 2, -2), Move(1, 7, 1, 0), Move(2, 9, 0, 0), Move(4, 8, 3, -3), Move(2, 8, 1, 0), Move(2, 4, 3, 0), Move(1, 9, 0, 0), Move(1, 5, 2, 0), Move(1, 8, 3, -3), Move(0, 9, 0, 0), Move(-1, 9, 1, 0), Move(0, 8, 0, -1), Move(0, 7, 3, -2), Move(-1, 8, 0, 0), Move(-2, 8, 1, 0), Move(-1, 7, 0, 0), Move(2, 10, 0, 0), Move(-2, 6, 2, 0), Move(4, 4, 2, -1), Move(5, 4, 1, -3), Move(4, 3, 2, 0), Move(7, 1, 0, -4), Move(7, 4, 3, -3), Move(8, 4, 3, -1), Move(10, 4, 1, -4), Move(8, 2, 2, -2), Move(9, 1, 0, -4), Move(10, 2, 0, -4), Move(9, 2, 1, -3), Move(10, 1, 0, -4), Move(8, 1, 1, -2), Move(9, 0, 0, -4), Move(9, -1, 3, 0), Move(10, 3, 3, -2), Move(5, 1, 2, 0), Move(5, 2, 3, -1), Move(7, 0, 0, -4), Move(8, 0, 1, -3), Move(8, -1, 3, 0), Move(4, 1, 2, 0), Move(4, 2, 3, -1), Move(7, -1, 0, -4), Move(2, 2, 1, 0), Move(5, -1, 0, -4), Move(6, -1, 1, -1), Move(7, -2, 0, -4), Move(7, -3, 3, 0), Move(6, -3, 2, 0), Move(6, -2, 3, -1), Move(5, -3, 2, 0), Move(5, -2, 3, -1), Move(4, -3, 2, 0), Move(2, 1, 1, 0), Move(4, -1, 0, -2), Move(4, -2, 3, -1), Move(3, -2, 1, 0), Move(2, -3, 2, 0), Move(3, -3, 1, -1), Move(3, -1, 3, -2), Move(2, -4, 2, 0), Move(2, 0, 3, 0), Move(1, -1, 2, 0), Move(2, -1, 1, -1), Move(2, -2, 3, -2), Move(1, -3, 2, 0), Move(1, 0, 1, 0), Move(0, 1, 0, 0), Move(0, -1, 2, 0), Move(0, 2, 3, -1), Move(1, 1, 0, -1), Move(1, -2, 3, -1), Move(0, -3, 2, 0), Move(-1, 1, 2, 0), Move(-2, 1, 1, 0), Move(-1, 0, 0, -1), Move(1, 2, 2, -2), Move(1, 4, 3, -3), Move(-1, 2, 2, -1), Move(-2, 2, 1, 0), Move(-1, 6, 0, 0), Move(-1, 5, 3, 0), Move(-2, 5, 1, 0), Move(-3, 4, 2, 0), Move(-3, 7, 0, 0), Move(-2, 7, 1, -1), Move(-2, 4, 3, 0), Move(-3, 3, 2, 0), Move(-1, 4, 1, -1), Move(-1, 3, 3, -2), Move(-3, 1, 2, 0), Move(-2, 3, 1, 0), Move(-2, 0, 3, 0), Move(-4, 5, 0, 0), Move(-3, 6, 0, 0), Move(-5, 4, 2, 0), Move(-4, 6, 1, 0), Move(-3, 5, 0, -1), Move(-3, 2, 3, 0), Move(-5, 5, 2, 0), Move(-4, 4, 0, -1), Move(-6, 4, 1, 0), Move(-6, 5, 1, 0), Move(-4, 3, 0, -2), Move(-4, 2, 3, 0), Move(-5, 3, 0, -1), Move(-6, 3, 1, 0), Move(-6, 2, 2, 0), Move(-5, 2, 1, -1), Move(-5, 1, 3, 0), Move(0, 0, 0, -1), Move(-3, 0, 1, 0), Move(0, -2, 3, -1), Move(-1, -1, 0, -1), Move(-2, -2, 2, 0), Move(-1, -2, 1, 0), Move(-1, -3, 3, 0), Move(-2, -3, 1, 0), Move(-6, 1, 3, 0), Move(-7, 0, 2, 0), Move(-4, 1, 1, -2), Move(-2, -1, 0, -2), Move(-3, -1, 1, 0), Move(-3, -2, 3, 0), Move(-4, 0, 0, -1), Move(-2, -4, 3, 0), Move(-3, -5, 2, 0), Move(-5, 0, 2, 0), Move(-4, -1, 0, -2), Move(-4, -2, 3, 0), Move(-5, -3, 2, 0), Move(-5, -2, 1, 0), Move(-5, -1, 3, -2), Move(-6, 0, 1, -1), Move(-7, -1, 2, 0), Move(-6, -1, 1, -1), Move(-3, -3, 0, -3), Move(-6, -3, 2, 0), Move(-4, -3, 1, -2), Move(-3, -4, 0, -4), Move(-3, -6, 3, 0), Move(-4, -5, 2, 0), Move(-5, -4, 2, 0), Move(-7, -2, 0, 0), Move(-6, -2, 3, -1), Move(-4, -4, 0, -3), Move(-6, -4, 1, 0), Move(-4, -6, 3, 0), Move(-7, -3, 2, 0), Move(-7, -4, 3, 0)]
 import Dates
 import Base.copy
 using Random
@@ -1459,9 +1461,10 @@ function run()
     inactive_cycle_reset = 1
     back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 10
+    improvement_inactivity_reset = 1
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
+    min_visits_explore = 400
 
     iteration = 0
     max_score = 0
@@ -1544,14 +1547,14 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        elseif test_visits < 400
+        elseif test_visits < min_visits_explore
             # min(1 * (2^(t - 1)), 4000)
-            400
+            min_visits_explore
         # elseif total_evaluations < 10000
         # t * 50
             else
                 # min(1 * (2^(t - 1)), 4000)
-            min(100 * (2^(t - 1)), 4000)
+            min(50 * (2^(t - 1)), 4000)
         end
         
             visit_counter = 0
@@ -1603,12 +1606,12 @@ function run()
                 
 
                 elseif upper_band_improvement_counter > upper_band_improvement_reset && back_accept > back_accept_min
-                back_accept -= 1
-                    upper_band_improvement_counter = 0
+                # back_accept -= 1
+                    # upper_band_improvement_counter = 0
                 end
 
                 current_time = Dates.now()
-                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset b:$(length(backlog))")
+                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset b:$(length(backlog)) $back_accept")
                 
                 trip_time = Dates.now()
                 improvements_counter = 0
@@ -1646,7 +1649,7 @@ function run()
                     max_moves = eval_moves
 
                     back_accept = back_accept_min
-                    upper_band_improvement_counter = 0
+                    # upper_band_improvement_counter = 0
                 end
 
                 
@@ -1658,7 +1661,7 @@ function run()
                 # end
 
                 if eval_score >= (max_score - back_accept + 1)
-                    upper_band_improvement_counter += 1
+                    # upper_band_improvement_counter += 1
                     back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
                 end
             
@@ -1714,9 +1717,9 @@ function run()
                         max_moves = fendy_moves
         
                         back_accept = back_accept_min
-                        upper_band_improvement_counter = 0
+                        # upper_band_improvement_counter = 0
                     elseif fendy_score >= (max_score - back_accept + 1)
-                        upper_band_improvement_counter += 1
+                        # upper_band_improvement_counter += 1
                         back_accept = max(min(back_accept, max_score - fendy_score), back_accept_min)
                         
                     end
