@@ -1459,7 +1459,7 @@ function run()
     inactive_cycle_reset = 1
     back_accept_min = 0
     min_move_visits = 1
-    improvement_inactivity_reset = 3
+    improvement_inactivity_reset = 10
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
 
@@ -1544,11 +1544,13 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        elseif test_visits > 10000
-            1
-        elseif total_evaluations < 10000
-        t * 50
+        elseif test_visits < 400
+            # min(1 * (2^(t - 1)), 4000)
+            400
+        # elseif total_evaluations < 10000
+        # t * 50
             else
+                # min(1 * (2^(t - 1)), 4000)
             min(100 * (2^(t - 1)), 4000)
         end
         
@@ -1606,7 +1608,7 @@ function run()
                 end
 
                 current_time = Dates.now()
-                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset")
+                println("$total_evaluations. $(current_time - trip_time) ($max_score) impr: $improvements_counter/$improvement_inactivity_reset up_band_impr:$upper_band_improvement_counter/$upper_band_improvement_reset in_cyc: $inactive_cycles/$inactive_cycle_reset b:$(length(backlog))")
                 
                 trip_time = Dates.now()
                 improvements_counter = 0
@@ -1659,8 +1661,9 @@ function run()
                     upper_band_improvement_counter += 1
                     back_accept = max(min(back_accept, max_score - eval_score), back_accept_min)
                 end
-                
-                
+            
+            elseif (!in_index && eval_score >= (max_score - 5))
+                backlog[eval_hash] = eval_moves
             end
 
             visit_counter += 1
