@@ -1547,16 +1547,18 @@ function run()
         # modification
         num_visits = if (test_score < (max_score - back_accept))
             0
-        # elseif test_visits < min_visits_explore
+        elseif test_visits < min_visits_explore
         #     # min(1 * (2^(t - 1)), 4000)
-        #     min_visits_explore
+            min_visits_explore
         # elseif total_evaluations < 10000
         # t * 50
         # elseif test_visits > 10000
         #     min(1 * (2^(t - 1)), 4000)
             else
                 # min(1 * (2^(t - 1)), 4000)
-            min(100 * (2^(t - 1)), 4000)
+            # min(100 * (2^(t - 1)), 4000)
+            
+            min(100 * (ℯ^(t - 1)), 4000)
         end
         
             visit_counter = 0
