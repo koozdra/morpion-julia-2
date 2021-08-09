@@ -1479,7 +1479,7 @@ function run()
     # dimitri
     # states = Dict(points_hash(moves) => Dict(0 => 1))
     index = Dict(points_hash(moves) => (moves, 0))
-    backlog = Dict(points_hash(moves) => moves)
+    backlog = Dict(points_hash(moves) => (moves, 0))
 
     index_pairs = collect(pairs(index))
     index_pair_counter = 0
@@ -1599,10 +1599,10 @@ function run()
                     upper_band_improvement_counter = 0
                     inactive_cycles = 0
 
-                    for (b_key, b_moves) in collect(pairs(backlog))
+                    for (b_key, (b_moves, b_visits)) in collect(pairs(backlog))
                         b_score = length(b_moves)
                         if (!haskey(index, b_key) && b_score >= max_score - back_accept) 
-                            index[b_key] = (b_moves, 0)
+                            index[b_key] = (b_moves, b_visits)
                             # println("$total_evaluations. b $b_score")
                         end
                     end
@@ -1670,7 +1670,9 @@ function run()
                 end
             
             elseif (!in_index && eval_score >= (max_score - 5))
-                backlog[eval_hash] = eval_moves
+                if !haskey(backlog, eval_hash)
+                    backlog[eval_hash] = (eval_moves, 0)
+                end
             end
 
             visit_counter += 1
@@ -1680,7 +1682,7 @@ function run()
         
 
         if (test_score < (max_score - back_accept))
-            backlog[test_hash_key] = test_moves
+            backlog[test_hash_key] = (test_moves, test_visits)
             delete!(index, test_hash_key)
             # delete!(states, test_hash_key)
             index_pairs = collect(pairs(index))
