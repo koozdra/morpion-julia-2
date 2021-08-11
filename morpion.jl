@@ -1459,12 +1459,12 @@ function run()
     upper_band_improvement_reset = 1
     score_visits_explore_decay = 1
     inactive_cycle_reset = 1
-    back_accept_min = 0
+    back_accept_min = 2
     min_move_visits = 1
     improvement_inactivity_reset = 1
     min_test_move_visits_end_search = 0
     back_accept = back_accept_min
-    min_visits_explore = 200
+    min_visits_explore = 400
 
     iteration = 0
     max_score = 0
@@ -1485,15 +1485,15 @@ function run()
     index_pair_counter = 0
     end_searched_index = Dict(points_hash(moves) => true)
 
-    for i in 1:1000
-        dna = rand(40 * 40 * 4)
-        moves = eval_dna(copy(board_template), dna)
-        score = length(moves)
+    # for i in 1:1000
+    #     dna = rand(40 * 40 * 4)
+    #     moves = eval_dna(copy(board_template), dna)
+    #     score = length(moves)
 
-        # states[points_hash(moves)] = Dict(1 => 1)
-        index[points_hash(moves)] = (moves, 0)
-        index_pairs = collect(pairs(index))
-    end
+    #     # states[points_hash(moves)] = Dict(1 => 1)
+    #     index[points_hash(moves)] = (moves, 0)
+    #     index_pairs = collect(pairs(index))
+    # end
 
     while true
         # selection
@@ -1550,8 +1550,8 @@ function run()
         elseif test_visits < min_visits_explore
         #     # min(1 * (2^(t - 1)), 4000)
             min_visits_explore
-        # elseif total_evaluations < 10000
-        # t * 50
+        elseif test_visits > 10000
+            min(2 * (2^(t - 1)), 4000)
         # elseif test_visits > 10000
         #     min(1 * (2^(t - 1)), 4000)
             else
@@ -1559,6 +1559,8 @@ function run()
             # min(100 * (2^(t - 1)), 4000)
             
             min(100 * (2^(t - 1)), 4000)
+            # min(1 * (2^(t - 1)), 4000)
+            # min(2 * (ℯ^(t - 1)), 4000)
         end
         
             visit_counter = 0
