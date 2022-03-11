@@ -1469,9 +1469,15 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 30
     end_search_interval = 500
+    current_source_score = 100
     reset_interaval = 1000000
+
+    focus_interval = 100000
+    back_focus_score_min = -5
+    back_focus_score_max = 0
+
 
     function local_end_search(test_hash, test_moves)
         test_score = length(test_moves)
@@ -1510,8 +1516,20 @@ function run()
         end
     end
 
+
+    current_back_focus_score_mod = 0
     while true
         iteration += 1
+
+        focus = (iteration % focus_interval) / focus_interval
+
+        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+
+        if back_focus_score_mod != current_back_focus_score_mod
+            current_set = []
+            current_back_focus_score_mod = back_focus_score_mod
+            println("----- $back_focus_score_mod")
+        end
 
         # if iteration % reset_interaval == 0
         #     filter(function (pair)
@@ -1551,11 +1569,12 @@ function run()
                     score
                 end, index_pairs)
 
+            current_source_score = highest_score
 
             current_set = filter(function (pair)
                     (_, (moves, visits, iteration_visited)) = pair
                     score = length(moves)
-                    score >= (highest_score - current_source_back_accept)
+                    score >= (highest_score + back_focus_score_mod)
                 end, index_pairs)
 
             # println(current_set)
@@ -1606,9 +1625,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        if test_score >= 100 && !haskey(end_searched_index, test_hash)
-            local_end_search(test_hash, test_moves)
-        end
+        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+        #     local_end_search(test_hash, test_moves)
+        # end
 
 
 
@@ -1658,10 +1677,9 @@ function run()
                 # end
 
                 if eval_score >= test_score
-                    println("$iteration. $test_score($test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set))")
-
+                    println("$iteration. $test_score($test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
                 else
-                    println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set))")
+                    println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
