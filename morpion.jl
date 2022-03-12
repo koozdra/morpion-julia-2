@@ -1647,7 +1647,8 @@ function run()
                 modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
             end
         else
-            modified_dna = modify_dna_move(test_moves[(test_visits%length(test_moves))+1], test_dna)
+            # modified_dna = modify_dna_move(test_moves[(test_visits%length(test_moves))+1], test_dna)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         end
 
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
