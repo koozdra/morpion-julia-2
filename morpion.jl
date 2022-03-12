@@ -1469,13 +1469,13 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 30
+    taboo_score_multiplier = 10
     end_search_interval = 500
     current_source_score = 100
     reset_interaval = 1000000
 
     focus_interval = 100000
-    back_focus_score_min = -5
+    back_focus_score_min = 0
     back_focus_score_max = 0
 
 
@@ -1545,21 +1545,21 @@ function run()
         #     println("$iteration. --")
         # end
 
-        if iteration % end_search_interval == 0
-            (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
-                    (hash_key, (moves, visits, iteration_visited)) = pair
-                    score = length(moves)
-                    if (haskey(end_searched_index, hash_key))
-                        0
-                    else
-                        score + rand()
-                    end
-                end, collect(pairs(index)))
+        # if iteration % end_search_interval == 0
+        #     (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
+        #             (hash_key, (moves, visits, iteration_visited)) = pair
+        #             score = length(moves)
+        #             if (haskey(end_searched_index, hash_key))
+        #                 0
+        #             else
+        #                 score + rand()
+        #             end
+        #         end, collect(pairs(index)))
 
-            if length(moves) >= 100
-                local_end_search(hash_key, moves)
-            end
-        end
+        #     if length(moves) >= 100
+        #         local_end_search(hash_key, moves)
+        #     end
+        # end
 
         if length(current_set) == 0
             index_pairs = collect(pairs(index))
@@ -1625,9 +1625,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
-        #     local_end_search(test_hash, test_moves)
-        # end
+        if test_score >= 100 && !haskey(end_searched_index, test_hash)
+            local_end_search(test_hash, test_moves)
+        end
 
 
 
