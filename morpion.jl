@@ -1469,7 +1469,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 4
     end_search_interval = 500
     current_source_score = 100
     reset_interaval = 1000000
