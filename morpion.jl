@@ -1510,7 +1510,7 @@ function run()
                     println(max_moves)
 
                     current_set = []
-                    empty!(taboo)
+                    # empty!(taboo)
                 end
             end
         end
@@ -1541,7 +1541,7 @@ function run()
                 end, collect(pairs(taboo)))
 
             current_set = []
-            empty!(taboo)
+            # empty!(taboo)
             println("$iteration. --")
         end
 
