@@ -1469,7 +1469,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 4
+    taboo_score_multiplier = 6
     end_search_interval = 500
     current_source_score = 100
     reset_interaval = 1000000
@@ -1646,6 +1646,9 @@ function run()
             for i in 1:2
                 modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
             end
+        elseif (test_visit_score_index % 2 == 1)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
         else
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         end
