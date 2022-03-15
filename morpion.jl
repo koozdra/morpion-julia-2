@@ -1470,7 +1470,7 @@ function run()
     back_accept_reset_visits = 5
     current_source_back_accept = 0
     taboo_score_multiplier = 6
-    end_search_interval = 500
+    end_search_interval = 100
     current_source_score = 100
     reset_interaval = 1000000
 
@@ -1545,21 +1545,21 @@ function run()
             println("$iteration. --")
         end
 
-        # if iteration % end_search_interval == 0
-        #     (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
-        #             (hash_key, (moves, visits, iteration_visited)) = pair
-        #             score = length(moves)
-        #             if (haskey(end_searched_index, hash_key))
-        #                 0
-        #             else
-        #                 score + rand()
-        #             end
-        #         end, collect(pairs(index)))
+        if iteration % end_search_interval == 0
+            (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
+                    (hash_key, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    if (haskey(end_searched_index, hash_key))
+                        0
+                    else
+                        score + rand()
+                    end
+                end, collect(pairs(index)))
 
-        #     if length(moves) >= 100
-        #         local_end_search(hash_key, moves)
-        #     end
-        # end
+            if length(moves) >= 100
+                local_end_search(hash_key, moves)
+            end
+        end
 
         if length(current_set) == 0
             index_pairs = collect(pairs(index))
