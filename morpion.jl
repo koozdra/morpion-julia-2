@@ -1469,7 +1469,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 0
     current_source_back_accept = 0
-    taboo_score_multiplier = 3 * 3
+    taboo_score_multiplier = 1 * 3
     end_search_interval = 1000
     current_source_score = 100
     reset_interaval = 1000000
@@ -1531,19 +1531,19 @@ function run()
             println("----- $back_focus_score_mod")
         end
 
-        # if iteration % reset_interaval == 0
-        #     filter(function (pair)
-        #             (hash, (moves, visits, iteration_visited)) = pair
-        #             # score = length(moves)
-        #             # score >= (highest_score - current_source_back_accept)
-        #             index[hash] = (moves, 0, iteration)
-        #             false
-        #         end, collect(pairs(taboo)))
+        if iteration % reset_interaval == 0
+            filter(function (pair)
+                    (hash, (moves, visits, iteration_visited)) = pair
+                    # score = length(moves)
+                    # score >= (highest_score - current_source_back_accept)
+                    index[hash] = (moves, 0, iteration)
+                    false
+                end, collect(pairs(taboo)))
 
-        #     current_set = []
-        #     # empty!(taboo)
-        #     println("$iteration. --")
-        # end
+            current_set = []
+            # empty!(taboo)
+            println("$iteration. --")
+        end
 
         # if iteration % end_search_interval == 0
         #     (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
