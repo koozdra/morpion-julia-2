@@ -1475,7 +1475,7 @@ function run()
     reset_interaval = 1000000
 
     focus_interval = 100000
-    back_focus_score_min = 0
+    back_focus_score_min = -2
     back_focus_score_max = 0
 
 
