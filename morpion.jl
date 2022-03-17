@@ -1467,9 +1467,9 @@ function run()
     max_moves = moves
 
     back_accept = 5
-    back_accept_reset_visits = 1
+    back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 1 * 3
+    taboo_score_multiplier = 100
     end_search_interval = 500
     current_source_score = 100
     reset_interaval = 1000000
@@ -1641,17 +1641,17 @@ function run()
         test_visit_score_index = floor(test_visits / test_score)
 
         #modification
-        if (test_visit_score_index % 2 == 0)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-            for i in 1:2
-                modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
-            end
-        elseif (test_visit_score_index % 2 == 1)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        # if (test_visit_score_index % 2 == 0)
+        modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        for i in 1:2
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
-        else
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         end
+        # elseif (test_visit_score_index % 2 == 1)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        # else
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        # end
 
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
         eval_score = length(eval_moves)
