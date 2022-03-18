@@ -1448,17 +1448,17 @@ function run()
     index = Dict(points_hash(moves) => (moves, 0, iteration))
     current_set = []
 
-    # highest_start_score = 0
-    # for i in 1:1000
-    #     dna = rand(40 * 40 * 4)
-    #     moves = eval_dna(copy(board_template), dna)
-    #     score = length(moves)
-    #     if score >= highest_start_score
-    #         highest_start_score = max(highest_start_score, score)
-    #         println("$i. $score")
-    #     end
-    #     index[points_hash(moves)] = (moves, 0, iteration)
-    # end
+    highest_start_score = 0
+    for i in 1:1000
+        dna = rand(40 * 40 * 4)
+        moves = eval_dna(copy(board_template), dna)
+        score = length(moves)
+        if score >= highest_start_score
+            highest_start_score = max(highest_start_score, score)
+            println("$i. $score")
+        end
+        index[points_hash(moves)] = (moves, 0, iteration)
+    end
 
     end_searched_index = Dict(points_hash(moves) => true)
     dna_cache = Dict(points_hash(moves) => dna)
@@ -1494,8 +1494,11 @@ function run()
             fendy_score = length(fendy_moves)
             if !haskey(index, fendy_key) && !haskey(taboo, fendy_key)
                 if fendy_score >= end_search_min_accept
-                    println("$iteration. $test_score -> $fendy_score")
                     index[fendy_key] = (fendy_moves, 0, iteration)
+                end
+
+                if fendy_score >= test_score
+                    println("$iteration. $test_score -> $fendy_score")
                 end
 
                 if fendy_score >= (test_score - current_source_back_accept)
@@ -1531,35 +1534,35 @@ function run()
             println("----- $back_focus_score_mod")
         end
 
-        if iteration % reset_interaval == 0
-            filter(function (pair)
-                    (hash, (moves, visits, iteration_visited)) = pair
-                    # score = length(moves)
-                    # score >= (highest_score - current_source_back_accept)
-                    index[hash] = (moves, 0, iteration)
-                    false
-                end, collect(pairs(taboo)))
+        # if iteration % reset_interaval == 0
+        #     filter(function (pair)
+        #             (hash, (moves, visits, iteration_visited)) = pair
+        #             # score = length(moves)
+        #             # score >= (highest_score - current_source_back_accept)
+        #             index[hash] = (moves, 0, iteration)
+        #             false
+        #         end, collect(pairs(taboo)))
 
-            current_set = []
-            # empty!(taboo)
-            println("$iteration. --")
-        end
-
-        # if iteration % end_search_interval == 0
-        #     (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
-        #             (hash_key, (moves, visits, iteration_visited)) = pair
-        #             score = length(moves)
-        #             if (haskey(end_searched_index, hash_key))
-        #                 0
-        #             else
-        #                 score + rand()
-        #             end
-        #         end, collect(pairs(index)))
-
-        #     if length(moves) >= 100
-        #         local_end_search(hash_key, moves)
-        #     end
+        #     current_set = []
+        #     # empty!(taboo)
+        #     println("$iteration. --")
         # end
+
+        if iteration % end_search_interval == 0
+            (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
+                    (hash_key, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    if (haskey(end_searched_index, hash_key))
+                        0
+                    else
+                        score + rand()
+                    end
+                end, collect(pairs(index)))
+
+            if length(moves) >= 100
+                local_end_search(hash_key, moves)
+            end
+        end
 
         if length(current_set) == 0
             index_pairs = collect(pairs(index))
