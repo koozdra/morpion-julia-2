@@ -1469,10 +1469,11 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 100
-    end_search_interval = 500
+    # taboo_score_multiplier = 1
+    taboo_visits = 50
+    end_search_interval = 300
     current_source_score = 100
-    reset_interaval = 1000000
+    reset_interaval = 100000
 
     focus_interval = 100000
     back_focus_score_min = 0
@@ -1534,19 +1535,19 @@ function run()
             println("----- $back_focus_score_mod")
         end
 
-        # if iteration % reset_interaval == 0
-        #     filter(function (pair)
-        #             (hash, (moves, visits, iteration_visited)) = pair
-        #             # score = length(moves)
-        #             # score >= (highest_score - current_source_back_accept)
-        #             index[hash] = (moves, 0, iteration)
-        #             false
-        #         end, collect(pairs(taboo)))
+        if iteration % reset_interaval == 0
+            filter(function (pair)
+                    (hash, (moves, visits, iteration_visited)) = pair
+                    # score = length(moves)
+                    # score >= (highest_score - current_source_back_accept)
+                    index[hash] = (moves, 0, iteration)
+                    false
+                end, collect(pairs(taboo)))
 
-        #     current_set = []
-        #     # empty!(taboo)
-        #     println("$iteration. --")
-        # end
+            current_set = []
+            # empty!(taboo)
+            println("$iteration. --")
+        end
 
         if iteration % end_search_interval == 0
             (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
@@ -1703,7 +1704,7 @@ function run()
             empty!(taboo)
         end
 
-        if test_visits >= test_score * taboo_score_multiplier
+        if test_visits >= taboo_visits
             taboo[test_hash] = (test_moves, test_visits, iteration)
             println("$iteration. T - $test_score ($test_visits) cs:$(length(current_set))")
             delete!(index, test_hash)
