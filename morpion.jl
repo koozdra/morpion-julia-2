@@ -1448,17 +1448,17 @@ function run()
     index = Dict(points_hash(moves) => (moves, 0, iteration))
     current_set = []
 
-    highest_start_score = 0
-    for i in 1:1000
-        dna = rand(40 * 40 * 4)
-        moves = eval_dna(copy(board_template), dna)
-        score = length(moves)
-        if score >= highest_start_score
-            highest_start_score = max(highest_start_score, score)
-            println("$i. $score")
-        end
-        index[points_hash(moves)] = (moves, 0, iteration)
-    end
+    # highest_start_score = 0
+    # for i in 1:1000
+    #     dna = rand(40 * 40 * 4)
+    #     moves = eval_dna(copy(board_template), dna)
+    #     score = length(moves)
+    #     if score >= highest_start_score
+    #         highest_start_score = max(highest_start_score, score)
+    #         println("$i. $score")
+    #     end
+    #     index[points_hash(moves)] = (moves, 0, iteration)
+    # end
 
     end_searched_index = Dict(points_hash(moves) => true)
     dna_cache = Dict(points_hash(moves) => dna)
@@ -1469,14 +1469,14 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3 * 3
+    taboo_score_multiplier = 6 * 3
     # taboo_visits = 100
-    end_search_interval = 500
+    end_search_interval = 0
     current_source_score = 100
     reset_interval = 0
 
     focus_interval = 100000
-    back_focus_score_min = 0
+    back_focus_score_min = -1
     back_focus_score_max = 0
 
 
@@ -1556,7 +1556,7 @@ function run()
                     if (haskey(end_searched_index, hash_key))
                         0
                     else
-                        score + rand()
+                        score + rand() + rand() + rand()
                     end
                 end, collect(pairs(index)))
 
@@ -2084,6 +2084,8 @@ function run()
     # min_accept_modifier = -back_accept
 
     # min_end_search_step = 0
+
+
 
     # max_score = pool_score
     # max_moves = moves
