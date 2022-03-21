@@ -535,7 +535,7 @@ function end_search(board_template, min_accept_score, index, search_timeout, mov
         rando_score = length(eval_gym.taken_moves)
         max_score_found = max(max_score_found, rando_score)
         min_score_found = min(min_score_found, rando_score)
-        rando_points_hash = points_hash(eval_gym.taken_moves)
+        rando_points_hash = lines_hash(eval_gym.taken_moves)
         if !haskey(index, rando_points_hash) && (rando_score >= min_accept_score)
             # println(length(rando_moves))
             index[rando_points_hash] = eval_gym.taken_moves
@@ -1445,7 +1445,7 @@ function run()
 
     iteration = 0
     trip_time = Dates.now()
-    index = Dict(points_hash(moves) => (moves, 0, iteration))
+    index = Dict(lines_hash(moves) => (moves, 0, iteration))
     current_set = []
 
     # highest_start_score = 0
@@ -1460,23 +1460,23 @@ function run()
     #     index[points_hash(moves)] = (moves, 0, iteration)
     # end
 
-    end_searched_index = Dict(points_hash(moves) => true)
-    dna_cache = Dict(points_hash(moves) => dna)
-    taboo = Dict(points_hash(moves) => (moves, 0, iteration))
+    end_searched_index = Dict(lines_hash(moves) => true)
+    dna_cache = Dict(lines_hash(moves) => dna)
+    taboo = Dict(lines_hash(moves) => (moves, 0, iteration))
     max_score = score
     max_moves = moves
 
-    back_accept = 5
-    back_accept_reset_visits = 5
+    back_accept = 3
+    back_accept_reset_visits = 0
     current_source_back_accept = 0
-    taboo_score_multiplier = 6 * 3
+    taboo_score_multiplier = 1
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
     reset_interval = 0
 
     focus_interval = 100000
-    back_focus_score_min = -1
+    back_focus_score_min = 0
     back_focus_score_max = 0
 
 
@@ -1489,7 +1489,7 @@ function run()
         end_search_result = end_search(board_template, end_search_min_accept, 20, test_moves)
         current_time = Dates.now()
 
-        println("$iteration. ES $test_score (fnd $(length(end_search_result)), min: $(end_search_min_accept)) $(current_time - end_search_trip_time)")
+        println("$iteration. ES $test_score (fnd $(length(end_search_result)), min: $(end_search_min_accept)) $(current_time - end_search_trip_time) cs.$(length(current_set))")
 
         for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
             fendy_score = length(fendy_moves)
@@ -1629,9 +1629,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        if test_score >= 100 && !haskey(end_searched_index, test_hash)
-            local_end_search(test_hash, test_moves)
-        end
+        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+        #     local_end_search(test_hash, test_moves)
+        # end
 
 
 
@@ -1664,7 +1664,7 @@ function run()
         # println("$iteration. $test_score($test_visits) -> $eval_score ($max_score, $(test_score - (test_visits / (test_score * 10)))) i.$(length(index))")
 
         if eval_score >= (test_score - back_accept)
-            eval_hash = points_hash(eval_moves)
+            eval_hash = lines_hash(eval_moves)
             is_in_index = haskey(index, eval_hash)
             is_in_taboo = haskey(taboo, eval_hash)
             if !is_in_index && !is_in_taboo
@@ -1677,7 +1677,9 @@ function run()
 
                 index[eval_hash] = (eval_moves, 0, iteration)
                 if eval_score >= (test_score - current_source_back_accept)
-                    current_set = []
+                    # current_set = []
+                    #dimitri
+                    push!(current_set, Pair(eval_hash, (eval_moves, 0, iteration)))
                 end
                 # if eval_score >= 100 && !haskey(end_searched_index, eval_hash)
                 #     local_end_search(eval_hash, eval_moves)
@@ -1685,8 +1687,8 @@ function run()
 
                 if eval_score >= test_score
                     println("$iteration. $test_score($test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
-                else
-                    println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
+                    # else
+                    #     println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
