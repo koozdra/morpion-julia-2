@@ -1469,7 +1469,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 0
     current_source_back_accept = 0
-    taboo_score_multiplier = 6
+    taboo_score_multiplier = 9
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1629,9 +1629,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
-        #     local_end_search(test_hash, test_moves)
-        # end
+        if test_score >= 100 && !haskey(end_searched_index, test_hash)
+            local_end_search(test_hash, test_moves)
+        end
 
 
 
@@ -1684,6 +1684,10 @@ function run()
                 # if eval_score >= 100 && !haskey(end_searched_index, eval_hash)
                 #     local_end_search(eval_hash, eval_moves)
                 # end
+
+                if eval_score > test_score
+                    current_set = []
+                end
 
                 if eval_score >= test_score
                     println("$iteration. $test_score($test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
