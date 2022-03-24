@@ -535,7 +535,7 @@ function end_search(board_template, min_accept_score, index, search_timeout, mov
         rando_score = length(eval_gym.taken_moves)
         max_score_found = max(max_score_found, rando_score)
         min_score_found = min(min_score_found, rando_score)
-        rando_points_hash = lines_hash(eval_gym.taken_moves)
+        rando_points_hash = points_hash(eval_gym.taken_moves)
         if !haskey(index, rando_points_hash) && (rando_score >= min_accept_score)
             # println(length(rando_moves))
             index[rando_points_hash] = eval_gym.taken_moves
@@ -1445,7 +1445,7 @@ function run()
 
     iteration = 0
     trip_time = Dates.now()
-    index = Dict(lines_hash(moves) => (moves, 0, iteration))
+    index = Dict(points_hash(moves) => (moves, 0, iteration))
     current_set = []
 
     # highest_start_score = 0
@@ -1664,7 +1664,7 @@ function run()
         # println("$iteration. $test_score($test_visits) -> $eval_score ($max_score, $(test_score - (test_visits / (test_score * 10)))) i.$(length(index))")
 
         if eval_score >= (test_score - back_accept)
-            eval_hash = lines_hash(eval_moves)
+            eval_hash = points_hash(eval_moves)
             is_in_index = haskey(index, eval_hash)
             is_in_taboo = haskey(taboo, eval_hash)
             if !is_in_index && !is_in_taboo
