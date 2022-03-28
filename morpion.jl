@@ -1469,14 +1469,14 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3 * 3
+    taboo_score_multiplier = 6 * 3
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
     reset_interval = 0
 
     focus_interval = 100000
-    back_focus_score_min = -2
+    back_focus_score_min = 0
     back_focus_score_max = 0
 
 
