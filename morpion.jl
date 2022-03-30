@@ -1476,7 +1476,7 @@ function run()
     reset_interval = 0
 
     focus_interval = 100000
-    back_focus_score_min = -2
+    back_focus_score_min = -3
     back_focus_score_max = 0
 
 
@@ -1556,7 +1556,7 @@ function run()
                     if (haskey(end_searched_index, hash_key))
                         0
                     else
-                        score + rand() + rand() + rand()
+                        score
                     end
                 end, collect(pairs(index)))
 
@@ -1634,9 +1634,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        if test_score >= 100 && !haskey(end_searched_index, test_hash)
-            local_end_search(test_hash, test_moves)
-        end
+        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+        #     local_end_search(test_hash, test_moves)
+        # end
 
 
 
@@ -1716,9 +1716,15 @@ function run()
         end
 
         if test_visits >= (taboo_score_multiplier * test_score)
+            if test_score >= 100 && !haskey(end_searched_index, test_hash)
+                local_end_search(test_hash, test_moves)
+            end
+
             taboo[test_hash] = (test_moves, test_visits, iteration)
             println("$iteration. T - $test_score ($test_visits) cs:$(length(current_set))")
             delete!(index, test_hash)
+
+
 
             current_set = []
         end
