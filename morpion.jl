@@ -1480,7 +1480,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -3
+    back_focus_score_min = -5
     back_focus_score_max = 0
 
 
@@ -1634,7 +1634,7 @@ function run()
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
 
-        if test_visits < test_score && low_visit_counter < low_visit_timeout
+        if test_visits < (test_score * 2) && low_visit_counter < low_visit_timeout
             low_visit_counter += 1
         elseif low_visit_counter >= low_visit_timeout
             current_set_index += 1
