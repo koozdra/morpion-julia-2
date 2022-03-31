@@ -1447,6 +1447,7 @@ function run()
     trip_time = Dates.now()
     index = Dict(points_hash(moves) => (moves, 0, iteration))
     current_set = []
+    current_set_index = 1
 
     # highest_start_score = 0
     # for i in 1:1000
@@ -1469,11 +1470,14 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 1 * 3
+    taboo_score_multiplier = 10 * 3
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
     reset_interval = 0
+
+    low_visit_timeout = 10
+    low_visit_counter = 0
 
     focus_interval = 100000
     back_focus_score_min = -3
@@ -1522,6 +1526,7 @@ function run()
 
 
     current_back_focus_score_mod = 0
+
     while true
         iteration += 1
 
@@ -1623,13 +1628,23 @@ function run()
         #         score - (visits / (score * 10))
         #         # end
         #     end, index_pairs)
-        (test_hash, _) = current_set[(iteration%length(current_set))+1]
+        # (test_hash, _) = current_set[(iteration%length(current_set))+1]
+        (test_hash, _) = current_set[(current_set_index%length(current_set))+1]
         (test_moves, test_visits, test_iteration_born) = index[test_hash]
-
-
-
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
+
+        if test_visits < test_score && low_visit_counter < low_visit_timeout
+            low_visit_counter += 1
+        elseif low_visit_counter >= low_visit_timeout
+            current_set_index += 1
+            low_visit_counter = 0
+        end
+
+
+
+        # println("$low_visit_counter $current_set_index")
+
 
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
