@@ -1476,7 +1476,7 @@ function run()
     reset_interval = 0
 
     focus_interval = 100000
-    back_focus_score_min = -3
+    back_focus_score_min = -4
     back_focus_score_max = 0
 
 
@@ -1716,9 +1716,9 @@ function run()
         end
 
         if test_visits >= (taboo_score_multiplier * test_score)
-            if test_score >= 100 && !haskey(end_searched_index, test_hash)
-                local_end_search(test_hash, test_moves)
-            end
+            # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+            #     local_end_search(test_hash, test_moves)
+            # end
 
             taboo[test_hash] = (test_moves, test_visits, iteration)
             println("$iteration. T - $test_score ($test_visits) cs:$(length(current_set))")
