@@ -1476,7 +1476,7 @@ function run()
     current_source_score = 100
     reset_interval = 0
 
-    low_visit_timeout = 10
+    low_visit_timeout = 30
     low_visit_counter = 0
 
     focus_interval = 100000
@@ -1695,6 +1695,7 @@ function run()
                 # end
                 if eval_score >= (test_score - back_accept_reset_visits)
                     index[test_hash] = (test_moves, 0, iteration)
+                    low_visit_counter = 0
                 end
 
                 index[eval_hash] = (eval_moves, 0, iteration)
