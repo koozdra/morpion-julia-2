@@ -1476,7 +1476,7 @@ function run()
     current_source_score = 100
     reset_interval = 0
 
-    low_visit_timeout = 10
+    low_visit_timeout = 100
     low_visit_counter = 0
 
     focus_interval = 100000
