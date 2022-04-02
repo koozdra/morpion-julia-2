@@ -1636,11 +1636,9 @@ function run()
 
         if test_visits < test_score && low_visit_counter < low_visit_timeout
             low_visit_counter += 1
-        elseif low_visit_counter >= low_visit_timeout
-            current_set_index += 1
-            low_visit_counter = 0
         else
             current_set_index += 1
+            low_visit_counter = 0
         end
 
 
