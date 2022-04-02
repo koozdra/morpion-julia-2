@@ -1470,13 +1470,13 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 10
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
     reset_interval = 0
 
-    low_visit_timeout = 100
+    low_visit_timeout = 30
     low_visit_counter = 0
 
     focus_interval = 100000
@@ -1629,7 +1629,8 @@ function run()
         #         # end
         #     end, index_pairs)
         # (test_hash, _) = current_set[(iteration%length(current_set))+1]
-        (test_hash, _) = current_set[(current_set_index%length(current_set))+1]
+        current_set_position = (current_set_index % length(current_set)) + 1
+        (test_hash, _) = current_set[current_set_position]
         (test_moves, test_visits, test_iteration_born) = index[test_hash]
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
@@ -1711,7 +1712,7 @@ function run()
                 end
 
                 if eval_score >= test_score
-                    println("$iteration. $test_score($test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
+                    println("$iteration. $test_score($current_set_position, $test_visits - $test_visit_score_index) => $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
                     # else
                     #     println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
                 end
