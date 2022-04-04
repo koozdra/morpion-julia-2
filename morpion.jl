@@ -1470,7 +1470,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 30
+    taboo_score_multiplier = 7
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1480,7 +1480,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -5
+    back_focus_score_min = -3
     back_focus_score_max = 0
 
 
@@ -1635,7 +1635,7 @@ function run()
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
 
-        if test_visits < test_score && low_visit_counter < low_visit_timeout
+        if test_visits < (test_score * 2) && low_visit_counter < low_visit_timeout
             low_visit_counter += 1
         else
             current_set_index += 1
