@@ -1480,7 +1480,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -1
+    back_focus_score_min = -2
     back_focus_score_max = 0
 
 
