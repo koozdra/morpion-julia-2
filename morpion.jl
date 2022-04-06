@@ -1470,7 +1470,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 2
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1640,7 +1640,7 @@ function run()
         low_visit_timeout = 1
 
         if test_visits < (test_score * 2) || test_score == current_source_score
-            low_visit_timeout = 20
+            low_visit_timeout = 100
         end
 
         if low_visit_counter < low_visit_timeout
@@ -1675,14 +1675,23 @@ function run()
         test_visit_score_index = floor(test_visits / test_score)
 
         #modification
-        if (test_visit_score_index % 3 == 0)
+        # if (test_visit_score_index % 3 == 0)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        #     for i in 1:2
+        #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        #     end
+        # elseif (test_visit_score_index % 3 == 1)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        # else
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        # end
+
+        if (test_visit_score_index % 2 == 0)
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
             for i in 1:2
                 modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
             end
-        elseif (test_visit_score_index % 3 == 1)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
         else
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         end
