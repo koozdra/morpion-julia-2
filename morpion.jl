@@ -1470,7 +1470,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 1
+    taboo_score_multiplier = 3
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1480,7 +1480,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = 0
+    back_focus_score_min = -3
     back_focus_score_max = 0
 
     current_source_score = 100
@@ -1639,7 +1639,7 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_visits < (test_score * 2) || test_score == current_source_score
+        if test_visits < test_score || test_score == current_source_score
             low_visit_timeout = 100
         end
 
@@ -1686,7 +1686,6 @@ function run()
         else
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
         end
-
 
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
         eval_score = length(eval_moves)
