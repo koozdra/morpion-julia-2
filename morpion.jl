@@ -740,6 +740,8 @@ end
 
 
 
+
+
 function select_possible_move_by_policy(q_table, state, possible_moves)
     # could be more efficient
     # println(possible_moves)
@@ -1435,8 +1437,73 @@ function gran_random_state(index_pairs, states)
     (key, move_position, visits, moves)
 end
 
+mutable struct Gym
+    taken_moves::Array{Move}
+    possible_moves::Array{Move}
+    board::Array{UInt8,1}
+end
+
+function new_gym(board_template)
+    Gym([], initial_moves(), copy(board_template))
+end
+
+mutable struct Searchy
+    board_template::Array{UInt8,1}
+    hyper_parameters
+    index
+    iteration
+    current_set
+    current_set_index
+    current_source_score
+end
+
+function new_searchy(hyper_parameters)
+    board_template = generate_initial_board()
+    dna = rand(40 * 40 * 4)
+    moves = eval_dna(copy(board_template), dna)
+    iteration = 0
+
+    index = Dict(points_hash(moves) => (moves, 0, iteration))
+    Searchy(board_template, hyper_parameters, index, iteration, [], 1, 0)
+end
+
+function visit_search(searchy)
+    back_focus_score_mod = searchy.hyper_parameters["back_focus_score_mod"]
+
+    searchy.iteration += 1
+
+    if length(searchy.current_set) == 0
+        index_pairs = collect(pairs(searchy.index))
+        (highest_score, _) = findmax(function (pair)
+                (_, (moves, visits, iteration_visited)) = pair
+                score = length(moves)
+                score
+            end, index_pairs)
+
+        searchy.current_source_score = highest_score
+
+        searchy.current_set = filter(function (pair)
+                (_, (moves, visits, iteration_visited)) = pair
+                score = length(moves)
+                score >= (highest_score + back_focus_score_mod)
+            end, index_pairs)
+    end
+end
 
 function run()
+    hyper_parameters = Dict("back_focus_score_mod" => -5)
+    searchy = new_searchy(hyper_parameters)
+
+    println(searchy)
+    visit_search(searchy)
+    println(searchy)
+    # readline()
+
+
+
+
+
+
     board_template = generate_initial_board()
 
     dna = rand(40 * 40 * 4)
@@ -1449,17 +1516,17 @@ function run()
     current_set = []
     current_set_index = 1
 
-    # highest_start_score = 0
-    # for i in 1:1000
-    #     dna = rand(40 * 40 * 4)
-    #     moves = eval_dna(copy(board_template), dna)
-    #     score = length(moves)
-    #     if score >= highest_start_score
-    #         highest_start_score = max(highest_start_score, score)
-    #         println("$i. $score")
-    #     end
-    #     index[points_hash(moves)] = (moves, 0, iteration)
-    # end
+    highest_start_score = 0
+    for i in 1:1000
+        dna = rand(40 * 40 * 4)
+        moves = eval_dna(copy(board_template), dna)
+        score = length(moves)
+        if score >= highest_start_score
+            highest_start_score = max(highest_start_score, score)
+            println("$i. $score")
+        end
+        index[points_hash(moves)] = (moves, 0, iteration)
+    end
 
     end_searched_index = Dict(lines_hash(moves) => true)
     dna_cache = Dict(lines_hash(moves) => dna)
@@ -1470,7 +1537,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 20
+    taboo_score_multiplier = 10
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1480,7 +1547,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -5
+    back_focus_score_min = -8
     back_focus_score_max = 0
 
     current_source_score = 100
@@ -1639,7 +1706,7 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_visits < (test_score * 2) # || test_score == current_source_score
+        if test_visits < (test_score * 2) || test_score == current_source_score
             low_visit_timeout = 100
         end
 
@@ -1747,7 +1814,7 @@ function run()
             # end
 
             taboo[test_hash] = (test_moves, test_visits, iteration)
-            println("$iteration. T - $test_score ($test_visits) cs:$(length(current_set))")
+            println("$iteration. T - $test_score/$current_source_score ($test_visits) cs:$(length(current_set))")
             delete!(index, test_hash)
 
 
