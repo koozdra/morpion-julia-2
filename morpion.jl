@@ -1706,8 +1706,8 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_visits < (test_score * 2) || test_score == current_source_score
-            low_visit_timeout = 10
+        if test_visits < (test_score * 3) || test_score == current_source_score
+            low_visit_timeout = 100
         end
 
         if low_visit_counter < low_visit_timeout
