@@ -1541,13 +1541,13 @@ function run()
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
-    reset_interval = 1000000
+    reset_interval = 0
 
     low_visit_timeout = 100
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -5
+    back_focus_score_min = -8
     back_focus_score_max = 0
 
     current_source_score = 100
