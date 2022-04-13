@@ -1537,7 +1537,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 10
+    taboo_score_multiplier = 15
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1706,7 +1706,11 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_visits < test_score #|| test_score == current_source_score
+        if test_score == current_source_score
+            low_visit_timeout = 10
+        end
+
+        if test_visits < test_score
             low_visit_timeout = 100
         end
 
