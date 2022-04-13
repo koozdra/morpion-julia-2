@@ -1547,7 +1547,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -8
+    back_focus_score_min = -2
     back_focus_score_max = 0
 
     current_source_score = 100
@@ -1706,7 +1706,7 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_visits < test_score || test_score == current_source_score
+        if test_visits < test_score #|| test_score == current_source_score
             low_visit_timeout = 100
         end
 
