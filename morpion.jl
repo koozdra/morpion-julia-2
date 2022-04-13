@@ -1739,6 +1739,7 @@ function run()
                 generate_dna_zeros(test_moves)
             end
         dna_cache[test_hash] = copy(test_dna)
+        test_visit_score_index_detailed = test_visits / test_score
         test_visit_score_index = floor(test_visits / test_score)
 
         #modification
@@ -1787,10 +1788,16 @@ function run()
                     current_set = []
                 end
 
-                if eval_score >= test_score
-                    println("$iteration. $test_score($current_set_position, $test_visit_score_index) => $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
-                    # else
-                    #     println("$iteration. $test_score($test_visits - $test_visit_score_index) -> $eval_score ($max_score) i.$(length(index)) cs:$(length(current_set)) f:$focus $back_focus_score_mod")
+                if eval_score >= (current_source_score + back_focus_score_min)
+                    connector =
+                        if eval_score > test_score
+                            "==>"
+                        elseif eval_score == test_score
+                            "=>"
+                        else
+                            "->"
+                        end
+                    println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
