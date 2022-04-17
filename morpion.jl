@@ -1599,9 +1599,14 @@ function run()
     while true
         iteration += 1
 
-        focus = (iteration % focus_interval) / focus_interval
+        interval_type_explore = (iteration % (focus_interval * 2)) < focus_interval
 
-        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        if interval_type_explore
+            focus = (iteration % focus_interval) / focus_interval
+            back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        else
+            back_focus_score_mod = 0
+        end
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
