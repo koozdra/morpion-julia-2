@@ -1546,7 +1546,7 @@ function run()
     low_visit_timeout = 15
     low_visit_counter = 0
 
-    focus_interval = 200000
+    focus_interval = 100000
     back_focus_score_min = -3
     back_focus_score_max = 0
 
