@@ -1546,6 +1546,8 @@ function run()
     low_visit_timeout = 15
     low_visit_counter = 0
 
+    current_set_zero_pass_through_counter = 0
+
     focus_interval = 100000
     back_focus_score_min = -3
     back_focus_score_max = 0
@@ -1679,9 +1681,10 @@ function run()
             #     end, index_pairs)
 
             current_time = Dates.now()
-            println("$iteration. $(current_time - trip_time) ($max_score)")
+            println("$iteration. $(current_time - trip_time) ($max_score, pt:$current_set_zero_pass_through_counter)")
 
             trip_time = Dates.now()
+            current_set_zero_pass_through_counter = 0
 
 
         end
@@ -1704,6 +1707,9 @@ function run()
         #     end, index_pairs)
         # (test_hash, _) = current_set[(iteration%length(current_set))+1]
         current_set_position = (current_set_index % length(current_set)) + 1
+        if current_set_position == 1
+            current_set_zero_pass_through_counter += 1
+        end
         (test_hash, _) = current_set[current_set_position]
         (test_moves, test_visits, test_iteration_born) = index[test_hash]
         test_score = length(test_moves)
@@ -1711,11 +1717,13 @@ function run()
 
         low_visit_timeout = 1
 
-        if test_score == current_source_score && test_visits < test_score * 10
+        # focus on best score but not too much
+        if test_score == current_source_score && test_visits < test_score * 2
             low_visit_timeout = test_score
         end
 
-        if test_visits < test_score
+        # focus on lowest score in the current set
+        if (test_score == current_source_score + back_focus_score_mod) && test_visits < test_score
             low_visit_timeout = test_score
         end
 
