@@ -1718,13 +1718,13 @@ function run()
         low_visit_timeout = 1
 
         # focus on best score but not too much
-        if test_score == current_source_score && test_visits < test_score * 2
-            low_visit_timeout = test_score / 4
+        if test_score == current_source_score && test_visits < test_score * 4
+            low_visit_timeout = test_score
         end
 
-        # focus on lowest score in the current set
-        if (test_score == current_source_score + back_focus_score_mod) && test_visits < test_score
-            low_visit_timeout = test_score / 4
+
+        if test_visits < test_score
+            low_visit_timeout = test_score
         end
 
         if low_visit_counter < low_visit_timeout
