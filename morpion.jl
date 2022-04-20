@@ -1788,6 +1788,9 @@ function run()
                 # end
                 if eval_score >= (test_score - back_accept_reset_visits)
                     index[test_hash] = (test_moves, 0, iteration)
+                end
+
+                if eval_score >= test_score
                     low_visit_counter = 0
                 end
 
