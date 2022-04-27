@@ -1723,7 +1723,7 @@ function run()
         end
 
 
-        if test_visits < test_score
+        if test_visits < (test_score * 2)
             low_visit_timeout = test_score
         end
 
