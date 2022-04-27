@@ -1724,7 +1724,7 @@ function run()
 
 
         if test_visits < test_score
-            low_visit_timeout = test_score / 4
+            low_visit_timeout = test_score
         end
 
         if low_visit_counter < low_visit_timeout
