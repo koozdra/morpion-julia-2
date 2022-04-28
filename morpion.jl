@@ -1601,7 +1601,7 @@ function run()
     while true
         iteration += 1
 
-        interval_type_explore = (iteration % (focus_interval * 2)) < focus_interval
+        interval_type_explore = (iteration % (focus_interval * 3)) < focus_interval
 
         if interval_type_explore
             focus = (iteration % focus_interval) / focus_interval
