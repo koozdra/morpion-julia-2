@@ -1718,9 +1718,9 @@ function run()
         low_visit_timeout = 1
 
         # focus on best score but not too much
-        if test_score == current_source_score && test_visits < test_score * 4
-            low_visit_timeout = test_score
-        end
+        # if test_score == current_source_score && test_visits < test_score * 4
+        #     low_visit_timeout = test_score
+        # end
 
 
         if test_visits < test_score
