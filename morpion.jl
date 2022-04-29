@@ -1549,8 +1549,8 @@ function run()
     current_set_zero_pass_through_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -10
-    back_focus_score_max = -1
+    back_focus_score_min = -5
+    back_focus_score_max = 0
 
     current_source_score = 100
 
@@ -1601,14 +1601,14 @@ function run()
     while true
         iteration += 1
 
-        interval_type_explore = (iteration % (focus_interval * 5)) < focus_interval
+        # interval_type_explore = (iteration % (focus_interval * 5)) < focus_interval
 
-        if interval_type_explore
-            focus = (iteration % focus_interval) / focus_interval
-            back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
-        else
-            back_focus_score_mod = 0
-        end
+        # if interval_type_explore
+        focus = (iteration % focus_interval) / focus_interval
+        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        # else
+        #     back_focus_score_mod = 0
+        # end
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
@@ -1718,9 +1718,9 @@ function run()
         low_visit_timeout = 1
 
         # focus on best score but not too much
-        # if test_score == current_source_score && test_visits < test_score * 4
-        #     low_visit_timeout = test_score
-        # end
+        if test_score == current_source_score && test_visits < test_score * 4
+            low_visit_timeout = test_score
+        end
 
 
         if test_visits < test_score
