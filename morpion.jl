@@ -1706,7 +1706,8 @@ function run()
         #         # end
         #     end, index_pairs)
         # (test_hash, _) = current_set[(iteration%length(current_set))+1]
-        current_set_position = (current_set_index % length(current_set)) + 1
+        # current_set_position = (current_set_index % length(current_set)) + 1
+        current_set_position = rand(1:length(current_set))
         if current_set_position == 1
             current_set_zero_pass_through_counter += 1
         end
