@@ -1686,7 +1686,8 @@ function run()
             trip_time = Dates.now()
             current_set_zero_pass_through_counter = 0
 
-
+            #cleanup
+            empty!(dna_cache)
         end
 
         if iteration % 100000 == 0
