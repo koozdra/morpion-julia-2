@@ -1668,17 +1668,17 @@ function run()
 
 
         if iteration % 10000 == 0
-            # index_pairs = collect(pairs(index))
-            # argmax(function (pair)
-            #         (hash, (moves, visits, iteration_visited)) = pair
-            #         score = length(moves)
-            #         age = iteration - iteration_visited
-            #         if age >= 100000
-            #             println("$iteration. - $score (a:$age, v:$visits)")
-            #             delete!(index, hash)
-            #         end
-            #         score
-            #     end, index_pairs)
+            index_pairs = collect(pairs(index))
+            argmax(function (pair)
+                    (hash, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    age = iteration - iteration_visited
+                    if age >= 1000000
+                        println("$iteration. - $score (a:$age, v:$visits)")
+                        delete!(index, hash)
+                    end
+                    score
+                end, index_pairs)
 
             current_time = Dates.now()
             println("$iteration. $(current_time - trip_time) ($max_score, pt:$current_set_zero_pass_through_counter)")
@@ -1713,6 +1713,10 @@ function run()
             current_set_zero_pass_through_counter += 1
         end
         (test_hash, _) = current_set[current_set_position]
+        while !haskey(index, test_hash)
+            current_set_position = rand(1:length(current_set))
+            (test_hash, _) = current_set[current_set_position]
+        end
         (test_moves, test_visits, test_iteration_born) = index[test_hash]
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
