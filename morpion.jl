@@ -1491,12 +1491,12 @@ function visit_search(searchy)
 end
 
 function run()
-    hyper_parameters = Dict("back_focus_score_mod" => -5)
-    searchy = new_searchy(hyper_parameters)
+    # hyper_parameters = Dict("back_focus_score_mod" => -5)
+    # searchy = new_searchy(hyper_parameters)
 
-    println(searchy)
-    visit_search(searchy)
-    println(searchy)
+    # println(searchy)
+    # visit_search(searchy)
+    # println(searchy)
     # readline()
 
 
@@ -1509,6 +1509,14 @@ function run()
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
     score = length(moves)
+
+    # println(dna)
+    # println(score)
+
+    # index = Dict(points_hash(moves) => (moves, 0))
+    # current_pool = []
+
+    # modification
 
     iteration = 0
     trip_time = Dates.now()
@@ -1601,17 +1609,23 @@ function run()
 
     current_back_focus_score_mod = 0
 
+    current_set_position = 1
+    current_location_timeout = 100
+    current_location_timer = 0
+
     while true
         iteration += 1
+        focus = (iteration % focus_interval) / focus_interval
 
-        interval_type_explore = (iteration % (focus_interval * 2)) < focus_interval
+        # interval_type_explore = (iteration % (focus_interval * 10)) < focus_interval
 
-        if interval_type_explore
-            focus = (iteration % focus_interval) / focus_interval
-            back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
-        else
-            back_focus_score_mod = 0
-        end
+        # if interval_type_explore
+        #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        # else
+        #     back_focus_score_mod = 0
+        # end
+
+        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
@@ -1711,12 +1725,24 @@ function run()
         #     end, index_pairs)
         # (test_hash, _) = current_set[(iteration%length(current_set))+1]
         # current_set_position = (current_set_index % length(current_set)) + 1
-        current_set_position = rand(1:length(current_set))
-        if current_set_position == 1
-            current_set_zero_pass_through_counter += 1
+
+
+
+        if current_location_timer > current_location_timeout || current_set_position > length(current_set)
+            current_set_position = rand(1:length(current_set))
         end
+
+        # println(current_set_position)
+
+        current_location_timer += 1
+
+
+        # if current_set_position == 1
+        #     current_set_zero_pass_through_counter += 1
+        # end
         (test_hash, _) = current_set[current_set_position]
         while !haskey(index, test_hash)
+            println("no")
             current_set_position = rand(1:length(current_set))
             (test_hash, _) = current_set[current_set_position]
         end
@@ -1762,9 +1788,11 @@ function run()
             if haskey(dna_cache, test_hash)
                 copy(dna_cache[test_hash])
             else
-                generate_dna_zeros(test_moves)
+                zeros_dna = generate_dna_zeros(test_moves)
+                dna_cache[test_hash] = copy(zeros_dna)
+                zeros_dna
             end
-        dna_cache[test_hash] = copy(test_dna)
+
         test_visit_score_index_detailed = test_visits / test_score
         test_visit_score_index = floor(test_visits / test_score)
 
@@ -1824,6 +1852,8 @@ function run()
                             "->"
                         end
                     println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
+
+                    current_location_timer = 0
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
