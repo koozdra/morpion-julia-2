@@ -1545,7 +1545,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 12
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1752,24 +1752,24 @@ function run()
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
 
-        low_visit_timeout = 1
+        # low_visit_timeout = 1
 
-        # focus on best score but not too much
-        if test_score == current_source_score && test_visits < test_score * 15
-            low_visit_timeout = test_score
-        end
+        # # focus on best score but not too much
+        # if test_score == current_source_score && test_visits < test_score * 15
+        #     low_visit_timeout = test_score
+        # end
 
 
-        if test_visits < test_score
-            low_visit_timeout = test_score
-        end
+        # if test_visits < test_score
+        #     low_visit_timeout = test_score
+        # end
 
-        if low_visit_counter < low_visit_timeout
-            low_visit_counter += 1
-        else
-            current_set_index += 1
-            low_visit_counter = 0
-        end
+        # if low_visit_counter < low_visit_timeout
+        #     low_visit_counter += 1
+        # else
+        #     current_set_index += 1
+        #     low_visit_counter = 0
+        # end
         # current_set_index += 1
 
 
