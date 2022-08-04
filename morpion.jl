@@ -1557,7 +1557,7 @@ function run()
     current_set_zero_pass_through_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -1
+    back_focus_score_min = -5
     back_focus_score_max = 0
 
     linger_length = 10
