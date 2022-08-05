@@ -1545,7 +1545,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 30
+    taboo_score_multiplier = 3
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1730,8 +1730,10 @@ function run()
 
 
 
-        if current_location_timer > current_location_timeout || current_set_position > length(current_set)
+        if current_location_timer > current_location_timeout || current_set_position > length(current_set) || current_set_position == 0
             current_set_position = rand(1:length(current_set))
+
+
         end
 
         # println(current_set_position)
@@ -1840,9 +1842,9 @@ function run()
                 #     local_end_search(eval_hash, eval_moves)
                 # end
 
-                if eval_score > test_score
-                    current_set = []
-                end
+                # if eval_score > test_score
+                #     current_set = []
+                # end
 
                 if eval_score >= (current_source_score + back_focus_score_min)
                     connector =
@@ -1856,6 +1858,12 @@ function run()
                     println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
 
                     current_location_timer = 0
+
+                    if eval_score >= test_score
+                        current_set_position = length(current_set)
+
+                        println(current_set_position)
+                    end
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
