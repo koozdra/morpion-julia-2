@@ -1545,7 +1545,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 3
+    taboo_score_multiplier = 30
     # taboo_visits = 100
     end_search_interval = 0
     current_source_score = 100
@@ -1557,7 +1557,7 @@ function run()
     current_set_zero_pass_through_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -5
+    back_focus_score_min = -7
     back_focus_score_max = 0
 
     linger_length = 10
@@ -1610,7 +1610,7 @@ function run()
     current_back_focus_score_mod = 0
 
     current_set_position = 1
-    current_location_timeout = 10
+    current_location_timeout = 100
     current_location_timer = 0
 
     while true
