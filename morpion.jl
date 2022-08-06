@@ -1610,7 +1610,7 @@ function run()
     current_back_focus_score_mod = 0
 
     current_set_position = 1
-    current_location_timeout = 100
+    current_location_timeout = 10
     current_location_timer = 0
 
     while true
