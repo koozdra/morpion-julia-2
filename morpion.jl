@@ -1548,7 +1548,7 @@ function run()
     taboo_score_multiplier = 100
     # taboo_visits = 100
     end_search_interval = 0
-    current_source_score = 1000
+    current_source_score = 10000
     reset_interval = 0
 
     low_visit_timeout = 15
