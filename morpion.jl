@@ -1537,6 +1537,7 @@ function run()
     end
 
     end_searched_index = Dict(lines_hash(moves) => true)
+    end_search_derived = Dict()
     dna_cache = Dict(lines_hash(moves) => dna)
     taboo = Dict(lines_hash(moves) => (moves, 0, iteration))
     max_score = score
@@ -1547,7 +1548,7 @@ function run()
     current_source_back_accept = 0
     taboo_score_multiplier = 100
     # taboo_visits = 100
-    end_search_interval = 0
+    end_search_interval = 500
     current_source_score = 10000
     reset_interval = 0
 
@@ -1587,6 +1588,8 @@ function run()
                 if fendy_score >= test_score
                     println("$iteration. $test_score -> $fendy_score")
                 end
+
+                end_search_derived[fendy_key] = true
 
                 if fendy_score >= (test_score - current_source_back_accept)
                     current_set = []
@@ -1656,7 +1659,13 @@ function run()
                     if (haskey(end_searched_index, hash_key))
                         0
                     else
-                        score
+                        modifier = if haskey(end_search_derived, hash_key)
+                            5
+                        else
+                            0
+                        end
+
+                        score + modifier
                     end
                 end, collect(pairs(index)))
 
