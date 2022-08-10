@@ -1546,7 +1546,7 @@ function run()
     back_accept = 5
     back_accept_reset_visits = 5
     current_source_back_accept = 0
-    taboo_score_multiplier = 100
+    taboo_score_multiplier = 10
     # taboo_visits = 100
     end_search_interval = 500
     current_source_score = 10000
@@ -1558,7 +1558,7 @@ function run()
     current_set_zero_pass_through_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = -7
+    back_focus_score_min = -5
     back_focus_score_max = 0
 
     linger_length = 10
@@ -1628,9 +1628,9 @@ function run()
         #     back_focus_score_mod = 0
         # end
 
-        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        # back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
 
-        # back_focus_score_mod = 0
+        back_focus_score_mod = 0
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
