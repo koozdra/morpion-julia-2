@@ -1565,7 +1565,7 @@ function run()
     current_source_back_accept = 0
     taboo_score_multiplier = 3
     # taboo_visits = 100
-    end_search_interval = 500
+    end_search_interval = 1000
     current_source_score = 10000
     reset_interval = 0
 
@@ -1645,9 +1645,9 @@ function run()
         #     back_focus_score_mod = 0
         # end
 
-        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        # back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
 
-        # back_focus_score_mod = 0
+        back_focus_score_mod = 0
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
@@ -1676,13 +1676,14 @@ function run()
                     if (haskey(end_searched_index, hash_key))
                         0
                     else
-                        modifier = if haskey(end_search_derived, hash_key)
-                            5
-                        else
-                            0
-                        end
+                        # modifier = if haskey(end_search_derived, hash_key)
+                        #     5
+                        # else
+                        #     0
+                        # end
 
-                        score + modifier
+                        # score + modifier
+                        score
                     end
                 end, collect(pairs(index)))
 
@@ -1885,10 +1886,10 @@ function run()
 
                     current_location_timer = 0
 
-                    if eval_score >= test_score
+                    if eval_score > test_score
                         current_set_position = length(current_set)
 
-                        println(current_set_position)
+                        # println(current_set_position)
                     end
                 end
             elseif is_in_index
