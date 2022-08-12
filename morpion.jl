@@ -255,8 +255,25 @@ function random_possible_move_reducer(a, b)
 end
 
 function random_completion(board)
-    eval_possible_move_reducer(board, random_possible_move_reducer)
+    curr_possible_moves = initial_moves()
+    taken_moves = Move[]
+
+    i = 1
+
+    while length(curr_possible_moves) > 0
+        move = curr_possible_moves[rand(1:end)]
+        push!(taken_moves, move)
+        update_board(board, move)
+        filter!((move) -> is_move_valid(board, move), curr_possible_moves)
+        created_moves = find_created_moves(board, move.x, move.y)
+        union!(curr_possible_moves, created_moves)
+
+        i += 1
+    end
+
+    taken_moves
 end
+
 
 function eval_dna(board, dna::Array{Float64,1})
     function dna_move_reducer(a, b)
