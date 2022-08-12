@@ -1645,9 +1645,9 @@ function run()
         #     back_focus_score_mod = 0
         # end
 
-        # back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
 
-        back_focus_score_mod = 0
+        # back_focus_score_mod = 0
 
         if back_focus_score_mod != current_back_focus_score_mod
             current_set = []
