@@ -1537,8 +1537,8 @@ function run()
     println("$iteration. $score")
 
     while (true)
-        rand_move = moves[rand(1:end)]
-        # rand_move = moves[(iteration%length(moves))+1]
+        # rand_move = moves[rand(1:end)]
+        rand_move = moves[(iteration%length(moves))+1]
         rand_move_index = dna_index(rand_move)
         rand_dna_index = rand(1:length(dna))
 
@@ -1584,7 +1584,7 @@ function run()
         if iteration % 10000 == 0
 
             current_time = Dates.now()
-            println("$iteration. $(current_time - trip_time) ($max_score)")
+            # println("$iteration. $(current_time - trip_time) ($max_score)")
 
             trip_time = Dates.now()
         end
