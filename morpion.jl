@@ -1525,16 +1525,20 @@ function run()
     max_moves = []
     max_score = 0
     iteration = 0
+    trip_time = Dates.now()
 
     dna = rand(40 * 40 * 4)
     moves = eval_dna(copy(board_template), dna)
+    index = Dict()
     score = length(moves)
+
+    points_hash_visit_timeout = 1000
 
     println("$iteration. $score")
 
     while (true)
-        # rand_move = moves[rand(1:end)]
-        rand_move = moves[(iteration%length(moves))+1]
+        rand_move = moves[rand(1:end)]
+        # rand_move = moves[(iteration%length(moves))+1]
         rand_move_index = dna_index(rand_move)
         rand_dna_index = rand(1:length(dna))
 
@@ -1543,6 +1547,20 @@ function run()
         eval_moves = eval_dna(copy(board_template), dna)
         eval_score = length(eval_moves)
 
+        # moves_points_hash = points_hash(moves)
+
+        # if haskey(index, points_hash)
+        #     new_visits = index[moves_points_hash] + 1
+        #     index[moves_points_hash] = new_visits
+
+
+        #     if new_visits > points_hash_visit_timeout
+
+        #     end
+
+        # else
+        #     index[moves_points_hash] = 1
+        # end
 
 
         # println(eval_score)
@@ -1562,6 +1580,14 @@ function run()
 
 
         iteration += 1
+
+        if iteration % 10000 == 0
+
+            current_time = Dates.now()
+            println("$iteration. $(current_time - trip_time) ($max_score)")
+
+            trip_time = Dates.now()
+        end
 
     end
 
