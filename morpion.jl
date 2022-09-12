@@ -250,6 +250,46 @@ function eval_possible_move_reducer(board, possible_move_reducer)
     taken_moves
 end
 
+# initial_dict = Dict()
+# for possible_move in initial_moves()
+#     initial_dict[possible_move] = true
+# end
+
+# function eval_possible_move_reducer(board, possible_move_reducer)
+#     curr_possible_moves = Dict()
+#     # memoize here
+#     for possible_move in initial_moves()
+#         curr_possible_moves[possible_move] = true
+#     end
+#     curr_possible_moves = copy(initial_dict)
+#     taken_moves = Move[]
+
+#     i = 1
+
+#     while length(curr_possible_moves) > 0
+#         move = reduce(possible_move_reducer, keys(curr_possible_moves))
+#         push!(taken_moves, move)
+#         update_board(board, move)
+
+#         # filter!((move) -> is_move_valid(board, move), curr_possible_moves)
+#         for possible_move in keys(curr_possible_moves)
+#             if !is_move_valid(board, possible_move)
+#                 delete!(curr_possible_moves, possible_move)
+#             end
+#         end
+
+#         created_moves = find_created_moves(board, move.x, move.y)
+#         # union!(curr_possible_moves, created_moves)
+
+#         for move in created_moves
+#             curr_possible_moves[move] = true
+#         end
+#         i += 1
+#     end
+
+#     taken_moves
+# end
+
 function random_possible_move_reducer(a, b)
     rand(Bool) ? a : b
 end
@@ -1521,6 +1561,77 @@ function run()
     #dimitri
 
 
+    # board_template = generate_initial_board()
+    # max_moves = []
+    # max_score = 0
+    # iteration = 0
+    # trip_time = Dates.now()
+
+    # dna = rand(40 * 40 * 4)
+    # moves = eval_dna(copy(board_template), dna)
+    # index = Dict()
+    # score = length(moves)
+
+    # points_hash_visit_timeout = 1000
+
+    # println("$iteration. $score")
+
+    # while (true)
+    #     # rand_move = moves[rand(1:end)]
+    #     rand_move = moves[(iteration%length(moves))+1]
+    #     rand_move_index = dna_index(rand_move)
+    #     rand_dna_index = rand(1:length(dna))
+
+    #     (dna[rand_move_index], dna[rand_dna_index]) = (dna[rand_dna_index], dna[rand_move_index])
+
+    #     eval_moves = eval_dna(copy(board_template), dna)
+    #     eval_score = length(eval_moves)
+
+    #     # moves_points_hash = points_hash(moves)
+
+    #     # if haskey(index, points_hash)
+    #     #     new_visits = index[moves_points_hash] + 1
+    #     #     index[moves_points_hash] = new_visits
+
+
+    #     #     if new_visits > points_hash_visit_timeout
+
+    #     #     end
+
+    #     # else
+    #     #     index[moves_points_hash] = 1
+    #     # end
+
+
+    #     # println(eval_score)
+
+    #     if (eval_score > max_score)
+    #         max_score = eval_score
+    #         max_moves = eval_moves
+
+    #         moves = eval_moves
+
+    #         println("$iteration. $max_score")
+    #     elseif (eval_score < max_score)
+    #         (dna[rand_dna_index], dna[rand_move_index]) = (dna[rand_move_index], dna[rand_dna_index])
+    #     else
+    #         moves = eval_moves
+    #     end
+
+
+    #     iteration += 1
+
+    #     if iteration % 10000 == 0
+
+    #         current_time = Dates.now()
+    #         println("$iteration. $(current_time - trip_time) ($max_score)")
+
+    #         trip_time = Dates.now()
+    #     end
+
+    # end
+
+
     board_template = generate_initial_board()
     max_moves = []
     max_score = 0
@@ -1532,463 +1643,397 @@ function run()
     index = Dict()
     score = length(moves)
 
-    points_hash_visit_timeout = 1000
+    index = Dict(points_hash(moves) => (moves, 0))
+    current_pool = []
 
-    println("$iteration. $score")
+    iteration = 0
+    trip_time = Dates.now()
+    index = Dict(points_hash(moves) => (moves, 0, iteration))
+    current_set = []
+    current_set_index = 1
 
-    while (true)
-        # rand_move = moves[rand(1:end)]
-        rand_move = moves[(iteration%length(moves))+1]
-        rand_move_index = dna_index(rand_move)
-        rand_dna_index = rand(1:length(dna))
-
-        (dna[rand_move_index], dna[rand_dna_index]) = (dna[rand_dna_index], dna[rand_move_index])
-
-        eval_moves = eval_dna(copy(board_template), dna)
-        eval_score = length(eval_moves)
-
-        # moves_points_hash = points_hash(moves)
-
-        # if haskey(index, points_hash)
-        #     new_visits = index[moves_points_hash] + 1
-        #     index[moves_points_hash] = new_visits
-
-
-        #     if new_visits > points_hash_visit_timeout
-
-        #     end
-
-        # else
-        #     index[moves_points_hash] = 1
-        # end
-
-
-        # println(eval_score)
-
-        if (eval_score > max_score)
-            max_score = eval_score
-            max_moves = eval_moves
-
-            moves = eval_moves
-
-            println("$iteration. $max_score")
-        elseif (eval_score < max_score)
-            (dna[rand_dna_index], dna[rand_move_index]) = (dna[rand_move_index], dna[rand_dna_index])
-        else
-            moves = eval_moves
+    highest_start_score = 0
+    for i in 1:1000
+        dna = rand(40 * 40 * 4)
+        moves = eval_dna(copy(board_template), dna)
+        score = length(moves)
+        if score >= highest_start_score
+            highest_start_score = max(highest_start_score, score)
+            println("$i. $score")
         end
+        index[points_hash(moves)] = (moves, 0, iteration)
+    end
+
+    end_searched_index = Dict(lines_hash(moves) => true)
+    end_search_derived = Dict()
+    dna_cache = Dict(lines_hash(moves) => dna)
+    taboo = Dict(lines_hash(moves) => (moves, 0, iteration))
+    max_score = score
+    max_moves = moves
+
+    back_accept = 5
+    back_accept_reset_visits = 5
+    current_source_back_accept = 0
+    taboo_score_multiplier = 1000
+    # taboo_visits = 100
+    end_search_interval = 1000
+    current_source_score = 10000
+    reset_interval = 0
+
+    low_visit_timeout = 15
+    low_visit_counter = 0
+
+    current_set_zero_pass_through_counter = 0
+
+    focus_interval = 100000
+    back_focus_score_min = -10
+    back_focus_score_max = 0
+
+    linger_length = 10
+    linger_counter = 0
+
+    current_source_score = 100
 
 
-        iteration += 1
+    function local_end_search(test_hash, test_moves)
+        test_score = length(test_moves)
+        end_searched_index[test_hash] = true
 
-        if iteration % 10000 == 0
+        end_search_trip_time = Dates.now()
+        end_search_min_accept = test_score - back_accept
+        end_search_result = end_search(board_template, end_search_min_accept, 20, test_moves)
+        current_time = Dates.now()
 
-            current_time = Dates.now()
-            # println("$iteration. $(current_time - trip_time) ($max_score)")
+        println("$iteration. ES $test_score (fnd $(length(end_search_result)), min: $(end_search_min_accept)) $(current_time - end_search_trip_time) cs.$(length(current_set))")
 
-            trip_time = Dates.now()
+        for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
+            fendy_score = length(fendy_moves)
+            if !haskey(index, fendy_key) && !haskey(taboo, fendy_key)
+                if fendy_score >= end_search_min_accept
+                    index[fendy_key] = (fendy_moves, 0, iteration)
+                end
+
+                if fendy_score >= test_score
+                    println("$iteration. $test_score -> $fendy_score")
+                end
+
+                end_search_derived[fendy_key] = true
+
+                if fendy_score >= (test_score - current_source_back_accept)
+                    current_set = []
+                end
+
+                if (fendy_score > max_score)
+                    max_score = fendy_score
+                    max_moves = fendy_moves
+
+                    println("*** $max_score ***")
+                    println(max_moves)
+
+                    current_set = []
+                    # empty!(taboo)
+                end
+            end
         end
-
     end
 
 
+    current_back_focus_score_mod = 0
+
+    current_set_position = 1
+    current_location_timeout = 100
+    current_location_timer = 0
+
+    while true
+        iteration += 1
+        focus = (iteration % focus_interval) / focus_interval
+
+        # interval_type_explore = (iteration % (focus_interval * 10)) < focus_interval
+
+        # if interval_type_explore
+        #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+        # else
+        #     back_focus_score_mod = 0
+        # end
+
+        back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+
+        # back_focus_score_mod = 0
+
+        if back_focus_score_mod != current_back_focus_score_mod
+            current_set = []
+            current_back_focus_score_mod = back_focus_score_mod
+            println("----- $back_focus_score_mod")
+        end
+
+        if reset_interval > 0 && iteration % reset_interval == 0
+            filter(function (pair)
+                    (hash, (moves, visits, iteration_visited)) = pair
+                    # score = length(moves)
+                    # score >= (highest_score - current_source_back_accept)
+                    index[hash] = (moves, 0, iteration)
+                    false
+                end, collect(pairs(taboo)))
+
+            current_set = []
+            # empty!(taboo)
+            println("$iteration. --")
+        end
+
+        if end_search_interval > 0 && iteration % end_search_interval == 0
+            (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
+                    (hash_key, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    if (haskey(end_searched_index, hash_key))
+                        0
+                    else
+                        # modifier = if haskey(end_search_derived, hash_key)
+                        #     5
+                        # else
+                        #     0
+                        # end
+
+                        # score + modifier
+                        score
+                    end
+                end, collect(pairs(index)))
+
+            if length(moves) >= 100
+                local_end_search(hash_key, moves)
+            end
+        end
+
+        if length(current_set) == 0
+            index_pairs = collect(pairs(index))
+            (highest_score, _) = findmax(function (pair)
+                    (_, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    score
+                end, index_pairs)
+
+            current_source_score = highest_score
+
+            current_set = filter(function (pair)
+                    (_, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    score >= (highest_score + back_focus_score_mod)
+                end, index_pairs)
+
+            # println(current_set)
+            # readline()
+        end
+
+
+        if iteration % 10000 == 0
+            index_pairs = collect(pairs(index))
+            argmax(function (pair)
+                    (hash, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    age = iteration - iteration_visited
+                    if age >= 1000000
+                        println("$iteration. - $score (a:$age, v:$visits)")
+                        delete!(index, hash)
+                    end
+                    score
+                end, index_pairs)
+
+            current_time = Dates.now()
+            println("$iteration. $(current_time - trip_time) ($max_score, pt:$current_set_zero_pass_through_counter)")
 
-    # println(dna)
-    # println(score)
+            trip_time = Dates.now()
+            current_set_zero_pass_through_counter = 0
 
-    # index = Dict(points_hash(moves) => (moves, 0))
-    # current_pool = []
-
-    # modification
+            #cleanup
+            empty!(dna_cache)
+        end
 
-    # iteration = 0
-    # trip_time = Dates.now()
-    # index = Dict(points_hash(moves) => (moves, 0, iteration))
-    # current_set = []
-    # current_set_index = 1
+        if iteration % 100000 == 0
+            println(max_score)
+            println(max_moves)
+        end
 
-    # highest_start_score = 0
-    # for i in 1:1000
-    #     dna = rand(40 * 40 * 4)
-    #     moves = eval_dna(copy(board_template), dna)
-    #     score = length(moves)
-    #     if score >= highest_start_score
-    #         highest_start_score = max(highest_start_score, score)
-    #         println("$i. $score")
-    #     end
-    #     index[points_hash(moves)] = (moves, 0, iteration)
-    # end
+        #selection
+        # index_pairs = collect(pairs(index))
+        # (test_hash, (test_moves, test_visits, test_iteration_born)) = argmax(function (pair)
+        #         (hash, (moves, visits, iteration_born)) = pair
+        #         score = length(moves)
+        #         # if iteration % 2 == 0
+        #         #     score - (visits / (score))
+        #         # else
+        #         score - (visits / (score * 10))
+        #         # end
+        #     end, index_pairs)
+        # (test_hash, _) = current_set[(iteration%length(current_set))+1]
+        # current_set_position = (current_set_index % length(current_set)) + 1
 
-    # end_searched_index = Dict(lines_hash(moves) => true)
-    # end_search_derived = Dict()
-    # dna_cache = Dict(lines_hash(moves) => dna)
-    # taboo = Dict(lines_hash(moves) => (moves, 0, iteration))
-    # max_score = score
-    # max_moves = moves
-
-    # back_accept = 5
-    # back_accept_reset_visits = 5
-    # current_source_back_accept = 0
-    # taboo_score_multiplier = 1000
-    # # taboo_visits = 100
-    # end_search_interval = 1000
-    # current_source_score = 10000
-    # reset_interval = 0
-
-    # low_visit_timeout = 15
-    # low_visit_counter = 0
-
-    # current_set_zero_pass_through_counter = 0
-
-    # focus_interval = 100000
-    # back_focus_score_min = -10
-    # back_focus_score_max = 0
-
-    # linger_length = 10
-    # linger_counter = 0
-
-    # current_source_score = 100
-
-
-    # function local_end_search(test_hash, test_moves)
-    #     test_score = length(test_moves)
-    #     end_searched_index[test_hash] = true
-
-    #     end_search_trip_time = Dates.now()
-    #     end_search_min_accept = test_score - back_accept
-    #     end_search_result = end_search(board_template, end_search_min_accept, 20, test_moves)
-    #     current_time = Dates.now()
-
-    #     println("$iteration. ES $test_score (fnd $(length(end_search_result)), min: $(end_search_min_accept)) $(current_time - end_search_trip_time) cs.$(length(current_set))")
-
-    #     for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
-    #         fendy_score = length(fendy_moves)
-    #         if !haskey(index, fendy_key) && !haskey(taboo, fendy_key)
-    #             if fendy_score >= end_search_min_accept
-    #                 index[fendy_key] = (fendy_moves, 0, iteration)
-    #             end
-
-    #             if fendy_score >= test_score
-    #                 println("$iteration. $test_score -> $fendy_score")
-    #             end
-
-    #             end_search_derived[fendy_key] = true
-
-    #             if fendy_score >= (test_score - current_source_back_accept)
-    #                 current_set = []
-    #             end
-
-    #             if (fendy_score > max_score)
-    #                 max_score = fendy_score
-    #                 max_moves = fendy_moves
-
-    #                 println("*** $max_score ***")
-    #                 println(max_moves)
-
-    #                 current_set = []
-    #                 # empty!(taboo)
-    #             end
-    #         end
-    #     end
-    # end
-
-
-    # current_back_focus_score_mod = 0
-
-    # current_set_position = 1
-    # current_location_timeout = 100
-    # current_location_timer = 0
-
-    # while true
-    #     iteration += 1
-    #     focus = (iteration % focus_interval) / focus_interval
-
-    #     # interval_type_explore = (iteration % (focus_interval * 10)) < focus_interval
-
-    #     # if interval_type_explore
-    #     #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
-    #     # else
-    #     #     back_focus_score_mod = 0
-    #     # end
-
-    #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
-
-    #     # back_focus_score_mod = 0
-
-    #     if back_focus_score_mod != current_back_focus_score_mod
-    #         current_set = []
-    #         current_back_focus_score_mod = back_focus_score_mod
-    #         println("----- $back_focus_score_mod")
-    #     end
-
-    #     if reset_interval > 0 && iteration % reset_interval == 0
-    #         filter(function (pair)
-    #                 (hash, (moves, visits, iteration_visited)) = pair
-    #                 # score = length(moves)
-    #                 # score >= (highest_score - current_source_back_accept)
-    #                 index[hash] = (moves, 0, iteration)
-    #                 false
-    #             end, collect(pairs(taboo)))
-
-    #         current_set = []
-    #         # empty!(taboo)
-    #         println("$iteration. --")
-    #     end
-
-    #     if end_search_interval > 0 && iteration % end_search_interval == 0
-    #         (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
-    #                 (hash_key, (moves, visits, iteration_visited)) = pair
-    #                 score = length(moves)
-    #                 if (haskey(end_searched_index, hash_key))
-    #                     0
-    #                 else
-    #                     # modifier = if haskey(end_search_derived, hash_key)
-    #                     #     5
-    #                     # else
-    #                     #     0
-    #                     # end
-
-    #                     # score + modifier
-    #                     score
-    #                 end
-    #             end, collect(pairs(index)))
-
-    #         if length(moves) >= 100
-    #             local_end_search(hash_key, moves)
-    #         end
-    #     end
-
-    #     if length(current_set) == 0
-    #         index_pairs = collect(pairs(index))
-    #         (highest_score, _) = findmax(function (pair)
-    #                 (_, (moves, visits, iteration_visited)) = pair
-    #                 score = length(moves)
-    #                 score
-    #             end, index_pairs)
-
-    #         current_source_score = highest_score
-
-    #         current_set = filter(function (pair)
-    #                 (_, (moves, visits, iteration_visited)) = pair
-    #                 score = length(moves)
-    #                 score >= (highest_score + back_focus_score_mod)
-    #             end, index_pairs)
-
-    #         # println(current_set)
-    #         # readline()
-    #     end
-
-
-    #     if iteration % 10000 == 0
-    #         index_pairs = collect(pairs(index))
-    #         argmax(function (pair)
-    #                 (hash, (moves, visits, iteration_visited)) = pair
-    #                 score = length(moves)
-    #                 age = iteration - iteration_visited
-    #                 if age >= 1000000
-    #                     println("$iteration. - $score (a:$age, v:$visits)")
-    #                     delete!(index, hash)
-    #                 end
-    #                 score
-    #             end, index_pairs)
-
-    #         current_time = Dates.now()
-    #         println("$iteration. $(current_time - trip_time) ($max_score, pt:$current_set_zero_pass_through_counter)")
-
-    #         trip_time = Dates.now()
-    #         current_set_zero_pass_through_counter = 0
-
-    #         #cleanup
-    #         empty!(dna_cache)
-    #     end
-
-    #     if iteration % 100000 == 0
-    #         println(max_score)
-    #         println(max_moves)
-    #     end
-
-    #     #selection
-    #     # index_pairs = collect(pairs(index))
-    #     # (test_hash, (test_moves, test_visits, test_iteration_born)) = argmax(function (pair)
-    #     #         (hash, (moves, visits, iteration_born)) = pair
-    #     #         score = length(moves)
-    #     #         # if iteration % 2 == 0
-    #     #         #     score - (visits / (score))
-    #     #         # else
-    #     #         score - (visits / (score * 10))
-    #     #         # end
-    #     #     end, index_pairs)
-    #     # (test_hash, _) = current_set[(iteration%length(current_set))+1]
-    #     # current_set_position = (current_set_index % length(current_set)) + 1
-
-
-
-    #     if current_location_timer > current_location_timeout || current_set_position > length(current_set) || current_set_position == 0
-    #         current_set_position = rand(1:length(current_set))
-
-
-    #     end
-
-    #     # println(current_set_position)
-
-    #     current_location_timer += 1
-
-
-    #     # if current_set_position == 1
-    #     #     current_set_zero_pass_through_counter += 1
-    #     # end
-    #     (test_hash, _) = current_set[current_set_position]
-    #     while !haskey(index, test_hash)
-    #         println("no")
-    #         current_set_position = rand(1:length(current_set))
-    #         (test_hash, _) = current_set[current_set_position]
-    #     end
-    #     (test_moves, test_visits, test_iteration_born) = index[test_hash]
-    #     test_score = length(test_moves)
-    #     test_age = iteration - test_iteration_born
-
-    #     # low_visit_timeout = 1
-
-    #     # # focus on best score but not too much
-    #     # if test_score == current_source_score && test_visits < test_score * 15
-    #     #     low_visit_timeout = test_score
-    #     # end
-
-
-    #     # if test_visits < test_score
-    #     #     low_visit_timeout = test_score
-    #     # end
-
-    #     # if low_visit_counter < low_visit_timeout
-    #     #     low_visit_counter += 1
-    #     # else
-    #     #     current_set_index += 1
-    #     #     low_visit_counter = 0
-    #     # end
-    #     # current_set_index += 1
-
-
-
-    #     # println("$low_visit_counter $current_set_index")
-
-
-
-    #     index[test_hash] = (test_moves, test_visits + 1, iteration)
-
-    #     # if test_score >= 100 && !haskey(end_searched_index, test_hash)
-    #     #     local_end_search(test_hash, test_moves)
-    #     # end
-
-
-
-    #     test_dna =
-    #         if haskey(dna_cache, test_hash)
-    #             copy(dna_cache[test_hash])
-    #         else
-    #             zeros_dna = generate_dna_zeros(test_moves)
-    #             dna_cache[test_hash] = copy(zeros_dna)
-    #             zeros_dna
-    #         end
-
-    #     test_visit_score_index_detailed = test_visits / test_score
-    #     test_visit_score_index = floor(test_visits / test_score)
-
-    #     #modification
-    #     if (test_visit_score_index % 3 == 0)
-    #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-    #         for i in 1:2
-    #             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
-    #         end
-    #     elseif (test_visit_score_index % 3 == 1)
-    #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-    #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
-    #     else
-    #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-    #     end
-
-    #     eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
-    #     eval_score = length(eval_moves)
-
-
-    #     # println("$iteration. $test_score($test_visits) -> $eval_score ($max_score, $(test_score - (test_visits / (test_score * 10)))) i.$(length(index))")
-
-    #     if eval_score >= (test_score - back_accept)
-    #         eval_hash = points_hash(eval_moves)
-    #         is_in_index = haskey(index, eval_hash)
-    #         is_in_taboo = haskey(taboo, eval_hash)
-    #         if !is_in_index && !is_in_taboo
-    #             # if eval_score >= test_score
-    #             # index[test_hash] = (test_moves, 0, iteration)
-    #             # end
-    #             if eval_score >= (test_score - back_accept_reset_visits)
-    #                 index[test_hash] = (test_moves, 0, iteration)
-    #                 low_visit_counter = 0
-    #             end
-
-    #             index[eval_hash] = (eval_moves, 0, iteration)
-    #             if eval_score >= (test_score - current_source_back_accept)
-    #                 # current_set = []
-    #                 #dimitri
-    #                 push!(current_set, Pair(eval_hash, (eval_moves, 0, iteration)))
-    #             end
-    #             # if eval_score >= 100 && !haskey(end_searched_index, eval_hash)
-    #             #     local_end_search(eval_hash, eval_moves)
-    #             # end
-
-    #             # if eval_score > test_score
-    #             #     current_set = []
-    #             # end
-
-    #             if eval_score >= (current_source_score + back_focus_score_min)
-    #                 connector =
-    #                     if eval_score > test_score
-    #                         "==>"
-    #                     elseif eval_score == test_score
-    #                         "=>"
-    #                     else
-    #                         "->"
-    #                     end
-    #                 println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
-
-    #                 current_location_timer = 0
-
-    #                 if eval_score > test_score
-    #                     current_set_position = length(current_set)
-
-    #                     # println(current_set_position)
-    #                 end
-    #             end
-    #         elseif is_in_index
-    #             (t_moves, t_visits, t_iteration) = index[eval_hash]
-    #             index[eval_hash] = (eval_moves, t_visits, t_iteration)
-    #         end
-    #     end
-
-    #     if eval_score > max_score
-    #         max_score = eval_score
-    #         max_moves = eval_moves
-    #         println("*** $max_score ***")
-    #         println(max_moves)
-
-    #         current_set = []
-    #         # empty!(taboo)
-    #     end
-
-    #     if test_visits >= (taboo_score_multiplier * test_score)
-    #         # if test_score >= 100 && !haskey(end_searched_index, test_hash)
-    #         #     local_end_search(test_hash, test_moves)
-    #         # end
-
-    #         taboo[test_hash] = (test_moves, test_visits, iteration)
-    #         println("$iteration. T - $test_score/$current_source_score ($test_visits) cs:$(length(current_set))")
-    #         delete!(index, test_hash)
-
-
-
-    #         current_set = []
-    #     end
-
-    # end
+
+
+        if current_location_timer > current_location_timeout || current_set_position > length(current_set) || current_set_position == 0
+            current_set_position = rand(1:length(current_set))
+
+
+        end
+
+        # println(current_set_position)
+
+        current_location_timer += 1
+
+
+        # if current_set_position == 1
+        #     current_set_zero_pass_through_counter += 1
+        # end
+        (test_hash, _) = current_set[current_set_position]
+        while !haskey(index, test_hash)
+            println("no")
+            current_set_position = rand(1:length(current_set))
+            (test_hash, _) = current_set[current_set_position]
+        end
+        (test_moves, test_visits, test_iteration_born) = index[test_hash]
+        test_score = length(test_moves)
+        test_age = iteration - test_iteration_born
+
+        # low_visit_timeout = 1
+
+        # # focus on best score but not too much
+        # if test_score == current_source_score && test_visits < test_score * 15
+        #     low_visit_timeout = test_score
+        # end
+
+
+        # if test_visits < test_score
+        #     low_visit_timeout = test_score
+        # end
+
+        # if low_visit_counter < low_visit_timeout
+        #     low_visit_counter += 1
+        # else
+        #     current_set_index += 1
+        #     low_visit_counter = 0
+        # end
+        # current_set_index += 1
+
+
+
+        # println("$low_visit_counter $current_set_index")
+
+
+
+        index[test_hash] = (test_moves, test_visits + 1, iteration)
+
+        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+        #     local_end_search(test_hash, test_moves)
+        # end
+
+
+
+        test_dna =
+            if haskey(dna_cache, test_hash)
+                copy(dna_cache[test_hash])
+            else
+                zeros_dna = generate_dna_zeros(test_moves)
+                dna_cache[test_hash] = copy(zeros_dna)
+                zeros_dna
+            end
+
+        test_visit_score_index_detailed = test_visits / test_score
+        test_visit_score_index = floor(test_visits / test_score)
+
+        #modification
+        if (test_visit_score_index % 3 == 0)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            for i in 1:2
+                modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+            end
+        elseif (test_visit_score_index % 3 == 1)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        else
+            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        end
+
+        eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
+        eval_score = length(eval_moves)
+
+
+        # println("$iteration. $test_score($test_visits) -> $eval_score ($max_score, $(test_score - (test_visits / (test_score * 10)))) i.$(length(index))")
+
+        if eval_score >= (test_score - back_accept)
+            eval_hash = points_hash(eval_moves)
+            is_in_index = haskey(index, eval_hash)
+            is_in_taboo = haskey(taboo, eval_hash)
+            if !is_in_index && !is_in_taboo
+                # if eval_score >= test_score
+                # index[test_hash] = (test_moves, 0, iteration)
+                # end
+                if eval_score >= (test_score - back_accept_reset_visits)
+                    index[test_hash] = (test_moves, 0, iteration)
+                    low_visit_counter = 0
+                end
+
+                index[eval_hash] = (eval_moves, 0, iteration)
+                if eval_score >= (test_score - current_source_back_accept)
+                    # current_set = []
+                    #dimitri
+                    push!(current_set, Pair(eval_hash, (eval_moves, 0, iteration)))
+                end
+                # if eval_score >= 100 && !haskey(end_searched_index, eval_hash)
+                #     local_end_search(eval_hash, eval_moves)
+                # end
+
+                # if eval_score > test_score
+                #     current_set = []
+                # end
+
+                if eval_score >= (current_source_score + back_focus_score_min)
+                    connector =
+                        if eval_score > test_score
+                            "==>"
+                        elseif eval_score == test_score
+                            "=>"
+                        else
+                            "->"
+                        end
+                    println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
+
+                    current_location_timer = 0
+
+                    if eval_score > test_score
+                        current_set_position = length(current_set)
+
+                        # println(current_set_position)
+                    end
+                end
+            elseif is_in_index
+                (t_moves, t_visits, t_iteration) = index[eval_hash]
+                index[eval_hash] = (eval_moves, t_visits, t_iteration)
+            end
+        end
+
+        if eval_score > max_score
+            max_score = eval_score
+            max_moves = eval_moves
+            println("*** $max_score ***")
+            println(max_moves)
+
+            current_set = []
+            # empty!(taboo)
+        end
+
+        if test_visits >= (taboo_score_multiplier * test_score)
+            # if test_score >= 100 && !haskey(end_searched_index, test_hash)
+            #     local_end_search(test_hash, test_moves)
+            # end
+
+            taboo[test_hash] = (test_moves, test_visits, iteration)
+            println("$iteration. T - $test_score/$current_source_score ($test_visits) cs:$(length(current_set))")
+            delete!(index, test_hash)
+
+
+
+            current_set = []
+        end
+
+    end
 
     # ------------------------------------------------
 
