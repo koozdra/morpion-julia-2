@@ -1892,6 +1892,11 @@ function run()
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
 
+        if test_visits < test_score
+            current_location_timer = 0
+        end
+
+
         # low_visit_timeout = 1
 
         # # focus on best score but not too much
