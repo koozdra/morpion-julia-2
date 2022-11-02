@@ -1689,8 +1689,7 @@ function run()
     back_focus_score_min = -10
     back_focus_score_max = 0
 
-    linger_length = 10
-    linger_counter = 0
+    current_location_timeout = 10
 
     current_source_score = 100
 
@@ -1741,14 +1740,13 @@ function run()
     current_back_focus_score_mod = 0
 
     current_set_position = 1
-    current_location_timeout = 100
     current_location_timer = 0
 
     while true
         iteration += 1
         focus = (iteration % focus_interval) / focus_interval
 
-        # interval_type_explore = (iteration % (focus_interval * 10)) < focus_interval
+        # interval_type_explore = (iteration % (focus_interval * 3)) < focus_interval
 
         # if interval_type_explore
         #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
@@ -1794,7 +1792,7 @@ function run()
                         # end
 
                         # score + modifier
-                        score
+                        score + rand()
                     end
                 end, collect(pairs(index)))
 
@@ -1998,7 +1996,7 @@ function run()
                         else
                             "->"
                         end
-                    println("$iteration. $test_score($current_set_position, $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
+                    println("$iteration. $test_score($current_set_position ($current_location_timer), $(round(test_visit_score_index_detailed, digits=2))) $connector $eval_score ($current_source_score/$max_score) i.$(length(index)) cs:$(length(current_set)) $back_focus_score_mod")
 
                     current_location_timer = 0
 
