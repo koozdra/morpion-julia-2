@@ -1672,24 +1672,23 @@ function run()
     max_moves = moves
 
     back_accept = 5
-    back_accept_reset_visits = 5
+    back_accept_reset_visits = 0
     current_source_back_accept = 0
-    taboo_score_multiplier = 1000
+    #30 good
+    taboo_score_multiplier = 10
     # taboo_visits = 100
-    end_search_interval = 1000
+    end_search_interval = 10000
     current_source_score = 10000
     reset_interval = 0
 
     low_visit_timeout = 15
     low_visit_counter = 0
 
-    current_set_zero_pass_through_counter = 0
-
     focus_interval = 100000
-    back_focus_score_min = -10
+    back_focus_score_min = 0
     back_focus_score_max = 0
 
-    current_location_timeout = 10
+    current_location_timeout = 2
 
     current_source_score = 100
 
@@ -1746,7 +1745,7 @@ function run()
         iteration += 1
         focus = (iteration % focus_interval) / focus_interval
 
-        # interval_type_explore = (iteration % (focus_interval * 3)) < focus_interval
+        # interval_type_explore = (iteration % (focus_interval * 2)) < focus_interval
 
         # if interval_type_explore
         #     back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
@@ -1778,28 +1777,28 @@ function run()
             println("$iteration. --")
         end
 
-        if end_search_interval > 0 && iteration % end_search_interval == 0
-            (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
-                    (hash_key, (moves, visits, iteration_visited)) = pair
-                    score = length(moves)
-                    if (haskey(end_searched_index, hash_key))
-                        0
-                    else
-                        # modifier = if haskey(end_search_derived, hash_key)
-                        #     5
-                        # else
-                        #     0
-                        # end
+        # if end_search_interval > 0 && iteration % end_search_interval == 0
+        #     (hash_key, (moves, visits, iteration_visited)) = argmax(function (pair)
+        #             (hash_key, (moves, visits, iteration_visited)) = pair
+        #             score = length(moves)
+        #             if (haskey(end_searched_index, hash_key))
+        #                 0
+        #             else
+        #                 # modifier = if haskey(end_search_derived, hash_key)
+        #                 #     5
+        #                 # else
+        #                 #     0
+        #                 # end
 
-                        # score + modifier
-                        score + rand()
-                    end
-                end, collect(pairs(index)))
+        #                 # score + modifier
+        #                 score + rand()
+        #             end
+        #         end, collect(pairs(index)))
 
-            if length(moves) >= 100
-                local_end_search(hash_key, moves)
-            end
-        end
+        #     if length(moves) >= 100
+        #         local_end_search(hash_key, moves)
+        #     end
+        # end
 
         if length(current_set) == 0
             index_pairs = collect(pairs(index))
@@ -1829,17 +1828,16 @@ function run()
                     score = length(moves)
                     age = iteration - iteration_visited
                     if age >= 1000000
-                        println("$iteration. - $score (a:$age, v:$visits)")
+                        # println("$iteration. - $score (a:$age, v:$visits)")
                         delete!(index, hash)
                     end
                     score
                 end, index_pairs)
 
             current_time = Dates.now()
-            println("$iteration. $(current_time - trip_time) ($max_score, pt:$current_set_zero_pass_through_counter)")
+            println("$iteration. $(current_time - trip_time) ($max_score, cs.$(length(current_set)))")
 
             trip_time = Dates.now()
-            current_set_zero_pass_through_counter = 0
 
             #cleanup
             empty!(dna_cache)
@@ -1869,17 +1867,15 @@ function run()
         if current_location_timer > current_location_timeout || current_set_position > length(current_set) || current_set_position == 0
             current_set_position = rand(1:length(current_set))
 
-
+            current_location_timer = 0
         end
 
         # println(current_set_position)
 
-        current_location_timer += 1
+        
 
 
-        # if current_set_position == 1
-        #     current_set_zero_pass_through_counter += 1
-        # end
+
         (test_hash, _) = current_set[current_set_position]
         while !haskey(index, test_hash)
             println("no")
@@ -1890,9 +1886,7 @@ function run()
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
 
-        if test_visits < test_score
-            current_location_timer = 0
-        end
+        
 
 
         # low_visit_timeout = 1
@@ -1923,9 +1917,9 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        # if test_score >= 100 && !haskey(end_searched_index, test_hash)
-        #     local_end_search(test_hash, test_moves)
-        # end
+        if test_score >= 100 && !haskey(end_searched_index, test_hash)
+            local_end_search(test_hash, test_moves)
+        end
 
 
 
@@ -1942,16 +1936,25 @@ function run()
         test_visit_score_index = floor(test_visits / test_score)
 
         #modification
-        if (test_visit_score_index % 3 == 0)
+        # if (test_visit_score_index % 3 == 0)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        #     for i in 1:2
+        #         modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        #     end
+        # elseif (test_visit_score_index % 3 == 1)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
+        # else
+        #     modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+        # end
+
+        if (test_visit_score_index % 2 == 1)
             modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
             for i in 1:2
                 modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
             end
-        elseif (test_visit_score_index % 3 == 1)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], modified_dna)
         else
-            modified_dna = modify_dna_zeros_move(test_moves[rand(1:length(test_moves))], test_dna)
+            modified_dna = modify_dna_zeros_move(test_moves[(test_visits % length(test_moves)) + 1], test_dna)
         end
 
         eval_moves = eval_dna_zeros(copy(board_template), modified_dna)
@@ -2000,11 +2003,15 @@ function run()
 
                     current_location_timer = 0
 
-                    if eval_score > test_score
-                        current_set_position = length(current_set)
+                    # if eval_score > test_score
+                    #     current_set_position = length(current_set)
 
-                        # println(current_set_position)
-                    end
+                    #     # println(current_set_position)
+                    # end
+                end
+
+                if test_visits < test_score * 2
+                    current_location_timer = 0
                 end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
@@ -2021,6 +2028,12 @@ function run()
             current_set = []
             # empty!(taboo)
         end
+
+        current_location_timer += 1
+
+        # if test_visits < test_score
+        #     current_location_timer = 0
+        # end
 
         if test_visits >= (taboo_score_multiplier * test_score)
             # if test_score >= 100 && !haskey(end_searched_index, test_hash)
