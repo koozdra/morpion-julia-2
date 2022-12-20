@@ -1,5 +1,17 @@
 # 171
 # Move[Move(2, 7, 2, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(5, 3, 1, 0), Move(7, 7, 0, -2), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(5, 6, 1, 0), Move(4, 6, 1, -3), Move(7, 9, 1, -4), Move(5, 7, 2, -2), Move(9, 7, 3, -4), Move(8, 7, 1, -3), Move(7, 5, 2, -2), Move(7, 8, 3, -3), Move(4, 5, 2, -1), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(8, 5, 1, -2), Move(5, 8, 0, 0), Move(5, 5, 3, 0), Move(2, 5, 1, 0), Move(4, 7, 2, -2), Move(1, 7, 1, 0), Move(2, 9, 0, 0), Move(4, 8, 3, -3), Move(2, 8, 1, 0), Move(2, 4, 3, 0), Move(1, 9, 0, 0), Move(1, 5, 2, 0), Move(1, 8, 3, -3), Move(0, 9, 0, 0), Move(-1, 9, 1, 0), Move(0, 8, 0, -1), Move(0, 7, 3, -2), Move(-1, 8, 0, 0), Move(-2, 8, 1, 0), Move(-1, 7, 0, 0), Move(2, 10, 0, 0), Move(-2, 6, 2, 0), Move(4, 4, 2, -1), Move(5, 4, 1, -3), Move(4, 3, 2, 0), Move(7, 1, 0, -4), Move(7, 4, 3, -3), Move(8, 4, 3, -1), Move(10, 4, 1, -4), Move(8, 2, 2, -2), Move(9, 1, 0, -4), Move(10, 2, 0, -4), Move(9, 2, 1, -3), Move(10, 1, 0, -4), Move(8, 1, 1, -2), Move(9, 0, 0, -4), Move(9, -1, 3, 0), Move(10, 3, 3, -2), Move(5, 1, 2, 0), Move(5, 2, 3, -1), Move(7, 0, 0, -4), Move(8, 0, 1, -3), Move(8, -1, 3, 0), Move(4, 1, 2, 0), Move(4, 2, 3, -1), Move(7, -1, 0, -4), Move(2, 2, 1, 0), Move(5, -1, 0, -4), Move(6, -1, 1, -1), Move(7, -2, 0, -4), Move(7, -3, 3, 0), Move(6, -3, 2, 0), Move(6, -2, 3, -1), Move(5, -3, 2, 0), Move(5, -2, 3, -1), Move(4, -3, 2, 0), Move(2, 1, 1, 0), Move(4, -1, 0, -2), Move(4, -2, 3, -1), Move(3, -2, 1, 0), Move(2, -3, 2, 0), Move(3, -3, 1, -1), Move(3, -1, 3, -2), Move(2, -4, 2, 0), Move(2, 0, 3, 0), Move(1, -1, 2, 0), Move(2, -1, 1, -1), Move(2, -2, 3, -2), Move(1, -3, 2, 0), Move(1, 0, 1, 0), Move(0, 1, 0, 0), Move(0, -1, 2, 0), Move(0, 2, 3, -1), Move(1, 1, 0, -1), Move(1, -2, 3, -1), Move(0, -3, 2, 0), Move(-1, 1, 2, 0), Move(-2, 1, 1, 0), Move(-1, 0, 0, -1), Move(1, 2, 2, -2), Move(1, 4, 3, -3), Move(-1, 2, 2, -1), Move(-2, 2, 1, 0), Move(-1, 6, 0, 0), Move(-1, 5, 3, 0), Move(-2, 5, 1, 0), Move(-3, 4, 2, 0), Move(-3, 7, 0, 0), Move(-2, 7, 1, -1), Move(-2, 4, 3, 0), Move(-3, 3, 2, 0), Move(-1, 4, 1, -1), Move(-1, 3, 3, -2), Move(-3, 1, 2, 0), Move(-2, 3, 1, 0), Move(-2, 0, 3, 0), Move(-4, 5, 0, 0), Move(-3, 6, 0, 0), Move(-5, 4, 2, 0), Move(-4, 6, 1, 0), Move(-3, 5, 0, -1), Move(-3, 2, 3, 0), Move(-5, 5, 2, 0), Move(-4, 4, 0, -1), Move(-6, 4, 1, 0), Move(-6, 5, 1, 0), Move(-4, 3, 0, -2), Move(-4, 2, 3, 0), Move(-5, 3, 0, -1), Move(-6, 3, 1, 0), Move(-6, 2, 2, 0), Move(-5, 2, 1, -1), Move(-5, 1, 3, 0), Move(0, 0, 0, -1), Move(-3, 0, 1, 0), Move(0, -2, 3, -1), Move(-1, -1, 0, -1), Move(-2, -2, 2, 0), Move(-1, -2, 1, 0), Move(-1, -3, 3, 0), Move(-2, -3, 1, 0), Move(-6, 1, 3, 0), Move(-7, 0, 2, 0), Move(-4, 1, 1, -2), Move(-2, -1, 0, -2), Move(-3, -1, 1, 0), Move(-3, -2, 3, 0), Move(-4, 0, 0, -1), Move(-2, -4, 3, 0), Move(-3, -5, 2, 0), Move(-5, 0, 2, 0), Move(-4, -1, 0, -2), Move(-4, -2, 3, 0), Move(-5, -3, 2, 0), Move(-5, -2, 1, 0), Move(-5, -1, 3, -2), Move(-6, 0, 1, -1), Move(-7, -1, 2, 0), Move(-6, -1, 1, -1), Move(-3, -3, 0, -3), Move(-6, -3, 2, 0), Move(-4, -3, 1, -2), Move(-3, -4, 0, -4), Move(-3, -6, 3, 0), Move(-4, -5, 2, 0), Move(-5, -4, 2, 0), Move(-7, -2, 0, 0), Move(-6, -2, 3, -1), Move(-4, -4, 0, -3), Move(-6, -4, 1, 0), Move(-4, -6, 3, 0), Move(-7, -3, 2, 0), Move(-7, -4, 3, 0)]
+# 172
+# Move[Move(-1, 6, 1, 0), Move(1, 4, 0, -2), Move(2, 9, 1, 0), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(7, 7, 0, -2), Move(-1, 3, 1, 0), Move(1, 5, 2, -2), Move(1, 7, 3, -4), Move(0, 7, 3, -4), Move(2, 7, 2, -2), Move(4, 7, 1, -4), Move(5, 6, 0, -3), Move(4, 6, 1, -1), Move(5, 5, 0, -2), Move(4, 4, 2, -1), Move(5, 3, 0, -4), Move(4, 3, 1, -1), Move(2, 5, 0, -2), Move(2, 8, 3, -3), Move(-1, 5, 2, 0), Move(2, 2, 0, -3), Move(-2, 5, 1, 0), Move(1, 8, 2, -3), Move(4, 5, 1, -2), Move(5, 4, 0, -4), Move(5, 2, 3, 0), Move(4, 8, 3, -3), Move(5, 8, 1, -4), Move(8, 5, 0, -4), Move(7, 10, 2, -4), Move(-1, 2, 2, 0), Move(-1, 4, 3, -2), Move(2, 4, 1, -3), Move(2, 1, 3, 0), Move(1, 2, 0, -3), Move(0, 1, 2, 0), Move(0, 2, 1, -1), Move(-1, 1, 2, 0), Move(1, 1, 1, -2), Move(1, 0, 2, 0), Move(1, -1, 3, 0), Move(4, 2, 0, -4), Move(2, 0, 2, -1), Move(0, 0, 1, 0), Move(0, -1, 3, 0), Move(-1, -1, 2, 0), Move(7, 2, 1, -4), Move(10, 5, 2, -4), Move(7, 5, 1, -1), Move(7, 4, 3, -2), Move(8, 4, 1, -3), Move(8, 2, 3, 0), Move(10, 6, 2, -4), Move(11, 6, 1, -4), Move(9, 7, 2, -4), Move(5, 7, 0, -2), Move(8, 7, 1, -4), Move(5, 10, 3, -4), Move(7, 8, 0, -2), Move(8, 9, 2, -4), Move(7, 9, 3, -3), Move(8, 10, 2, -4), Move(8, 8, 3, -2), Move(6, 10, 0, 0), Move(9, 10, 1, -4), Move(7, 11, 2, -4), Move(9, 8, 1, -4), Move(9, 9, 3, -3), Move(10, 9, 1, -4), Move(11, 10, 2, -4), Move(10, 7, 0, -3), Move(11, 8, 2, -4), Move(4, 1, 3, 0), Move(2, -1, 2, 0), Move(3, -2, 0, -4), Move(3, -1, 1, -4), Move(3, -3, 3, 0), Move(2, -2, 0, -3), Move(5, 1, 2, -3), Move(7, 1, 1, -4), Move(2, -3, 3, 0), Move(4, -1, 2, -2), Move(4, -2, 0, -4), Move(5, -1, 2, -2), Move(5, -2, 3, 0), Move(6, -3, 0, -4), Move(6, -2, 1, -4), Move(6, -1, 3, -2), Move(7, -2, 0, -4), Move(7, -1, 1, -4), Move(8, -2, 0, -4), Move(7, -3, 0, -4), Move(7, 0, 3, -3), Move(8, -1, 0, -4), Move(8, 0, 1, -4), Move(8, 1, 3, -3), Move(9, -1, 0, -4), Move(4, -3, 3, 0), Move(3, -4, 2, 0), Move(5, -3, 1, -3), Move(9, 1, 2, -4), Move(9, 2, 3, 0), Move(10, 1, 0, -4), Move(9, 0, 2, -3), Move(9, -2, 3, 0), Move(10, -2, 1, -4), Move(10, -1, 0, -4), Move(11, -1, 1, -4), Move(10, 0, 0, -3), Move(11, 1, 2, -4), Move(10, 2, 3, -4), Move(12, 0, 0, -4), Move(11, 0, 1, -3), Move(11, 2, 1, -4), Move(11, 3, 3, -4), Move(10, 3, 1, -3), Move(11, 4, 2, -4), Move(12, 1, 0, -4), Move(13, 2, 2, -4), Move(12, 3, 0, -3), Move(13, 1, 1, -4), Move(14, 2, 2, -4), Move(10, 4, 3, -2), Move(12, 2, 0, -3), Move(12, 4, 3, -4), Move(13, 5, 2, -4), Move(15, 2, 1, -4), Move(11, 5, 2, -4), Move(13, 3, 0, -3), Move(13, 4, 3, -3), Move(14, 4, 1, -4), Move(15, 5, 2, -4), Move(14, 5, 2, -4), Move(12, 5, 1, -1), Move(14, 3, 0, -3), Move(15, 3, 1, -4), Move(14, 6, 3, -4), Move(11, 7, 3, -4), Move(12, 6, 0, -1), Move(12, 7, 1, -4), Move(12, 8, 3, -4), Move(13, 6, 0, -3), Move(15, 6, 1, -4), Move(10, 8, 0, -3), Move(13, 8, 1, -4), Move(14, 9, 2, -4), Move(10, 10, 3, -4), Move(11, 11, 2, -4), Move(11, 9, 3, -2), Move(13, 7, 0, -2), Move(13, 9, 3, -4), Move(12, 9, 1, -2), Move(14, 7, 0, -3), Move(15, 8, 2, -4), Move(14, 10, 2, -4), Move(14, 8, 3, -2), Move(15, 9, 2, -4), Move(15, 7, 3, -2), Move(16, 7, 1, -4), Move(12, 10, 0, -1), Move(13, 11, 2, -4), Move(13, 10, 1, -4), Move(12, 11, 0, 0), Move(12, 12, 3, -4), Move(16, 8, 0, -4), Move(17, 9, 2, -4), Move(17, 8, 1, -4), Move(18, 9, 2, -4), Move(16, 9, 1, -2)]
+# 172
+# Move[Move(10, 3, 1, -4), Move(8, 5, 0, -2), Move(7, 0, 1, -4), Move(10, 6, 1, -4), Move(8, 4, 2, -2), Move(8, 2, 3, 0), Move(3, 4, 3, -4), Move(3, 5, 3, -1), Move(2, 2, 0, -2), Move(9, 2, 3, 0), Move(6, 4, 3, -4), Move(6, 5, 3, -1), Move(7, 2, 2, -2), Move(5, 2, 1, 0), Move(4, 3, 0, -1), Move(5, 3, 1, -3), Move(4, 4, 0, -2), Move(5, 5, 2, -3), Move(4, 6, 0, 0), Move(5, 6, 1, -3), Move(7, 4, 0, -2), Move(5, 4, 1, -2), Move(5, 1, 3, -1), Move(7, 1, 3, -1), Move(10, 4, 2, -4), Move(11, 4, 1, -4), Move(8, 1, 2, -1), Move(4, 1, 1, 0), Move(2, -1, 2, 0), Move(1, 4, 0, 0), Move(4, 5, 0, 0), Move(4, 7, 3, -4), Move(7, 7, 0, -1), Move(10, 7, 2, -4), Move(10, 5, 3, -2), Move(7, 5, 1, -1), Move(7, 8, 3, -4), Move(8, 9, 2, -4), Move(8, 7, 0, -1), Move(9, 8, 2, -4), Move(9, 7, 1, -3), Move(10, 8, 2, -4), Move(8, 8, 1, -2), Move(8, 10, 3, -4), Move(5, 7, 0, 0), Move(2, 7, 1, 0), Move(-1, 4, 2, 0), Move(2, 4, 1, -3), Move(0, 2, 2, 0), Move(7, 9, 2, -3), Move(9, 9, 1, -4), Move(9, 10, 3, -4), Move(10, 10, 2, -4), Move(5, 8, 3, -4), Move(7, 10, 2, -4), Move(6, 10, 1, 0), Move(5, 11, 0, 0), Move(6, 11, 0, 0), Move(6, 12, 3, -4), Move(0, 7, 3, -4), Move(2, 5, 3, -2), Move(-1, 8, 0, 0), Move(1, 5, 1, 0), Move(4, 2, 0, -3), Move(2, 0, 2, 0), Move(1, 2, 1, 0), Move(4, -1, 3, 0), Move(2, 1, 0, -2), Move(2, -2, 3, 0), Move(3, -1, 2, -1), Move(1, 0, 2, 0), Move(-1, 3, 2, 0), Move(1, 1, 0, -2), Move(1, -1, 3, 0), Move(0, -1, 1, 0), Move(0, 1, 1, 0), Move(0, 0, 3, -1), Move(-1, 0, 1, 0), Move(-2, -1, 2, 0), Move(-2, 3, 1, 0), Move(-1, 2, 0, -1), Move(1, 7, 3, -4), Move(-2, 1, 2, 0), Move(7, 11, 0, -1), Move(7, 12, 3, -4), Move(5, 10, 2, -2), Move(5, 12, 3, -4), Move(4, 8, 2, -1), Move(2, 8, 1, 0), Move(4, 10, 2, -2), Move(4, 11, 3, -4), Move(3, 11, 1, 0), Move(2, 12, 0, 0), Move(3, 12, 0, 0), Move(3, 10, 3, -2), Move(2, 10, 1, 0), Move(1, 11, 0, 0), Move(2, 11, 0, 0), Move(2, 9, 3, -1), Move(1, 10, 0, 0), Move(0, 9, 2, -1), Move(1, 9, 1, 0), Move(1, 8, 3, -1), Move(-1, 10, 0, 0), Move(0, 10, 0, 0), Move(-2, 10, 1, 0), Move(4, 12, 1, -1), Move(0, 8, 2, 0), Move(-1, 9, 0, -1), Move(-2, 8, 2, 0), Move(0, 11, 3, -4), Move(-1, 11, 1, 0), Move(-1, 7, 3, 0), Move(-3, 9, 0, 0), Move(-2, 9, 1, -1), Move(-2, 7, 1, 0), Move(-2, 6, 3, 0), Move(-1, 6, 1, -1), Move(-1, 5, 3, -2), Move(-2, 4, 2, 0), Move(-3, 8, 0, 0), Move(-4, 7, 2, 0), Move(-4, 8, 1, 0), Move(-3, 7, 0, -1), Move(-5, 7, 2, 0), Move(-6, 7, 1, 0), Move(-2, 5, 2, 0), Move(-2, 2, 3, 0), Move(-1, 1, 0, -1), Move(-1, -1, 3, 0), Move(-2, -2, 2, 0), Move(-2, 0, 3, -2), Move(-3, 2, 1, 0), Move(-3, 6, 0, -1), Move(-3, 5, 3, 0), Move(-4, 6, 0, -1), Move(-4, 4, 2, 0), Move(-4, 5, 3, -1), Move(-5, 4, 2, 0), Move(-3, 4, 1, -2), Move(-5, 6, 0, -1), Move(-6, 6, 1, 0), Move(-4, 3, 0, -1), Move(6, 13, 2, -4), Move(-5, 5, 1, 0), Move(-3, 3, 0, -3), Move(-3, 1, 3, 0), Move(-4, 1, 1, 0), Move(-5, 0, 2, 0), Move(-5, 3, 3, 0), Move(-4, 2, 0, -1), Move(-6, 3, 1, 0), Move(-4, 0, 3, 0), Move(-5, -1, 2, 0), Move(-3, 0, 1, -2), Move(-5, 2, 0, -1), Move(-6, 1, 2, 0), Move(-5, 1, 3, -2), Move(-6, 0, 2, 0), Move(-6, 4, 2, 0), Move(-6, 2, 3, -2), Move(-7, 2, 1, 0), Move(-3, -1, 0, -3), Move(-4, -1, 1, 0), Move(-4, -2, 2, 0), Move(-3, -2, 0, -4), Move(-3, -3, 3, 0), Move(-7, 1, 0, 0), Move(-8, 0, 2, 0), Move(-8, 1, 1, 0), Move(-9, 0, 2, 0), Move(-7, 0, 1, -2)]
+# 172
+# Move[Move(0, 2, 3, 0), Move(9, 7, 3, -4), Move(10, 3, 1, -4), Move(8, 5, 0, -2), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(7, 9, 1, -4), Move(2, 7, 2, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(10, 6, 1, -4), Move(8, 4, 2, -2), Move(8, 7, 3, -4), Move(7, 7, 0, -2), Move(5, 7, 1, 0), Move(4, 6, 2, -1), Move(5, 6, 1, -3), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(4, 3, 2, 0), Move(5, 3, 1, -3), Move(7, 5, 2, -2), Move(7, 8, 3, -3), Move(10, 5, 0, -4), Move(7, 2, 2, -1), Move(11, 5, 1, -4), Move(8, 8, 0, -1), Move(10, 2, 0, -4), Move(10, 4, 3, -2), Move(7, 4, 1, -1), Move(7, 1, 3, 0), Move(8, 2, 2, -1), Move(9, 2, 1, -3), Move(10, 1, 0, -4), Move(5, 2, 2, 0), Move(5, 5, 1, -2), Move(9, 1, 0, -4), Move(8, 1, 1, -2), Move(5, 1, 3, 0), Move(4, 4, 2, -1), Move(8, 0, 0, -4), Move(8, -1, 3, 0), Move(7, 0, 0, -3), Move(9, 0, 1, -4), Move(10, -1, 0, -4), Move(9, -1, 3, 0), Move(4, 2, 3, 0), Move(7, -1, 0, -4), Move(6, -1, 1, 0), Move(5, -2, 2, 0), Move(6, -2, 2, 0), Move(6, -3, 3, 0), Move(7, -2, 2, -1), Move(4, 1, 0, -1), Move(2, 1, 1, 0), Move(4, -1, 0, -2), Move(4, -2, 3, 0), Move(3, -2, 1, 0), Move(2, -3, 2, 0), Move(7, -3, 3, 0), Move(5, -1, 0, -2), Move(3, -3, 2, 0), Move(3, -1, 3, -2), Move(2, -2, 2, 0), Move(2, -1, 1, 0), Move(2, 0, 3, -3), Move(1, 0, 1, 0), Move(0, -1, 2, 0), Move(1, -1, 2, 0), Move(1, -2, 2, 0), Move(5, -3, 3, 0), Move(4, -3, 1, -1), Move(0, 1, 0, 0), Move(6, -4, 0, -4), Move(2, 2, 1, 0), Move(-1, 5, 0, 0), Move(5, 8, 3, -3), Move(4, 8, 1, 0), Move(2, 10, 0, 0), Move(1, 5, 2, 0), Move(2, 5, 1, -3), Move(2, 4, 3, -1), Move(-1, 1, 2, 0), Move(0, 0, 0, -1), Move(0, -2, 3, 0), Move(-1, -2, 1, 0), Move(1, 4, 1, 0), Move(-1, 6, 0, 0), Move(-2, 6, 1, 0), Move(1, 2, 3, 0), Move(1, 1, 3, -3), Move(-1, -1, 2, 0), Move(-2, -1, 1, 0), Move(-1, 0, 2, -1), Move(-1, 2, 3, -4), Move(-2, 2, 1, 0), Move(-2, 1, 0, 0), Move(-3, 0, 2, 0), Move(-2, 0, 1, -1), Move(-2, 3, 3, -4), Move(-1, 3, 1, -1), Move(-3, 1, 2, 0), Move(-4, 2, 0, 0), Move(-4, 1, 1, 0), Move(-5, 2, 0, 0), Move(-1, 4, 3, -2), Move(-3, 2, 2, -1), Move(-6, 2, 1, 0), Move(-2, 5, 0, 0), Move(-2, 4, 0, 0), Move(-3, 3, 2, -1), Move(-3, 4, 3, -4), Move(-4, 3, 2, -1), Move(-4, 5, 0, 0), Move(-4, 4, 3, -3), Move(-5, 5, 0, 0), Move(-5, 4, 1, 0), Move(-6, 5, 0, 0), Move(-3, 5, 1, -3), Move(-5, 3, 2, -1), Move(-6, 3, 1, 0), Move(-5, 6, 3, -4), Move(-2, 7, 3, -4), Move(-3, 6, 2, -3), Move(4, 7, 2, -2), Move(4, 10, 3, -4), Move(2, 9, 0, 0), Move(1, 7, 1, 0), Move(2, 8, 2, -2), Move(2, 11, 3, -4), Move(3, 10, 0, -1), Move(1, 9, 0, 0), Move(0, 7, 0, 0), Move(1, 8, 2, -2), Move(1, 10, 3, -4), Move(0, 10, 1, 0), Move(0, 8, 1, 0), Move(0, 9, 3, -3), Move(-1, 8, 2, -1), Move(-1, 9, 1, 0), Move(-2, 10, 0, 0), Move(-1, 7, 2, -1), Move(-3, 7, 1, 0), Move(-3, 8, 3, -4), Move(-1, 10, 3, -4), Move(-2, 11, 0, 0), Move(-2, 8, 0, 0), Move(-4, 8, 1, 0), Move(-5, 9, 0, 0), Move(-4, 6, 2, 0), Move(-6, 6, 1, 0), Move(-2, 9, 3, -2), Move(-4, 7, 2, -1), Move(-4, 9, 3, -4), Move(-3, 9, 1, -2), Move(-5, 7, 2, -1), Move(-6, 8, 0, 0), Move(-5, 10, 0, 0), Move(-5, 8, 3, -2), Move(-6, 9, 0, 0), Move(-6, 7, 3, -2), Move(-3, 10, 2, -3), Move(-4, 10, 1, -1), Move(-7, 7, 1, 0), Move(-3, 11, 2, -4), Move(-3, 12, 3, -4), Move(-4, 11, 0, 0), Move(-7, 8, 2, 0), Move(-8, 9, 0, 0), Move(-8, 8, 1, 0), Move(-9, 9, 0, 0), Move(-7, 9, 1, -2)]
+# 175
+# Move[Move(6, -1, 3, 0), Move(4, 1, 0, -2), Move(4, 3, 1, -4), Move(5, 3, 1, -1), Move(2, 7, 2, -2), Move(2, 0, 1, 0), Move(4, 6, 1, -4), Move(5, 6, 1, -1), Move(0, 2, 3, 0), Move(7, 9, 1, -4), Move(3, -1, 3, 0), Move(5, 1, 2, -2), Move(2, 1, 1, 0), Move(2, 2, 0, -2), Move(2, 4, 3, -4), Move(3, 5, 2, -3), Move(3, 4, 3, -1), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(6, 5, 2, -4), Move(6, 4, 3, -1), Move(4, 2, 2, -2), Move(1, 2, 1, -1), Move(4, -1, 0, -4), Move(4, -2, 3, 0), Move(1, 1, 0, -1), Move(7, 2, 2, -3), Move(7, -1, 0, -4), Move(5, -1, 1, -2), Move(5, 2, 3, -3), Move(8, 2, 1, -4), Move(7, 1, 2, -3), Move(7, 0, 3, -1), Move(8, -1, 0, -4), Move(7, 4, 2, -4), Move(4, 4, 3, -2), Move(8, 0, 0, -4), Move(8, 1, 3, -2), Move(8, 4, 1, -4), Move(5, 5, 2, -3), Move(9, 1, 0, -4), Move(10, 1, 1, -4), Move(9, 2, 0, -3), Move(10, 3, 2, -4), Move(9, 0, 3, 0), Move(10, -1, 0, -4), Move(10, 0, 1, -4), Move(10, 2, 3, -3), Move(5, 7, 3, -4), Move(4, 7, 1, -2), Move(2, 9, 0, 0), Move(8, 10, 2, -4), Move(1, 4, 1, -1), Move(1, 5, 3, -4), Move(4, 8, 2, -4), Move(7, 5, 0, -4), Move(8, 5, 1, -4), Move(8, 7, 3, -4), Move(11, 2, 0, -4), Move(12, 3, 2, -4), Move(11, 3, 1, -3), Move(12, 4, 2, -4), Move(12, 2, 1, -4), Move(10, 4, 0, -2), Move(11, 4, 1, -3), Move(10, 5, 0, -2), Move(7, 7, 3, -4), Move(4, 10, 0, 0), Move(4, 11, 3, -4), Move(11, 1, 0, -4), Move(11, 5, 3, -4), Move(12, 5, 1, -4), Move(12, 6, 2, -4), Move(12, 7, 3, -4), Move(11, 6, 2, -3), Move(10, 6, 1, -2), Move(10, 7, 3, -4), Move(9, 7, 1, -3), Move(8, 8, 0, 0), Move(9, 8, 3, -4), Move(13, 4, 0, -4), Move(10, 9, 2, -4), Move(11, 8, 2, -4), Move(11, 7, 2, -4), Move(-1, 7, 0, 0), Move(11, 9, 3, -4), Move(10, 8, 2, -3), Move(9, 9, 0, -1), Move(8, 9, 1, -1), Move(10, 10, 2, -4), Move(10, 11, 3, -4), Move(7, 8, 1, 0), Move(9, 10, 2, -3), Move(8, 11, 0, 0), Move(5, 8, 1, -2), Move(3, 10, 0, 0), Move(3, 11, 3, -4), Move(7, 10, 2, -3), Move(7, 11, 3, -4), Move(11, 10, 1, -4), Move(5, 10, 0, -1), Move(5, 11, 3, -4), Move(6, 10, 1, -3), Move(4, 12, 0, 0), Move(8, 12, 2, -4), Move(8, 13, 3, -4), Move(6, 11, 3, -4), Move(2, 11, 1, 0), Move(7, 12, 2, -3), Move(5, 12, 0, 0), Move(9, 11, 1, -3), Move(9, 12, 3, -4), Move(6, 12, 1, -1), Move(7, 13, 2, -4), Move(6, 14, 0, 0), Move(7, 14, 0, 0), Move(7, 15, 3, -4), Move(5, 13, 2, -2), Move(4, 14, 0, 0), Move(6, 13, 2, -3), Move(4, 13, 1, 0), Move(4, 15, 3, -4), Move(5, 14, 0, -1), Move(5, 15, 3, -4), Move(3, 14, 1, 0), Move(6, 15, 3, -4), Move(3, 15, 1, 0), Move(3, 12, 2, -1), Move(3, 13, 3, -2), Move(2, 5, 2, -2), Move(-1, 5, 1, 0), Move(0, 7, 0, 0), Move(2, 8, 3, -4), Move(1, 7, 2, -2), Move(-2, 7, 1, 0), Move(-1, 6, 0, -1), Move(1, 8, 2, -2), Move(0, 8, 0, 0), Move(-1, 8, 1, 0), Move(-1, 9, 3, -4), Move(1, 9, 3, -4), Move(2, 10, 2, -3), Move(2, 12, 3, -4), Move(1, 11, 2, 0), Move(1, 12, 1, 0), Move(0, 9, 1, -1), Move(1, 10, 2, -3), Move(1, 13, 3, -4), Move(0, 14, 0, 0), Move(0, 10, 3, -4), Move(-1, 10, 1, 0), Move(-2, 11, 0, 0), Move(-1, 11, 0, 0), Move(0, 11, 1, -2), Move(2, 13, 2, -2), Move(0, 13, 1, 0), Move(0, 12, 3, -2), Move(-1, 13, 0, 0), Move(-1, 12, 3, -3), Move(-2, 13, 0, 0), Move(2, 14, 2, -3), Move(-1, 14, 0, 0), Move(1, 14, 1, -2), Move(2, 15, 2, -4), Move(2, 16, 3, -4), Move(1, 16, 0, 0), Move(0, 15, 0, 0), Move(-3, 12, 2, 0), Move(-2, 12, 1, -1), Move(1, 15, 2, -3), Move(-1, 15, 1, 0), Move(1, 17, 3, -4), Move(0, 18, 0, 0), Move(0, 16, 0, 0), Move(0, 17, 3, -3)]
+# 175
+# Move[Move(7, 7, 0, -2), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(2, 7, 2, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(0, 2, 3, 0), Move(7, 9, 1, -4), Move(9, 7, 3, -4), Move(10, 6, 1, -4), Move(8, 4, 2, -2), Move(10, 3, 1, -4), Move(8, 5, 0, -2), Move(8, 7, 3, -4), Move(5, 7, 1, 0), Move(4, 6, 2, -1), Move(5, 6, 1, -3), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(4, 3, 2, 0), Move(5, 3, 1, -3), Move(7, 5, 2, -2), Move(10, 2, 0, -4), Move(5, 5, 1, -2), Move(5, 8, 3, -3), Move(7, 8, 3, -3), Move(10, 5, 0, -4), Move(10, 4, 3, -2), Move(7, 4, 1, -1), Move(5, 2, 2, 0), Move(5, 1, 3, 0), Move(7, 2, 2, -1), Move(7, 1, 3, 0), Move(11, 5, 1, -4), Move(8, 2, 2, -1), Move(9, 2, 1, -3), Move(10, 1, 0, -4), Move(9, 1, 0, -4), Move(8, 1, 1, -2), Move(8, 8, 0, -1), Move(4, 8, 1, 0), Move(2, 10, 0, 0), Move(1, 5, 2, 0), Move(4, 4, 2, 0), Move(8, 0, 0, -4), Move(8, -1, 3, 0), Move(7, 0, 0, -3), Move(9, 0, 1, -4), Move(10, -1, 0, -4), Move(9, -1, 3, 0), Move(6, -1, 2, 0), Move(7, -1, 1, -1), Move(2, 4, 1, 0), Move(4, 2, 0, -4), Move(8, -2, 0, -4), Move(2, 2, 1, 0), Move(-1, 5, 0, 0), Move(4, 1, 3, 0), Move(2, 1, 1, 0), Move(2, 5, 3, -4), Move(-2, 5, 1, 0), Move(4, 7, 2, -2), Move(4, 10, 3, -4), Move(1, 7, 1, 0), Move(2, 8, 2, -2), Move(1, 9, 0, 0), Move(2, 9, 0, 0), Move(2, 11, 3, -4), Move(3, 10, 0, -1), Move(7, -2, 0, -4), Move(7, -3, 3, 0), Move(6, -3, 2, 0), Move(6, -2, 3, -1), Move(5, -1, 0, -2), Move(5, -3, 2, 0), Move(5, -2, 3, -1), Move(4, -2, 1, 0), Move(3, -3, 2, 0), Move(4, -1, 0, -2), Move(4, -3, 3, 0), Move(2, -3, 1, 0), Move(3, -2, 2, -1), Move(3, -1, 3, -2), Move(2, -1, 1, 0), Move(1, -2, 2, 0), Move(2, -2, 2, 0), Move(0, -2, 1, 0), Move(2, 0, 3, -3), Move(1, 1, 0, 0), Move(1, -1, 2, 0), Move(1, 0, 1, 0), Move(1, 2, 3, -4), Move(-1, 4, 0, -1), Move(1, 4, 3, -2), Move(-2, 4, 1, 0), Move(-1, 6, 0, 0), Move(-2, 6, 1, 0), Move(0, -1, 2, 0), Move(5, -4, 0, -4), Move(-1, 1, 2, 0), Move(0, 0, 0, -1), Move(0, 1, 3, -3), Move(-1, -1, 2, 0), Move(-2, -1, 1, 0), Move(-1, 0, 2, -1), Move(-2, 1, 0, 0), Move(-1, 2, 2, -1), Move(-1, 3, 3, -1), Move(-3, 5, 0, 0), Move(-2, 3, 1, 0), Move(-2, 7, 3, -4), Move(-3, 4, 0, 0), Move(-2, 2, 1, 0), Move(-2, 0, 3, -1), Move(-3, 0, 1, 0), Move(-3, 1, 2, 0), Move(-4, 1, 1, 0), Move(-3, 2, 2, -1), Move(-3, 3, 3, -3), Move(-4, 2, 2, 0), Move(-5, 3, 0, 0), Move(-1, -2, 3, 0), Move(-5, 2, 0, 0), Move(-6, 2, 1, 0), Move(-4, 4, 2, -2), Move(-5, 5, 0, 0), Move(-4, 3, 2, -1), Move(-4, 5, 3, -4), Move(-6, 5, 1, 0), Move(-5, 4, 0, -1), Move(-6, 4, 1, 0), Move(-5, 6, 3, -4), Move(-6, 3, 1, 0), Move(-3, 6, 2, -3), Move(-6, 6, 3, -4), Move(-4, 6, 1, -2), Move(0, 7, 0, 0), Move(1, 8, 2, -2), Move(1, 10, 3, -4), Move(0, 10, 1, 0), Move(0, 8, 1, 0), Move(0, 9, 3, -3), Move(-1, 8, 2, -1), Move(-1, 9, 1, 0), Move(-1, 7, 2, -1), Move(-1, 10, 3, -4), Move(-2, 11, 0, 0), Move(-3, 7, 1, 0), Move(-3, 8, 3, -4), Move(-2, 8, 2, -3), Move(-4, 8, 1, 0), Move(-5, 9, 0, 0), Move(-2, 10, 0, 0), Move(-2, 9, 3, -2), Move(-4, 7, 2, -1), Move(-4, 9, 3, -4), Move(-5, 10, 0, 0), Move(-3, 9, 1, -2), Move(-5, 7, 2, -1), Move(-5, 8, 3, -2), Move(-6, 9, 0, 0), Move(-4, 10, 0, 0), Move(-3, 10, 1, -2), Move(-6, 7, 2, 0), Move(-7, 7, 1, 0), Move(-7, 8, 0, 0), Move(-4, 11, 0, 0), Move(-3, 12, 2, -4), Move(-3, 11, 3, -3), Move(-6, 8, 2, -1), Move(-7, 9, 0, 0), Move(-8, 8, 1, 0), Move(-9, 9, 0, 0), Move(-6, 10, 3, -4), Move(-8, 9, 1, -1)]
+# 175
+# Move[Move(7, 9, 1, -4), Move(6, -1, 3, 0), Move(4, 1, 0, -2), Move(4, 6, 1, -4), Move(5, 6, 1, -1), Move(2, 7, 2, -2), Move(2, 0, 1, 0), Move(0, 2, 3, 0), Move(2, 2, 0, -2), Move(3, -1, 3, 0), Move(5, 1, 2, -2), Move(2, 1, 1, 0), Move(2, 4, 3, -4), Move(3, 5, 2, -3), Move(3, 4, 3, -1), Move(4, 5, 2, -2), Move(5, 4, 0, -3), Move(4, 3, 1, -4), Move(6, 5, 2, -4), Move(6, 4, 3, -1), Move(5, 3, 1, -1), Move(4, 2, 2, -2), Move(7, -1, 0, -4), Move(1, 2, 1, -1), Move(4, -1, 0, -4), Move(5, -1, 1, -2), Move(5, 2, 3, -3), Move(7, 4, 2, -4), Move(4, -2, 3, 0), Move(1, 1, 0, -1), Move(7, 2, 2, -3), Move(8, 2, 1, -4), Move(7, 1, 2, -3), Move(7, 0, 3, -1), Move(8, -1, 0, -4), Move(4, 4, 3, -2), Move(8, 4, 1, -4), Move(8, 0, 0, -4), Move(8, 1, 3, -2), Move(1, 4, 1, -1), Move(1, 5, 3, -4), Move(-1, 7, 0, 0), Move(4, 8, 2, -4), Move(5, 5, 2, -3), Move(9, 1, 0, -4), Move(10, 1, 1, -4), Move(9, 2, 0, -3), Move(10, 3, 2, -4), Move(9, 0, 3, 0), Move(10, -1, 0, -4), Move(10, 0, 1, -4), Move(10, 2, 3, -3), Move(5, 7, 3, -4), Move(8, 10, 2, -4), Move(7, 5, 0, -4), Move(11, 1, 0, -4), Move(7, 7, 3, -4), Move(4, 10, 0, 0), Move(8, 5, 1, -4), Move(8, 7, 3, -4), Move(11, 2, 0, -4), Move(12, 2, 1, -4), Move(12, 3, 2, -4), Move(11, 3, 1, -3), Move(10, 4, 0, -2), Move(12, 4, 2, -4), Move(11, 4, 1, -3), Move(11, 5, 3, -4), Move(12, 6, 2, -4), Move(10, 5, 0, -2), Move(12, 5, 1, -4), Move(12, 7, 3, -4), Move(11, 6, 2, -3), Move(10, 6, 1, -2), Move(10, 7, 3, -4), Move(11, 8, 2, -4), Move(11, 7, 2, -4), Move(11, 9, 3, -4), Move(9, 7, 1, -2), Move(10, 8, 2, -3), Move(9, 9, 0, -1), Move(8, 8, 0, 0), Move(10, 10, 2, -4), Move(9, 8, 3, -4), Move(7, 8, 1, 0), Move(5, 8, 1, -2), Move(3, 10, 0, 0), Move(3, 11, 3, -4), Move(13, 4, 0, -4), Move(10, 9, 2, -4), Move(10, 11, 3, -4), Move(8, 9, 1, -1), Move(9, 10, 2, -3), Move(8, 11, 0, 0), Move(4, 7, 1, -2), Move(7, 10, 2, -3), Move(11, 10, 1, -4), Move(7, 11, 3, -4), Move(4, 11, 3, -4), Move(5, 10, 0, -1), Move(6, 10, 1, -3), Move(8, 12, 2, -4), Move(8, 13, 3, -4), Move(6, 11, 3, -4), Move(7, 12, 2, -3), Move(9, 11, 1, -3), Move(9, 12, 3, -4), Move(7, 14, 0, 0), Move(5, 12, 0, 0), Move(6, 13, 2, -3), Move(6, 12, 1, -1), Move(5, 11, 3, -4), Move(7, 13, 2, -4), Move(7, 15, 3, -4), Move(6, 14, 0, 0), Move(6, 15, 3, -4), Move(2, 11, 1, 0), Move(4, 12, 0, 0), Move(5, 13, 2, -2), Move(4, 13, 1, 0), Move(4, 14, 0, 0), Move(4, 15, 3, -4), Move(5, 14, 0, -1), Move(3, 12, 2, -1), Move(3, 14, 1, 0), Move(5, 15, 3, -4), Move(3, 15, 1, 0), Move(3, 13, 3, -2), Move(2, 5, 2, -2), Move(-1, 5, 1, 0), Move(0, 7, 0, 0), Move(2, 9, 0, 0), Move(2, 8, 3, -4), Move(1, 7, 2, -2), Move(-2, 7, 1, 0), Move(-1, 6, 0, -1), Move(1, 8, 2, -2), Move(0, 8, 0, 0), Move(-1, 8, 1, 0), Move(-1, 9, 3, -4), Move(1, 9, 3, -4), Move(2, 10, 2, -3), Move(2, 12, 3, -4), Move(1, 12, 1, 0), Move(0, 9, 1, -1), Move(1, 10, 2, -3), Move(0, 10, 3, -4), Move(1, 11, 2, -1), Move(1, 13, 3, -4), Move(0, 14, 0, 0), Move(-1, 10, 1, 0), Move(-2, 11, 0, 0), Move(-1, 11, 0, 0), Move(0, 11, 1, -2), Move(2, 13, 2, -3), Move(0, 13, 1, 0), Move(-1, 14, 0, 0), Move(0, 12, 3, -2), Move(-1, 13, 0, 0), Move(-1, 12, 3, -2), Move(2, 14, 2, -3), Move(1, 14, 1, -2), Move(2, 15, 2, -4), Move(2, 16, 3, -4), Move(1, 16, 0, 0), Move(0, 15, 0, 0), Move(-2, 13, 0, 0), Move(-3, 12, 2, 0), Move(-2, 12, 1, -1), Move(1, 15, 2, -3), Move(-1, 15, 1, 0), Move(1, 17, 3, -4), Move(0, 16, 0, 0), Move(0, 18, 0, 0), Move(0, 17, 3, -3)]
 # 177
 # Move[Move(9, 2, 3, 0), Move(-1, 3, 1, 0), Move(1, 5, 2, -2), Move(2, 9, 1, 0), Move(6, 5, 3, 0), Move(6, 4, 3, -3), Move(2, 7, 2, -2), Move(-1, 6, 1, 0), Move(1, 4, 0, -2), Move(1, 7, 3, -4), Move(0, 7, 3, -4), Move(4, 7, 1, -4), Move(5, 6, 0, -3), Move(4, 6, 1, -1), Move(5, 5, 0, -2), Move(3, 5, 3, 0), Move(3, 4, 3, -3), Move(7, 7, 0, -2), Move(4, 4, 2, -1), Move(5, 3, 0, -4), Move(4, 3, 1, -1), Move(2, 5, 0, -2), Move(-1, 2, 2, 0), Move(2, 8, 3, -3), Move(-1, 5, 2, 0), Move(-1, 4, 3, -2), Move(2, 4, 1, -3), Move(4, 2, 0, -4), Move(-2, 5, 1, 0), Move(1, 8, 2, -3), Move(2, 2, 0, -3), Move(2, 1, 3, 0), Move(1, 2, 0, -3), Move(0, 2, 1, -1), Move(-1, 1, 2, 0), Move(4, 5, 1, -2), Move(4, 1, 3, 0), Move(0, 1, 2, 0), Move(1, 1, 1, -2), Move(5, 4, 0, -3), Move(1, 0, 2, 0), Move(1, -1, 3, 0), Move(2, 0, 2, -1), Move(0, 0, 1, 0), Move(-1, -1, 2, 0), Move(0, -1, 3, 0), Move(5, 2, 3, 0), Move(2, -1, 2, 0), Move(3, -1, 1, -4), Move(4, -2, 0, -4), Move(3, -2, 0, -4), Move(3, -3, 3, 0), Move(2, -2, 0, -3), Move(5, 1, 2, -3), Move(7, 1, 1, -4), Move(5, -1, 2, -2), Move(5, -2, 3, 0), Move(6, -2, 1, -4), Move(7, -3, 0, -4), Move(2, -3, 3, 0), Move(4, -1, 2, -2), Move(6, -3, 0, -4), Move(6, -1, 3, -2), Move(7, -1, 1, -4), Move(8, -2, 0, -4), Move(7, -2, 0, -4), Move(7, 0, 3, -3), Move(8, 0, 1, -4), Move(9, -1, 0, -4), Move(4, -3, 3, 0), Move(8, 1, 2, -4), Move(5, -3, 1, -3), Move(9, 1, 2, -4), Move(7, 2, 1, -4), Move(10, 5, 2, -4), Move(7, 4, 1, -4), Move(10, 1, 0, -4), Move(7, 5, 3, -3), Move(9, 7, 2, -4), Move(4, 8, 3, -3), Move(5, 7, 0, -2), Move(8, 7, 1, -4), Move(9, 8, 2, -4), Move(5, 8, 1, -4), Move(5, 10, 3, -4), Move(7, 8, 0, -2), Move(8, 8, 1, -3), Move(7, 10, 2, -4), Move(7, 9, 3, -3), Move(8, 10, 2, -4), Move(8, 9, 3, -3), Move(9, 10, 2, -4), Move(9, 9, 3, -3), Move(10, 9, 1, -4), Move(6, 10, 1, -1), Move(10, 6, 0, -4), Move(8, 4, 2, -2), Move(11, 6, 1, -4), Move(10, 7, 0, -3), Move(7, 11, 2, -4), Move(8, 5, 0, -4), Move(11, 5, 1, -4), Move(8, 2, 3, 0), Move(10, 4, 2, -3), Move(11, 4, 1, -4), Move(8, -1, 3, -1), Move(9, -2, 0, -4), Move(9, 0, 3, -2), Move(10, -1, 0, -4), Move(11, -1, 1, -4), Move(10, -2, 1, -4), Move(10, 0, 0, -3), Move(10, 2, 3, -4), Move(10, 3, 3, -1), Move(11, 3, 1, -4), Move(11, 7, 3, -4), Move(12, 7, 1, -4), Move(10, 8, 0, -3), Move(10, 10, 3, -4), Move(11, 11, 2, -4), Move(12, 5, 2, -4), Move(11, 2, 1, -4), Move(12, 1, 0, -4), Move(12, 3, 2, -4), Move(13, 2, 0, -4), Move(11, 1, 2, -4), Move(11, 0, 3, -1), Move(13, 1, 1, -4), Move(12, 2, 0, -3), Move(12, 0, 0, -4), Move(13, 0, 1, -4), Move(12, 4, 3, -4), Move(13, 5, 2, -4), Move(14, 2, 2, -4), Move(13, 3, 0, -3), Move(13, 4, 3, -4), Move(15, 2, 1, -4), Move(14, 3, 0, -3), Move(15, 3, 1, -4), Move(15, 4, 2, -4), Move(14, 4, 1, -3), Move(12, 6, 0, -1), Move(12, 8, 3, -4), Move(15, 5, 2, -4), Move(15, 6, 3, -4), Move(14, 5, 1, -3), Move(16, 7, 2, -4), Move(14, 6, 3, -4), Move(13, 6, 1, -2), Move(11, 8, 0, 0), Move(12, 9, 2, -4), Move(13, 8, 1, -4), Move(13, 7, 3, -3), Move(11, 9, 0, -1), Move(11, 10, 3, -3), Move(14, 7, 0, -3), Move(15, 7, 1, -3), Move(14, 9, 2, -4), Move(13, 9, 1, -3), Move(14, 10, 2, -4), Move(14, 8, 3, -2), Move(15, 9, 2, -4), Move(12, 10, 0, -1), Move(13, 10, 1, -3), Move(13, 11, 2, -4), Move(13, 12, 3, -4), Move(12, 11, 2, -3), Move(12, 12, 3, -4), Move(15, 8, 0, -3), Move(15, 10, 3, -4), Move(16, 9, 2, -4), Move(16, 8, 0, -4), Move(17, 9, 2, -4), Move(18, 9, 1, -4), Move(17, 8, 1, -4), Move(14, 11, 0, -1), Move(15, 11, 1, -4)]
 import Dates
@@ -1672,10 +1684,10 @@ function run()
     max_moves = moves
 
     back_accept = 5
-    back_accept_reset_visits = 0
+    back_accept_reset_visits = 5
     current_source_back_accept = 0
-    #30 good
-    taboo_score_multiplier = 10
+    #10 good
+    taboo_score_multiplier = 30
     # taboo_visits = 100
     end_search_interval = 10000
     current_source_score = 10000
@@ -1685,7 +1697,7 @@ function run()
     low_visit_counter = 0
 
     focus_interval = 100000
-    back_focus_score_min = 0
+    back_focus_score_min = -5
     back_focus_score_max = 0
 
     current_location_timeout = 2
@@ -1693,47 +1705,7 @@ function run()
     current_source_score = 100
 
 
-    function local_end_search(test_hash, test_moves)
-        test_score = length(test_moves)
-        end_searched_index[test_hash] = true
-
-        end_search_trip_time = Dates.now()
-        end_search_min_accept = test_score - back_accept
-        end_search_result = end_search(board_template, end_search_min_accept, 20, test_moves)
-        current_time = Dates.now()
-
-        println("$iteration. ES $test_score (fnd $(length(end_search_result)), min: $(end_search_min_accept)) $(current_time - end_search_trip_time) cs.$(length(current_set))")
-
-        for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
-            fendy_score = length(fendy_moves)
-            if !haskey(index, fendy_key) && !haskey(taboo, fendy_key)
-                if fendy_score >= end_search_min_accept
-                    index[fendy_key] = (fendy_moves, 0, iteration)
-                end
-
-                if fendy_score >= test_score
-                    println("$iteration. $test_score -> $fendy_score")
-                end
-
-                end_search_derived[fendy_key] = true
-
-                if fendy_score >= (test_score - current_source_back_accept)
-                    current_set = []
-                end
-
-                if (fendy_score > max_score)
-                    max_score = fendy_score
-                    max_moves = fendy_moves
-
-                    println("*** $max_score ***")
-                    println(max_moves)
-
-                    current_set = []
-                    # empty!(taboo)
-                end
-            end
-        end
-    end
+    
 
 
     current_back_focus_score_mod = 0
@@ -1754,6 +1726,79 @@ function run()
         # end
 
         back_focus_score_mod = back_focus_score_min + floor(((back_focus_score_max + 1) - back_focus_score_min) * focus)
+
+        function local_end_search(test_hash, test_moves)
+
+            if haskey(end_search_derived, test_hash)
+                return
+            end
+    
+            test_score = length(test_moves)
+            end_searched_index[test_hash] = true
+    
+            end_search_trip_time = Dates.now()
+            end_search_min_accept = test_score - back_accept
+            # 20 good
+            end_search_result = end_search(board_template, end_search_min_accept, 30, test_moves)
+            current_time = Dates.now()
+    
+            es_text = haskey(end_search_derived, test_hash) ? "ESD" : "ES"
+    
+            found_min_score = 0
+            found_max_score = 10000
+            new_found_count = 0
+    
+            for (fendy_key, fendy_moves) in collect(pairs(end_search_result))
+                fendy_score = length(fendy_moves)
+                if !haskey(index, fendy_key) && !haskey(taboo, fendy_key) && fendy_score >= end_search_min_accept
+                    
+                    index[fendy_key] = (fendy_moves, 0, iteration)
+    
+                    if fendy_score >= (current_source_score + back_focus_score_mod) 
+                        println("$iteration. $test_score -> $fendy_score")
+                        push!(current_set, Pair(fendy_key, (fendy_moves, 0, iteration)))
+                    end
+    
+                    if found_min_score < fendy_score
+                        found_min_score = fendy_score
+                    end
+    
+                    if found_max_score > fendy_score
+                        found_max_score = fendy_score
+                    end
+    
+                    if fendy_score > current_source_score
+                        current_set = []
+                    end
+    
+    
+                    end_search_derived[fendy_key] = true
+
+                    new_found_count += 1
+    
+                    # if fendy_score >= (test_score - current_source_back_accept)
+                    #     current_set = []
+                    # end
+    
+                    if (fendy_score > max_score)
+                        max_score = fendy_score
+                        max_moves = fendy_moves
+    
+                        println("*** $max_score ***")
+                        println(max_moves)
+    
+                        current_set = []
+                        # empty!(taboo)
+                    end
+                end
+            end
+    
+            println("$iteration. $es_text $test_score (fnd $(length(end_search_result))($new_found_count)[$found_max_score, $found_min_score], min: $(end_search_min_accept)) $(current_time - end_search_trip_time) cs.$(length(current_set)) $current_back_focus_score_mod")
+    
+            if test_score < (current_source_score + back_focus_score_min)
+                current_set = []
+            end
+        end
 
         # back_focus_score_mod = 0
 
@@ -1800,26 +1845,12 @@ function run()
         #     end
         # end
 
-        if length(current_set) == 0
-            index_pairs = collect(pairs(index))
-            (highest_score, _) = findmax(function (pair)
-                    (_, (moves, visits, iteration_visited)) = pair
-                    score = length(moves)
-                    score
-                end, index_pairs)
+        if iteration % 100000 == 0
+            println(max_score)
+            println(max_moves)
 
-            current_source_score = highest_score
-
-            current_set = filter(function (pair)
-                    (_, (moves, visits, iteration_visited)) = pair
-                    score = length(moves)
-                    score >= (highest_score + back_focus_score_mod)
-                end, index_pairs)
-
-            # println(current_set)
-            # readline()
+            current_set = []
         end
-
 
         if iteration % 10000 == 0
             index_pairs = collect(pairs(index))
@@ -1841,12 +1872,33 @@ function run()
 
             #cleanup
             empty!(dna_cache)
+            current_set = []
         end
 
-        if iteration % 100000 == 0
-            println(max_score)
-            println(max_moves)
+        if length(current_set) == 0
+            index_pairs = collect(pairs(index))
+            (highest_score, _) = findmax(function (pair)
+                    (_, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    score
+                end, index_pairs)
+
+            current_source_score = highest_score
+
+            current_set = filter(function (pair)
+                    (_, (moves, visits, iteration_visited)) = pair
+                    score = length(moves)
+                    score >= (highest_score + back_focus_score_mod)
+                end, index_pairs)
+
+            # println(current_set)
+            # readline()
         end
+
+
+        
+
+        
 
         #selection
         # index_pairs = collect(pairs(index))
@@ -1862,10 +1914,12 @@ function run()
         # (test_hash, _) = current_set[(iteration%length(current_set))+1]
         # current_set_position = (current_set_index % length(current_set)) + 1
 
-
+        # timeout = test_visits < (test_score * 2) ? 10 : 2
 
         if current_location_timer > current_location_timeout || current_set_position > length(current_set) || current_set_position == 0
-            current_set_position = rand(1:length(current_set))
+            # current_set_position = rand(1:length(current_set))
+
+            current_set_position = (iteration % length(current_set)) + 1
 
             current_location_timer = 0
         end
@@ -1885,8 +1939,6 @@ function run()
         (test_moves, test_visits, test_iteration_born) = index[test_hash]
         test_score = length(test_moves)
         test_age = iteration - test_iteration_born
-
-        
 
 
         # low_visit_timeout = 1
@@ -1917,7 +1969,7 @@ function run()
 
         index[test_hash] = (test_moves, test_visits + 1, iteration)
 
-        if test_score >= 100 && !haskey(end_searched_index, test_hash)
+        if test_score >= 100 && !haskey(end_searched_index, test_hash) && !haskey(end_search_derived, test_hash)
             local_end_search(test_hash, test_moves)
         end
 
@@ -1977,11 +2029,7 @@ function run()
                 end
 
                 index[eval_hash] = (eval_moves, 0, iteration)
-                if eval_score >= (test_score - current_source_back_accept)
-                    # current_set = []
-                    #dimitri
-                    push!(current_set, Pair(eval_hash, (eval_moves, 0, iteration)))
-                end
+                
                 # if eval_score >= 100 && !haskey(end_searched_index, eval_hash)
                 #     local_end_search(eval_hash, eval_moves)
                 # end
@@ -1990,7 +2038,13 @@ function run()
                 #     current_set = []
                 # end
 
-                if eval_score >= (current_source_score + back_focus_score_min)
+                # if eval_score >= 100 && !haskey(end_searched_index, eval_hash) && eval_score >= (current_source_score + back_focus_score_min)
+                #     local_end_search(eval_hash, eval_moves)
+                # end
+
+                if eval_score >= (current_source_score + back_focus_score_mod)
+                    push!(current_set, Pair(eval_hash, (eval_moves, 0, iteration)))
+
                     connector =
                         if eval_score > test_score
                             "==>"
@@ -2003,21 +2057,25 @@ function run()
 
                     current_location_timer = 0
 
+                    
+
                     # if eval_score > test_score
                     #     current_set_position = length(current_set)
 
                     #     # println(current_set_position)
                     # end
                 end
-
-                if test_visits < test_score * 2
-                    current_location_timer = 0
-                end
             elseif is_in_index
                 (t_moves, t_visits, t_iteration) = index[eval_hash]
                 index[eval_hash] = (eval_moves, t_visits, t_iteration)
             end
+
+            
         end
+
+        #not bad
+        # if test_visit
+        
 
         if eval_score > max_score
             max_score = eval_score
