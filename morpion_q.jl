@@ -11,6 +11,10 @@ struct Move
     start_offset::Int8
 end
 
+# function isless(move1::Move, move2::Move)
+#     isless((move1.x, move1.y, move1.direction, move1.start_offset), (move2.x, move2.y, move2.direction, move2.start_offset))
+# end
+
 function maxby(f, arr)
     reduce((a, b) -> f(a) > f(b) ? a : b, arr)
 end
@@ -1509,53 +1513,109 @@ function q_table_greedy_eval(board_template, q_table)
     gym
 end
 
-function run()
-    board_template = generate_initial_board()
+function move_spatial_hash(moves::Array{Move})
+    morpion_dna = falses(40 * 40 * 4)
 
-    initial_q_table_value = 0
-    discount = 1
-    learning_rate = 1
-    epsilon = 0.01
-    q_table = Dict{UInt64,Float64}()
-    max_score = 0
-    running = 0
-
-    for t in 1:10000
-
-        gym = q_sample_episode(board_template, q_table)
-
-        # println(length(gym.taken_moves))
-
-        # println(gym.taken_moves)
-        score = length(gym.taken_moves)
-
-        q_table[q_generate_key(gym.taken_moves)] = score
-            
-        for i in 1:(score - 1)
-            state_action = gym.taken_moves[1:(score - i)]
-            # println(length(state_action))
-            q_key = q_generate_key(state_action)
-            eval_gym = new_gym(board_template)
-            step_moves(eval_gym, state_action)
-            target_value = q_max_next_q_value(q_table, eval_gym)
-
-            q_table_value = q_get_table_value(q_table, q_key)
-
-            q_table[q_key] = q_table_value + learning_rate * (target_value - q_table_value)
-
-        end
-
-        println("$t. $score $max_score")
-
-        max_score = max(max_score, score)
+    for move in moves
+        morpion_dna[dna_index(move)] = true
     end
 
-    println()
+    hash(morpion_dna)
+end
 
-    # println(q_table)
-    g = q_table_greedy_eval(board_template, q_table)
-    println(length(g.taken_moves))
-    println(max_score)
+function run()
+
+    board_template = generate_initial_board()
+
+    # current_moves = random_completion(copy(board_template))
+
+    # println(current_moves)
+
+    # moves = Move[Move(2, 9, 1, 0), Move(7, 7, 0, -2), Move(10, 6, 1, -4), Move(8, 4, 2, -2), Move(4, 6, 1, -4), Move(6, 10, 3, -4), Move(4, 8, 2, -2), Move(2, 7, 2, -2), Move(3, 10, 3, -4), Move(5, 8, 0, -2), Move(2, 8, 1, 0), Move(2, 10, 3, -4), Move(2, 2, 0, -2), Move(5, 7, 0, -3), Move(4, 7, 1, -2), Move(4, 5, 3, 0), Move(7, 10, 2, -4), Move(5, 4, 0, -3), Move(5, 3, 1, 0), Move(9, 7, 3, -4), Move(4, 3, 1, -3), Move(0, 7, 3, -4), Move(6, 5, 2, -3), Move(7, 2, 2, -2), Move(6, 4, 3, -3), Move(7, 5, 2, -2), Move(7, 4, 3, -1), Move(4, 4, 1, 0), Move(5, 5, 2, -2), Move(8, 5, 1, -3), Move(8, 2, 3, 0), Move(9, 1, 0, -4), Move(10, 7, 2, -4), Move(8, 7, 1, -2), Move(5, 6, 3, -1), Move(3, 4, 2, -1), Move(3, 5, 3, -3), Move(7, 1, 0, -4), Move(10, 4, 2, -4), Move(7, 9, 2, -4), Move(10, 2, 0, -4), Move(8, 8, 0, -2), Move(2, 5, 0, -2), Move(1, 5, 1, -1), Move(1, 9, 0, 0), Move(2, 4, 3, -2), Move(1, 4, 1, -1), Move(1, 7, 3, -4), Move(-1, 5, 2, 0), Move(-1, 2, 2, 0), Move(4, 1, 0, -4), Move(4, 2, 3, -2), Move(5, 2, 1, -1), Move(5, 1, 0, -3), Move(5, -1, 3, 0), Move(8, 1, 1, -3), Move(2, -1, 2, 0), Move(1, 10, 0, 0), Move(2, 0, 1, 0), Move(9, 2, 0, -4), Move(1, -1, 2, 0)]
+    # sorted_moves = sort(moves, by=(move) -> (move.x, move.y, move.direction, move.start_offset))
+
+    
+
+    # println(moves)
+    # println(sorted_moves)
+
+    # println(move_spatial_hash(moves))
+    # println(move_spatial_hash(sorted_moves))
+
+    start_time = Dates.now()
+    for i in 1:10000
+        moves = random_completion(copy(board_template))
+        q_key = q_generate_key(moves)
+    end
+    end_time = Dates.now()
+
+    println(end_time - start_time)
+
+    start_time = Dates.now()
+    for i in 1:10000
+        moves = random_completion(copy(board_template))
+        q_key = move_spatial_hash(moves)
+    end
+    end_time = Dates.now()
+
+    println(end_time - start_time)
+
+
+
+
+    #---------------------------------------------------------------------------------------------------------
+    # board_template = generate_initial_board()
+
+    # initial_q_table_value = 0
+    # discount = 1
+    # learning_rate = 1
+    # epsilon = 0.01
+    # q_table = Dict{UInt64,Float64}()
+    # max_score = 0
+    # running = 0
+
+    # for t in 1:10000
+
+    #     gym = q_sample_episode(board_template, q_table)
+
+    #     # println(length(gym.taken_moves))
+
+    #     # println(gym.taken_moves)
+    #     score = length(gym.taken_moves)
+
+    #     q_table[q_generate_key(gym.taken_moves)] = score
+            
+    #     for i in 1:(score - 1)
+    #         state_action = gym.taken_moves[1:(score - i)]
+    #         # println(length(state_action))
+    #         q_key = q_generate_key(state_action)
+    #         eval_gym = new_gym(board_template)
+    #         step_moves(eval_gym, state_action)
+    #         target_value = q_max_next_q_value(q_table, eval_gym)
+
+    #         q_table_value = q_get_table_value(q_table, q_key)
+
+    #         q_table[q_key] = q_table_value + learning_rate * (target_value - q_table_value)
+
+    #     end
+
+    #     println("$t. $score $max_score")
+
+    #     max_score = max(max_score, score)
+    # end
+
+    # println()
+
+    # # println(q_table)
+    # g = q_table_greedy_eval(board_template, q_table)
+    # println(length(g.taken_moves))
+    # println(max_score)
+
+
+
+
+
+    #---------------------------------------------------------------------------------------------------------
 
 
     # for i in 1:10000000
