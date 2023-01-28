@@ -1523,6 +1523,16 @@ function move_spatial_hash(moves::Array{Move})
     hash(morpion_dna)
 end
 
+function dict_move_hash(moves::Array{Move})
+    morpion_dna = Dict{Move, Bool}()
+
+    for move in moves
+        morpion_dna[move] = true
+    end
+
+    hash(morpion_dna)
+end
+
 function run()
 
     board_template = generate_initial_board()
@@ -1539,28 +1549,44 @@ function run()
     # println(moves)
     # println(sorted_moves)
 
-    # println(move_spatial_hash(moves))
-    # println(move_spatial_hash(sorted_moves))
+    # println(dict_move_hash(moves))
+    # println(dict_move_hash(sorted_moves))
+
+    moves = random_completion(copy(board_template))
+    iterations = 1000000
 
     start_time = Dates.now()
-    for i in 1:10000
-        moves = random_completion(copy(board_template))
+    for i in 1:iterations
+        
         q_key = q_generate_key(moves)
+        # println(q_key)
     end
     end_time = Dates.now()
 
-    println(end_time - start_time)
+    a = end_time - start_time
+    println(a)
 
     start_time = Dates.now()
-    for i in 1:10000
-        moves = random_completion(copy(board_template))
+    for i in 1:iterations
+        # moves = random_completion(copy(board_template))
         q_key = move_spatial_hash(moves)
+        # println(q_key)
     end
     end_time = Dates.now()
 
-    println(end_time - start_time)
+    b = end_time - start_time
+    println(b)
 
+    start_time = Dates.now()
+    for i in 1:iterations
+        # moves = random_completion(copy(board_template))
+        q_key = dict_move_hash(moves)
+        # println(q_key)
+    end
+    end_time = Dates.now()
 
+    c = end_time - start_time
+    println(c)
 
 
     #---------------------------------------------------------------------------------------------------------
